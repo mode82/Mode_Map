@@ -411,6 +411,63 @@
       color: var(--muted);
       margin-top:4px;
     }
+
+    /* Admin Lock Overlay (only on admin82.html) */
+    #__adminLockOverlay{
+      position: fixed; inset: 0;
+      display: none;
+      align-items: center; justify-content: center;
+      background: rgba(0,0,0,.78);
+      backdrop-filter: blur(6px);
+      z-index: 2147483647;
+    }
+    #__adminLockCard{
+      width: min(420px, calc(100vw - 32px));
+      background: rgba(20, 24, 36, .92);
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 16px;
+      padding: 18px 18px 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.5);
+      color: #fff;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    }
+    #__adminLockCard h2{ margin: 0 0 8px; font-size: 18px; }
+    #__adminLockCard p{ margin: 0 0 14px; opacity: .85; font-size: 13px; line-height: 1.4; }
+    #__adminPw{
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(0,0,0,.25);
+      color: #fff;
+      outline: none;
+    }
+    #__adminLockRow{ display:flex; gap:10px; margin-top:12px; }
+    #__adminUnlockBtn{
+      flex: 1;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(124,196,255,.18);
+      color: #fff;
+      cursor: pointer;
+      font-weight: 700;
+    }
+    #__adminUnlockBtn:active{ transform: translateY(1px); }
+    #__adminLockMsg{ margin-top: 10px; font-size: 12px; opacity: .9; min-height: 16px; }
+    #__adminLogoutBtn{
+      position: fixed;
+      right: 12px; bottom: 12px;
+      z-index: 2147483646;
+      padding: 8px 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(255,80,80,.18);
+      color: #fff;
+      cursor: pointer;
+      font-size: 12px;
+      display: none;
+    }
   </style>
 </head>
 
@@ -425,14 +482,14 @@
     <div class="drop" id="gameDrop"></div>
   </div>
 
-  <!-- ✅ 관리자 모드로 돌아갈 수 있는 버튼(토글)은 유지 + 항상 표시 -->
-  <span class="pill">
+  <!-- ✅ 관리자 모드 토글(유저 페이지에서는 숨김 처리됨) -->
+  <span class="pill" id="adminToggleWrap">
     <span class="badge" id="modeBadge">USER</span>
     <label class="muted" style="margin:0;">관리자</label>
     <input id="adminToggle" type="checkbox" />
   </span>
 
-  <!-- ✅ 상단 메뉴: Map Demo 제외 전부 "관리자 모드에서만" 보이게 -->
+  <!-- ✅ 상단 메뉴: 관리자 모드에서만 -->
   <button id="uploadBtn" class="adminOnly">지도 업로드</button>
   <button id="resetViewBtn" class="adminOnly">뷰 리셋</button>
   <button id="clearAllBtn" class="danger adminOnly">전체 초기화</button>
@@ -440,7 +497,7 @@
 </header>
 
 <div class="wrap">
-  <!-- ✅ 좌측: 페이지 섹션 -->
+  <!-- ✅ 좌측: 페이지 -->
   <aside class="panel left">
     <div class="section">
       <h3>
@@ -454,7 +511,8 @@
       </button>
 
       <div class="muted" style="margin:10px 0 8px; line-height:1.4;">
-        • 페이지 버튼 클릭 → 같은 게임 안에서 지도 페이지 이동
+        • 페이지 버튼 클릭 → 같은 게임 안에서 지도 페이지 이동<br/>
+        • <b>폰/다른 기기</b>에서도 지도 보이게 하려면: 관리자에서 <b>URL</b> 버튼으로 지도 이미지 URL 설정
       </div>
 
       <div id="pageList" style="display:flex; flex-direction:column; gap:10px;"></div>
@@ -472,7 +530,7 @@
     </div>
   </div>
 
-  <!-- ✅ 우측: 카테고리 + 관리자툴 + 유저 마커초기화 + 선택패널 -->
+  <!-- ✅ 우측 -->
   <aside class="panel right">
     <div class="section" id="categorySection">
       <h3>카테고리</h3>
@@ -685,8 +743,75 @@
   </div>
 </div>
 
+<!-- Admin Lock UI (only on admin82.html) -->
+<div id="__adminLockOverlay">
+  <div id="__adminLockCard">
+    <h2>관리자 인증</h2>
+    <p>비밀번호를 입력하면 이 브라우저에서 24시간 동안 인증이 유지됩니다.</p>
+    <input id="__adminPw" type="password" inputmode="numeric" autocomplete="current-password" placeholder="관리자 비밀번호" />
+    <div id="__adminLockRow">
+      <button id="__adminUnlockBtn" type="button">확인</button>
+    </div>
+    <div id="__adminLockMsg"></div>
+  </div>
+</div>
+<button id="__adminLogoutBtn" type="button">관리자 로그아웃</button>
+
+<!-- ✅ iOS 폴리필: structuredClone 없으면 흰 화면 방지 -->
+<script>
+if (typeof structuredClone !== "function") {
+  window.structuredClone = (obj) => JSON.parse(JSON.stringify(obj));
+}
+</script>
+
 <script>
 (() => {
+  // ==========================================================
+  // Page mode detect
+  // ==========================================================
+  const IS_ADMIN_PAGE = /admin82\.html$/i.test(location.pathname);
+  const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+  // ==========================================================
+  // Admin Auth (24h) - only admin page
+  // ==========================================================
+  const ADMIN_PASSWORD = "0000000001";
+  const AUTH_KEY = "mm_admin_auth_v1";
+  const SESSION_MS = 24 * 60 * 60 * 1000;
+
+  const $lock = document.getElementById("__adminLockOverlay");
+  const $pw = document.getElementById("__adminPw");
+  const $unlock = document.getElementById("__adminUnlockBtn");
+  const $msg = document.getElementById("__adminLockMsg");
+  const $logout = document.getElementById("__adminLogoutBtn");
+
+  function getAuth(){
+    try{
+      const raw = localStorage.getItem(AUTH_KEY);
+      if(!raw) return null;
+      const obj = JSON.parse(raw);
+      if(!obj || typeof obj.exp !== "number") return null;
+      return obj;
+    }catch{ return null; }
+  }
+  function isAuthed(){
+    const a = getAuth();
+    return !!(a && a.exp > Date.now());
+  }
+  function setAuthed(){
+    localStorage.setItem(AUTH_KEY, JSON.stringify({ exp: Date.now() + SESSION_MS }));
+  }
+  function clearAuthed(){
+    localStorage.removeItem(AUTH_KEY);
+  }
+
+  function showLock(show){
+    if(!IS_ADMIN_PAGE) return;
+    $lock.style.display = show ? "flex" : "none";
+    $logout.style.display = show ? "none" : "block";
+    if(show) setTimeout(()=> $pw.focus(), 50);
+  }
+
   // ==========================================================
   // Storage / DB
   // ==========================================================
@@ -751,7 +876,7 @@
     return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
   function isValidUrl(url){
-    try { new URL(url); return true; } catch { return false; }
+    try { new URL(url, location.href); return true; } catch { return false; }
   }
   function uniqByName(list){
     const seen = new Set();
@@ -821,7 +946,7 @@
           {
             id: uid(),
             name: "1번마을",
-            map: { imageKey:"", width:2200, height:1400 },
+            map: { imageKey:"", imageUrl:"", width:2200, height:1400 },
             markers: [],
             links: []
           }
@@ -845,13 +970,14 @@
     if(typeof g.name !== "string") g.name = "Game";
     if(!Array.isArray(g.categories) || g.categories.length === 0) g.categories = structuredClone(DEFAULT_CATEGORIES);
     if(!Array.isArray(g.pages) || g.pages.length === 0){
-      g.pages = [{ id: uid(), name:"1번마을", map:{imageKey:"", width:2200, height:1400}, markers:[], links:[] }];
+      g.pages = [{ id: uid(), name:"1번마을", map:{imageKey:"", imageUrl:"", width:2200, height:1400}, markers:[], links:[] }];
     }
     for(const p of g.pages){
       if(!p.id) p.id = uid();
       if(typeof p.name !== "string") p.name = "Page";
-      if(!p.map) p.map = { imageKey:"", width:2200, height:1400 };
+      if(!p.map) p.map = { imageKey:"", imageUrl:"", width:2200, height:1400 };
       if(typeof p.map.imageKey !== "string") p.map.imageKey = "";
+      if(typeof p.map.imageUrl !== "string") p.map.imageUrl = "";
       if(typeof p.map.width !== "number" || !isFinite(p.map.width)) p.map.width = 2200;
       if(typeof p.map.height !== "number" || !isFinite(p.map.height)) p.map.height = 1400;
       if(!Array.isArray(p.markers)) p.markers = [];
@@ -1059,6 +1185,7 @@
   const ctx = canvas.getContext("2d");
   const centerStage = document.getElementById("centerStage");
 
+  const adminToggleWrap = document.getElementById("adminToggleWrap");
   const adminToggle = document.getElementById("adminToggle");
   const modeBadge = document.getElementById("modeBadge");
 
@@ -1135,10 +1262,9 @@
 
   let activeCatRowEl = null;
   let modalMarkerId = "";
-  let modalInitialCategory = ""; // ✅ 추가: 모달 열릴 때 카테고리 기억 (카테고리 변경 시 색상 동기화)
 
   // ==========================================================
-  // Admin-only header controls visibility
+  // Admin-only visibility
   // ==========================================================
   function syncAdminOnlyVisibility(){
     document.querySelectorAll(".adminOnly").forEach(el => {
@@ -1147,9 +1273,10 @@
   }
 
   // ==========================================================
-  // Map image load per page
+  // Map image load per page (IDB -> fallback URL)
   // ==========================================================
   const mapImg = new Image();
+  mapImg.crossOrigin = "anonymous";
   let mapImgReady = false;
   let mapObjectUrl = null;
 
@@ -1167,24 +1294,47 @@
     }
 
     const key = currentMapImageKey();
+
+    // 1) IDB first (device-local)
     const blob = await idbGet(key).catch(()=>null);
-    if(!blob){
-      mapImgReady = false;
-      draw();
+    if(blob){
+      mapObjectUrl = URL.createObjectURL(blob);
+      mapImg.onload = () => {
+        mapImgReady = true;
+        const mp = currentMap();
+        mp.width = mapImg.naturalWidth || mapImg.width;
+        mp.height = mapImg.naturalHeight || mapImg.height;
+        saveState();
+        resetView();
+        draw();
+      };
+      mapImg.onerror = () => { mapImgReady = false; draw(); };
+      mapImg.src = mapObjectUrl;
       return;
     }
-    mapObjectUrl = URL.createObjectURL(blob);
-    mapImg.onload = () => {
-      mapImgReady = true;
-      const mp = currentMap();
-      mp.width = mapImg.naturalWidth || mapImg.width;
-      mp.height = mapImg.naturalHeight || mapImg.height;
-      saveState();
-      resetView();
-      draw();
-    };
-    mapImg.onerror = () => { mapImgReady = false; draw(); };
-    mapImg.src = mapObjectUrl;
+
+    // 2) Fallback: public URL (shared across devices)
+    const mp = currentMap();
+    const url = (mp.imageUrl || "").trim();
+    if(url && isValidUrl(url)){
+      const abs = new URL(url, location.href).toString();
+      mapImg.onload = () => {
+        mapImgReady = true;
+        mp.width = mapImg.naturalWidth || mapImg.width;
+        mp.height = mapImg.naturalHeight || mapImg.height;
+        saveState();
+        resetView();
+        draw();
+      };
+      mapImg.onerror = () => { mapImgReady = false; draw(); };
+      // cache bust when reloading
+      mapImg.src = abs + (abs.includes("?") ? "&" : "?") + "v=" + Date.now();
+      return;
+    }
+
+    // 3) Nothing
+    mapImgReady = false;
+    draw();
   }
 
   // ==========================================================
@@ -1194,7 +1344,8 @@
 
   function resizeCanvas(){
     const rect = canvas.getBoundingClientRect();
-    const dpr = window.devicePixelRatio || 1;
+    // iOS 메모리 폭발 방지: DPR 제한
+    const dpr = isIOS ? 1 : (window.devicePixelRatio || 1);
     canvas.width = Math.floor(rect.width * dpr);
     canvas.height = Math.floor(rect.height * dpr);
     ctx.setTransform(dpr,0,0,dpr,0,0);
@@ -1222,10 +1373,6 @@
   // ==========================================================
   // Mode
   // ==========================================================
-  adminToggle.checked = !!state.ui.admin;
-  state.ui.admin = true;
-  adminToggle.checked = true;
-
   function setAdminMode(on){
     state.ui.admin = !!on;
     modeBadge.textContent = state.ui.admin ? "ADMIN" : "USER";
@@ -1242,13 +1389,23 @@
     syncAdminOnlyVisibility();
     refreshAll();
   }
-  adminToggle.addEventListener("change", () => setAdminMode(adminToggle.checked));
+
+  // Admin toggle: user page에서는 숨김 + 강제 USER
+  if(!IS_ADMIN_PAGE){
+    adminToggleWrap.style.display = "none";
+    state.ui.admin = false;
+    adminToggle.checked = false;
+  }else{
+    adminToggleWrap.style.display = "";
+    adminToggle.addEventListener("change", () => setAdminMode(adminToggle.checked));
+  }
 
   // ==========================================================
   // Header buttons (admin only visible)
   // ==========================================================
   uploadBtn.addEventListener("click", () => fileInput.click());
   fileInput.addEventListener("change", async (e) => {
+    if(!state.ui.admin) return;
     const f = e.target.files && e.target.files[0];
     if(!f) return;
     if(!f.type.startsWith("image/")) return;
@@ -1256,6 +1413,7 @@
     const key = currentMapImageKey();
     try{
       await idbPut(key, f);
+      // 업로드하면 URL은 굳이 바꾸지 않음(사용자 선택)
       await loadMapImageForCurrentPage();
     }catch(err){
       console.warn("image save failed:", err);
@@ -1266,6 +1424,7 @@
   resetViewBtn.addEventListener("click", () => { resetView(); draw(); });
 
   clearAllBtn.addEventListener("click", async () => {
+    if(!state.ui.admin) return;
     if(!confirm("localStorage + 모든 지도 이미지(IndexedDB)까지 전체 초기화할까요?")) return;
     try{ indexedDB.deleteDatabase(IDB_NAME); }catch(e){ console.warn(e); }
     localStorage.removeItem(LS_KEY);
@@ -1334,7 +1493,7 @@
           id: uid(),
           name: String(name).trim(),
           categories: structuredClone(DEFAULT_CATEGORIES),
-          pages: [{ id: uid(), name:"1번마을", map:{ imageKey:"", width:2200, height:1400 }, markers:[], links:[] }]
+          pages: [{ id: uid(), name:"1번마을", map:{ imageKey:"", imageUrl:"", width:2200, height:1400 }, markers:[], links:[] }]
         };
         state.games.push(ng);
         setCurrentGame(ng.id);
@@ -1437,7 +1596,8 @@
       const meta = document.createElement("div");
       meta.className = "meta";
       const mk = p.markers?.length || 0;
-      meta.textContent = `마커 ${mk}`;
+      const hasUrl = (p.map?.imageUrl || "").trim() ? "URL✓" : "URL-";
+      meta.textContent = `마커 ${mk} · ${hasUrl}`;
 
       left.appendChild(name);
       left.appendChild(meta);
@@ -1448,6 +1608,26 @@
       btn.addEventListener("click", () => setCurrentPage(p.id));
 
       if(state.ui.admin){
+        const urlBtn = document.createElement("button");
+        urlBtn.className = "iconBtn";
+        urlBtn.type = "button";
+        urlBtn.textContent = "URL";
+        urlBtn.title = "지도 이미지 URL 설정(폰/다른 기기 공유용)";
+        urlBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const cur = (p.map?.imageUrl || "").trim();
+          const v = prompt(
+            "지도 이미지 URL을 입력하세요.\n예) ./assets/maps/map1.png\n(이 URL이 설정되면 다른 기기에서도 지도가 보입니다)",
+            cur || "./assets/maps/map1.png"
+          );
+          if(v == null) return;
+          if(!p.map) p.map = { imageKey:"", imageUrl:"", width:2200, height:1400 };
+          p.map.imageUrl = String(v).trim();
+          saveState();
+          if(p.id === getCurrentPage().id) loadMapImageForCurrentPage();
+          rebuildPageList();
+        });
+
         const rename = document.createElement("button");
         rename.className = "iconBtn";
         rename.type = "button";
@@ -1479,7 +1659,7 @@
 
           g.pages = g.pages.filter(x => x.id !== p.id);
           if(g.pages.length === 0){
-            g.pages.push({ id: uid(), name:"1번마을", map:{ imageKey:"", width:2200, height:1400 }, markers:[], links:[] });
+            g.pages.push({ id: uid(), name:"1번마을", map:{ imageKey:"", imageUrl:"", width:2200, height:1400 }, markers:[], links:[] });
           }
           if(state.currentPageId === p.id){
             state.currentPageId = g.pages[0].id;
@@ -1489,6 +1669,7 @@
           loadMapImageForCurrentPage();
         });
 
+        actions.appendChild(urlBtn);
         actions.appendChild(rename);
         actions.appendChild(del);
       }
@@ -1505,7 +1686,7 @@
     const nextNum = (g.pages?.length || 0) + 1;
     const name = prompt("새 페이지 이름 (예: 2번마을)", `${nextNum}번마을`);
     if(!name) return;
-    const p = { id: uid(), name: String(name).trim(), map:{ imageKey:"", width:2200, height:1400 }, markers:[], links:[] };
+    const p = { id: uid(), name: String(name).trim(), map:{ imageKey:"", imageUrl:"", width:2200, height:1400 }, markers:[], links:[] };
     g.pages.push(p);
     saveState();
     setCurrentPage(p.id);
@@ -1795,8 +1976,6 @@
     }
 
     modalCategory.value = m.category || (currentCategories()[0]?.name || "");
-    modalInitialCategory = modalCategory.value; // ✅ 모달 열린 시점 카테고리 저장
-
     modalTitle.value = m.title || "";
     modalYoutubeUrl.value = m.youtubeUrl || "";
     modalYoutubeLabel.value = m.youtubeLabel || "";
@@ -1827,7 +2006,6 @@
     markerModalBackdrop.style.display = "none";
     markerModalBackdrop.setAttribute("aria-hidden","true");
     modalMarkerId = "";
-    modalInitialCategory = "";
   }
 
   closeMarkerModalBtn.addEventListener("click", closeMarkerModal);
@@ -1854,16 +2032,10 @@
       modalColor.value = (base && /^#([0-9a-fA-F]{6})$/.test(base)) ? base : "#e6edf3";
     }
   });
-
-  // ✅ 수정1) 카테고리를 바꾸면 "카테고리 색상 사용"을 강제로 켜서
-  //          카테고리 색상과 마커 색상이 항상 일치하도록 함(관리자 편집 UX)
   modalCategory.addEventListener("change", () => {
-    const base = getCategoryColor(modalCategory.value);
-    if(modalCategory.value !== modalInitialCategory){
-      modalUseCategoryColor.checked = true;
-      modalColor.disabled = true;
-    }
+    // 카테고리 변경 시 카테고리 색을 제대로 따라가도록
     if(modalUseCategoryColor.checked){
+      const base = getCategoryColor(modalCategory.value);
       modalColor.value = (base && /^#([0-9a-fA-F]{6})$/.test(base)) ? base : "#e6edf3";
     }
   });
@@ -1929,36 +2101,33 @@
     const m = currentMarkers().find(x => x.id === modalMarkerId);
     if(!m) return;
 
-    const nextCategory = (modalCategory.value || "").trim() || (currentCategories()[0]?.name || "default");
-    const categoryChanged = (modalInitialCategory && nextCategory !== modalInitialCategory);
-
+    // 텍스트/링크/메모는 개별 마커에만
     m.title = (modalTitle.value || "").trim();
-    m.category = nextCategory;
     m.youtubeUrl = (modalYoutubeUrl.value || "").trim();
     m.youtubeLabel = (modalYoutubeLabel.value || "").trim();
     m.memo = (modalMemo.value || "");
 
-    // ✅ 수정1) 카테고리를 바꾼 경우: 오버라이드 색을 강제로 제거 → 카테고리 색과 일치
-    if(categoryChanged){
-      m.colorOverride = "";
+    // ✅ 스타일/카테고리/색상은 "체인 마스터"에 적용해서 전체가 일치하도록
+    const chain = findChainByMarkerId(m.id);
+    const target = chain ? (currentMarkers().find(x => x.id === chain.masterId) || m) : m;
+
+    target.category = (modalCategory.value || "").trim() || (currentCategories()[0]?.name || "default");
+
+    if(modalUseCategoryColor.checked){
+      target.colorOverride = ""; // 카테고리 색상과 일치
     }else{
-      if(modalUseCategoryColor.checked){
-        m.colorOverride = "";
-      }else{
-        const c = (modalColor.value || "").trim();
-        m.colorOverride = (c && /^#([0-9a-fA-F]{6})$/.test(c)) ? c : "";
-      }
+      const c = (modalColor.value || "").trim();
+      target.colorOverride = (c && /^#([0-9a-fA-F]{6})$/.test(c)) ? c : "";
     }
 
     const radiusPx = clamp(Number(modalRadius.value || DEFAULT_MARKER_RADIUS_PX), 6, 30);
-    m.radiusPx = radiusPx;
-    m.labelSizePx = clamp(calcLabelSizeFromRadius(radiusPx), 10, 48);
-    m.labelWeight = Number(modalFontWeight.value || DEFAULT_LABEL_WEIGHT);
+    target.radiusPx = radiusPx;
+    target.labelSizePx = clamp(calcLabelSizeFromRadius(radiusPx), 10, 48);
+    target.labelWeight = Number(modalFontWeight.value || DEFAULT_LABEL_WEIGHT);
 
     const lc = (modalFontColor.value || "").trim();
-    m.labelColor = (lc && /^#([0-9a-fA-F]{6})$/.test(lc)) ? lc : DEFAULT_LABEL_COLOR;
+    target.labelColor = (lc && /^#([0-9a-fA-F]{6})$/.test(lc)) ? lc : DEFAULT_LABEL_COLOR;
 
-    const chain = findChainByMarkerId(m.id);
     if(chain) applyChainMasterStyleByChain(chain);
     else applyAllChainsInGroup(Number(m.groupId||0));
 
@@ -2141,6 +2310,7 @@
     const fallbackCat = g.categories[0]?.name || "default";
     for(const m of currentMarkers()){
       if(!validSet.has(m.category)) m.category = fallbackCat;
+      // 카테고리 변경/정리 후: "카테고리 색상 사용"이 기본이 되도록 오버라이드는 유지(사용자 선택)
     }
     normalizeAllChainsCurrentPage();
 
@@ -2247,6 +2417,8 @@
   }
 
   function createMarkerAtWorld(wx, wy){
+    if(!state.ui.admin) return;
+
     const mp = currentMap();
     const xr = clamp01(wx / mp.width);
     const yr = clamp01(wy / mp.height);
@@ -2416,7 +2588,7 @@
     if(m){
       state.ui.selectedMarkerId = m.id;
 
-      // 유저모드: 아이콘 클릭 시 "불투명 30%" 토글
+      // ✅ 유저모드: 아이콘 클릭 시 "불투명 30%" 토글
       if(!state.ui.admin){
         const set = new Set(state.ui.dimmedMarkerIds || []);
         if(set.has(m.id)) set.delete(m.id);
@@ -2541,14 +2713,14 @@
     ctx.restore();
   }
 
-  // ✅ 수정2) 화살표가 마커에서 너무 멀어서: r(끝단 오프셋) 12 → 8로 한 단계 더 가깝게
+  // ✅ 화살표-마커 간격 더 가깝게: r 12 -> 8
   function drawArrow(ax, ay, bx, by){
     const dx = bx - ax;
     const dy = by - ay;
     const len = Math.hypot(dx, dy);
     if(len < 1e-6) return;
 
-    const r = 8; // ✅ 기존 12
+    const r = 8; // <-- closer
     const ux = dx / len;
     const uy = dy / len;
     const endX = bx - ux * r;
@@ -2617,11 +2789,22 @@
       ctx.strokeStyle = "#223042";
       ctx.lineWidth = 4 / view.scale;
       ctx.strokeRect(0,0,mp.width, mp.height);
+
       ctx.fillStyle = "#7a8aa0";
       ctx.font = `800 ${28 / view.scale}px system-ui`;
       const g = getCurrentGame();
       const p = getCurrentPage();
-      ctx.fillText(`"${g.name} / ${p.name}" 지도 이미지를 업로드하세요 (관리자 모드)`, 40/view.scale, 80/view.scale);
+
+      const msg = IS_ADMIN_PAGE
+        ? `"${g.name} / ${p.name}" 지도 이미지를 업로드하거나, URL을 설정하세요 (관리자 모드)`
+        : `"${g.name} / ${p.name}" 지도 이미지가 설정되지 않았습니다.\n관리자에서 URL을 설정하면 폰에서도 동일하게 보입니다.`;
+
+      const lines = String(msg).split("\n");
+      let y = 70/view.scale;
+      for(const line of lines){
+        ctx.fillText(line, 40/view.scale, y);
+        y += 34/view.scale;
+      }
     }
 
     const visible = getVisibleMarkers();
@@ -2723,7 +2906,7 @@
   }
 
   // ==========================================================
-  // Init page content if empty: create sample markers only once
+  // Init sample markers (only once)
   // ==========================================================
   function ensureSampleMarkersOnce(){
     const p = getCurrentPage();
@@ -2802,15 +2985,12 @@
     rebuildLinks();
     saveState();
 
-    setAdminMode(!!state.ui.admin);
-
+    refreshAll();
     resizeCanvas();
     resetView();
     loadMapImageForCurrentPage();
     draw();
   }
-
-  init();
 
   // ==========================================================
   // Extra: click blank area to unpin overlay (user)
@@ -2825,184 +3005,50 @@
     if(overlayPinned) unpinOverlay();
   });
 
-})();
-</script>
+  // ==========================================================
+  // Admin auth wiring
+  // ==========================================================
+  function unlockAdmin(){
+    setAuthed();
+    showLock(false);
+    adminToggleWrap.style.display = "";
+    adminToggle.checked = true;
+    setAdminMode(true);
+  }
 
-  <!-- =======================
- Admin Auth (24h) Add-on
- 붙여넣기 위치: admin82.html의 </body> 바로 위
-======================== -->
-<style>
-  /* Admin Lock Overlay */
-  #__adminLockOverlay{
-    position: fixed; inset: 0;
-    display: flex; align-items: center; justify-content: center;
-    background: rgba(0,0,0,.78);
-    backdrop-filter: blur(6px);
-    z-index: 2147483647;
+  function lockAdmin(){
+    showLock(true);
+    adminToggle.checked = false;
+    setAdminMode(false);
   }
-  #__adminLockCard{
-    width: min(420px, calc(100vw - 32px));
-    background: rgba(20, 24, 36, .92);
-    border: 1px solid rgba(255,255,255,.14);
-    border-radius: 16px;
-    padding: 18px 18px 16px;
-    box-shadow: 0 20px 60px rgba(0,0,0,.5);
-    color: #fff;
-    font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-  }
-  #__adminLockCard h2{ margin: 0 0 8px; font-size: 18px; }
-  #__adminLockCard p{ margin: 0 0 14px; opacity: .85; font-size: 13px; line-height: 1.4; }
-  #__adminPw{
-    width: 100%;
-    padding: 10px 12px;
-    border-radius: 12px;
-    border: 1px solid rgba(255,255,255,.16);
-    background: rgba(0,0,0,.25);
-    color: #fff;
-    outline: none;
-  }
-  #__adminLockRow{
-    display: flex; gap: 10px; margin-top: 12px;
-  }
-  #__adminUnlockBtn{
-    flex: 1;
-    padding: 10px 12px;
-    border-radius: 12px;
-    border: 1px solid rgba(255,255,255,.16);
-    background: rgba(124,196,255,.18);
-    color: #fff;
-    cursor: pointer;
-    font-weight: 700;
-  }
-  #__adminUnlockBtn:active{ transform: translateY(1px); }
-  #__adminLockMsg{ margin-top: 10px; font-size: 12px; opacity: .9; min-height: 16px; }
 
-  /* Optional: 작은 로그아웃 버튼 */
-  #__adminLogoutBtn{
-    position: fixed;
-    right: 12px; bottom: 12px;
-    z-index: 2147483646;
-    padding: 8px 10px;
-    border-radius: 12px;
-    border: 1px solid rgba(255,255,255,.16);
-    background: rgba(255,80,80,.18);
-    color: #fff;
-    cursor: pointer;
-    font-size: 12px;
-    display: none;
-  }
-</style>
-
-<script>
-(() => {
-  // ===== 설정 =====
-  const ADMIN_PASSWORD = "0000000001"; // 사용자가 지정한 비밀번호
-  const AUTH_KEY = "mm_admin_auth_v1";
-  const SESSION_MS = 24 * 60 * 60 * 1000; // 24시간
-
-  // ===== 유틸 =====
-  const now = () => Date.now();
-
-  function getAuth() {
-    try {
-      const raw = localStorage.getItem(AUTH_KEY);
-      if (!raw) return null;
-      const obj = JSON.parse(raw);
-      if (!obj || typeof obj.exp !== "number") return null;
-      return obj;
-    } catch (e) {
-      return null;
+  if(IS_ADMIN_PAGE){
+    // admin page: auth gate
+    if(!isAuthed()){
+      lockAdmin();
+    }else{
+      showLock(false);
+      adminToggle.checked = true;
+      setAdminMode(true);
     }
-  }
 
-  function isAuthed() {
-    const a = getAuth();
-    return !!(a && a.exp > now());
-  }
-
-  function setAuthed() {
-    const payload = { exp: now() + SESSION_MS };
-    localStorage.setItem(AUTH_KEY, JSON.stringify(payload));
-  }
-
-  function clearAuthed() {
-    localStorage.removeItem(AUTH_KEY);
-  }
-
-  // ===== 잠금 UI =====
-  function createOverlay() {
-    const overlay = document.createElement("div");
-    overlay.id = "__adminLockOverlay";
-    overlay.innerHTML = `
-      <div id="__adminLockCard">
-        <h2>관리자 인증</h2>
-        <p>비밀번호를 입력하면 이 브라우저에서 24시간 동안 인증이 유지됩니다.</p>
-        <input id="__adminPw" type="password" inputmode="numeric" autocomplete="current-password" placeholder="관리자 비밀번호" />
-        <div id="__adminLockRow">
-          <button id="__adminUnlockBtn" type="button">확인</button>
-        </div>
-        <div id="__adminLockMsg"></div>
-      </div>
-    `;
-    document.body.appendChild(overlay);
-
-    const pw = overlay.querySelector("#__adminPw");
-    const btn = overlay.querySelector("#__adminUnlockBtn");
-    const msg = overlay.querySelector("#__adminLockMsg");
-
-    const unlock = () => {
-      if ((pw.value || "") === ADMIN_PASSWORD) {
-        setAuthed();
-        overlay.remove();
-        showLogout(true);
-      } else {
-        msg.textContent = "비밀번호가 올바르지 않습니다.";
-        pw.select();
-      }
-    };
-
-    btn.addEventListener("click", unlock);
-    pw.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") unlock();
+    $unlock.addEventListener("click", () => {
+      if(($pw.value || "") === ADMIN_PASSWORD) unlockAdmin();
+      else { $msg.textContent = "비밀번호가 올바르지 않습니다."; $pw.select(); }
     });
+    $pw.addEventListener("keydown", (e) => { if(e.key === "Enter") $unlock.click(); });
 
-    // 자동 포커스
-    setTimeout(() => pw.focus(), 50);
-  }
-
-  // ===== 로그아웃 버튼(선택) =====
-  function ensureLogoutBtn() {
-    let b = document.getElementById("__adminLogoutBtn");
-    if (b) return b;
-    b = document.createElement("button");
-    b.id = "__adminLogoutBtn";
-    b.type = "button";
-    b.textContent = "관리자 로그아웃";
-    b.addEventListener("click", () => {
+    $logout.addEventListener("click", () => {
       clearAuthed();
       location.reload();
     });
-    document.body.appendChild(b);
-    return b;
+  }else{
+    // user page: always user mode
+    setAdminMode(false);
   }
 
-  function showLogout(show) {
-    const b = ensureLogoutBtn();
-    b.style.display = show ? "block" : "none";
-  }
-
-  // ===== 실행 =====
-  window.addEventListener("DOMContentLoaded", () => {
-    if (!isAuthed()) {
-      createOverlay();
-      showLogout(false);
-    } else {
-      showLogout(true);
-    }
-  });
+  init();
 })();
 </script>
-
 </body>
 </html>
