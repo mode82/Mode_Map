@@ -1591,6 +1591,12 @@ if (typeof structuredClone !== "function") {
       name.className = "name";
       name.textContent = p.name || "Page";
 
+      const meta = document.createElement("div");
+      meta.className = "meta";
+      const mk = p.markers?.length || 0;
+      const hasUrl = (p.map?.imageUrl || "").trim() ? "URL✓" : "URL-";
+      meta.textContent = `마커 ${mk} · ${hasUrl}`;
+
       left.appendChild(name);
       left.appendChild(meta);
 
