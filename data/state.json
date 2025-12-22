@@ -1,1 +1,379 @@
-{"ui":{"admin":true,"selectedCategory":"","selectedMarkerId":"61qbls33-mjh9vrh1","lastCreatedMarkerId":"w6t7wu47-mjh9w9u1","activePaintColor":"","createCategory":"깃털","createGroupId":1766415011425,"createColorOverride":"","insertAfterMarkerId":"","dimmedMarkerIds":["ah8m54dk-mjh5twoz"]},"currentGameId":"8pt8noyr-mjh5rqag","currentPageId":"aus8qlww-mjh5rqah","games":[{"id":"8pt8noyr-mjh5rqag","name":"Map Demo","categories":[{"name":"보스","color":"#ff3b30"},{"name":"깃털","color":"#ffd60a"},{"name":"큐브","color":"#0a84ff"}],"pages":[{"id":"aus8qlww-mjh5rqah","name":"1번마을","map":{"imageKey":"","imageUrl":"./assets/maps/aion2map.jpg","width":1125,"height":1125},"markers":[{"id":"ah8m54dk-mjh5twoz","x":0.373994589076381,"y":0.3634294412682923,"category":"보스","title":"1번 보스","youtubeUrl":"","youtubeLabel":"1번 보스","createdAt":"2025-12-22T12:56:32.963Z","colorOverride":"","radiusPx":10,"labelSizePx":15,"labelWeight":900,"labelColor":"#e6edf3","groupId":0,"chainStart":false,"memo":"1번 보스","_autoYt":true,"_autoMemo":true},{"id":"7c5p2cat-mjh5u4jj","x":0.4008444885729606,"y":0.43878238501675804,"category":"보스","title":"2번 보스","youtubeUrl":"","youtubeLabel":"2번 보스","createdAt":"2025-12-22T12:56:43.135Z","colorOverride":"","radiusPx":10,"labelSizePx":15,"labelWeight":900,"labelColor":"#e6edf3","groupId":0,"chainStart":false,"memo":"2번 보스","_autoYt":true,"_autoMemo":true},{"id":"vgw9rvi0-mjh5u4t6","x":0.39131710488062604,"y":0.5331900961498931,"category":"보스","title":"3번 보스","youtubeUrl":"","youtubeLabel":"3번 보스","createdAt":"2025-12-22T12:56:43.482Z","colorOverride":"","radiusPx":10,"labelSizePx":15,"labelWeight":900,"labelColor":"#e6edf3","groupId":0,"chainStart":false,"memo":"3번 보스","_autoYt":true,"_autoMemo":true},{"id":"xi2sqmj6-mjh5u51q","x":0.43029276544017714,"y":0.657912209940457,"category":"보스","title":"","youtubeUrl":"","youtubeLabel":"","createdAt":"2025-12-22T12:56:43.790Z","colorOverride":"","radiusPx":10,"labelSizePx":15,"labelWeight":900,"labelColor":"#e6edf3","groupId":0,"chainStart":false,"memo":"","_autoYt":true,"_autoMemo":true},{"id":"7vpb2j1l-mjh5ugqd","x":0.5333617344754348,"y":0.39807447287678227,"category":"깃털","title":"1번 깃털","youtubeUrl":"","youtubeLabel":"1번 깃털","createdAt":"2025-12-22T12:56:58.933Z","colorOverride":"","radiusPx":10,"labelSizePx":15,"labelWeight":900,"labelColor":"#e6edf3","groupId":1766408221529,"chainStart":true,"memo":"1번 깃털","_autoYt":true,"_autoMemo":true},{"id":"gm0gem2w-mjh5uqu6","x":0.5472197471188307,"y":0.483820926107795,"category":"깃털","title":"","youtubeUrl":"","youtubeLabel":"","createdAt":"2025-12-22T12:57:12.030Z","colorOverride":"","radiusPx":10,"labelSizePx":15,"labelWeight":900,"labelColor":"#e6edf3","groupId":1766408221529,"chainStart":false,"memo":"","_autoYt":true,"_autoMemo":true},{"id":"itf48ou3-mjh5ur4r","x":0.49958282865715703,"y":0.6189365493809058,"category":"깃털","title":"","youtubeUrl":"","youtubeLabel":"","createdAt":"2025-12-22T12:57:12.411Z","colorOverride":"","radiusPx":10,"labelSizePx":15,"labelWeight":900,"labelColor":"#e6edf3","groupId":1766408221529,"chainStart":false,"memo":"","_autoYt":true,"_autoMemo":true},{"id":"00iyjdhq-mjh5uras","x":0.5913921624196554,"y":0.6570460841502447,"category":"깃털","title":"","youtubeUrl":"","youtubeLabel":"","createdAt":"2025-12-22T12:57:12.628Z","colorOverride":"","radiusPx":10,"labelSizePx":15,"labelWeight":900,"labelColor":"#e6edf3","groupId":1766408221529,"chainStart":false,"memo":"","_autoYt":true,"_autoMemo":true},{"id":"gib60z99-mjh5urt1","x":0.6736741124898191,"y":0.44138076238739476,"category":"깃털","title":"","youtubeUrl":"","youtubeLabel":"","createdAt":"2025-12-22T12:57:13.285Z","colorOverride":"","radiusPx":10,"labelSizePx":15,"labelWeight":900,"labelColor":"#e6edf3","groupId":1766408221529,"chainStart":false,"memo":"","_autoYt":true,"_autoMemo":true},{"id":"61qbls33-mjh9vrh1","x":0.507234710618785,"y":0.34995207320317867,"category":"큐브","title":"","youtubeUrl":"","youtubeLabel":"","createdAt":"2025-12-22T14:49:57.973Z","colorOverride":"","radiusPx":10,"labelSizePx":15,"labelWeight":900,"labelColor":"#e6edf3","groupId":1766415011425,"chainStart":true,"memo":""},{"id":"8pufngj0-mjh9vvu9","x":0.6267600696680753,"y":0.42790339432228114,"category":"큐브","title":"","youtubeUrl":"","youtubeLabel":"","createdAt":"2025-12-22T14:50:03.633Z","colorOverride":"","radiusPx":10,"labelSizePx":15,"labelWeight":900,"labelColor":"#e6edf3","groupId":1766415011425,"chainStart":false,"memo":""},{"id":"w6t7wu47-mjh9w9u1","x":0.4951089495558135,"y":0.680812125064258,"category":"큐브","title":"","youtubeUrl":"","youtubeLabel":"","createdAt":"2025-12-22T14:50:21.769Z","colorOverride":"","radiusPx":10,"labelSizePx":15,"labelWeight":900,"labelColor":"#e6edf3","groupId":1766415011425,"chainStart":false,"memo":""}],"links":[{"id":"xrdtw93i-mjhafng5","fromId":"ah8m54dk-mjh5twoz","toId":"7c5p2cat-mjh5u4jj"},{"id":"pp3ugps4-mjhafng5","fromId":"7c5p2cat-mjh5u4jj","toId":"vgw9rvi0-mjh5u4t6"},{"id":"tzfc55bj-mjhafng5","fromId":"vgw9rvi0-mjh5u4t6","toId":"xi2sqmj6-mjh5u51q"},{"id":"hk7kjldg-mjhafng5","fromId":"7vpb2j1l-mjh5ugqd","toId":"gm0gem2w-mjh5uqu6"},{"id":"6qaoh5p5-mjhafng5","fromId":"gm0gem2w-mjh5uqu6","toId":"itf48ou3-mjh5ur4r"},{"id":"0ai97zod-mjhafng5","fromId":"itf48ou3-mjh5ur4r","toId":"00iyjdhq-mjh5uras"},{"id":"z7z6luno-mjhafng5","fromId":"00iyjdhq-mjh5uras","toId":"gib60z99-mjh5urt1"},{"id":"3f7l9xnp-mjhafng5","fromId":"61qbls33-mjh9vrh1","toId":"8pufngj0-mjh9vvu9"},{"id":"berq69wu-mjhafng5","fromId":"8pufngj0-mjh9vvu9","toId":"w6t7wu47-mjh9w9u1"}]}]}]}
+{
+  "ui": {
+    "admin": true,
+    "selectedCategory": "",
+    "selectedMarkerId": "8pufngj0-mjh9vvu9",
+    "lastCreatedMarkerId": "yfb07lsx-mjhblsli",
+    "activePaintColor": "",
+    "createCategory": "깃털",
+    "createGroupId": 1766415011425,
+    "createColorOverride": "",
+    "insertAfterMarkerId": "",
+    "dimmedMarkerIds": [
+      "ah8m54dk-mjh5twoz"
+    ]
+  },
+  "currentGameId": "8pt8noyr-mjh5rqag",
+  "currentPageId": "aus8qlww-mjh5rqah",
+  "games": [
+    {
+      "id": "8pt8noyr-mjh5rqag",
+      "name": "Map Demo",
+      "categories": [
+        {
+          "name": "보스",
+          "color": "#ff3b30"
+        },
+        {
+          "name": "깃털",
+          "color": "#ffd60a"
+        },
+        {
+          "name": "큐브",
+          "color": "#0a84ff"
+        }
+      ],
+      "pages": [
+        {
+          "id": "aus8qlww-mjh5rqah",
+          "name": "1번마을",
+          "map": {
+            "imageKey": "",
+            "imageUrl": "./assets/maps/aion2map.jpg",
+            "width": 1125,
+            "height": 1125
+          },
+          "markers": [
+            {
+              "id": "ah8m54dk-mjh5twoz",
+              "x": 0.373994589076381,
+              "y": 0.3634294412682923,
+              "category": "보스",
+              "title": "1번 보스",
+              "youtubeUrl": "",
+              "youtubeLabel": "1번 보스",
+              "createdAt": "2025-12-22T12:56:32.963Z",
+              "colorOverride": "",
+              "radiusPx": 10,
+              "labelSizePx": 15,
+              "labelWeight": 900,
+              "labelColor": "#e6edf3",
+              "groupId": 0,
+              "chainStart": false,
+              "memo": "1번 보스",
+              "_autoYt": true,
+              "_autoMemo": true
+            },
+            {
+              "id": "7c5p2cat-mjh5u4jj",
+              "x": 0.4008444885729606,
+              "y": 0.43878238501675804,
+              "category": "보스",
+              "title": "2번 보스",
+              "youtubeUrl": "",
+              "youtubeLabel": "2번 보스",
+              "createdAt": "2025-12-22T12:56:43.135Z",
+              "colorOverride": "",
+              "radiusPx": 10,
+              "labelSizePx": 15,
+              "labelWeight": 900,
+              "labelColor": "#e6edf3",
+              "groupId": 0,
+              "chainStart": false,
+              "memo": "2번 보스",
+              "_autoYt": true,
+              "_autoMemo": true
+            },
+            {
+              "id": "vgw9rvi0-mjh5u4t6",
+              "x": 0.39131710488062604,
+              "y": 0.5331900961498931,
+              "category": "보스",
+              "title": "3번 보스",
+              "youtubeUrl": "",
+              "youtubeLabel": "3번 보스",
+              "createdAt": "2025-12-22T12:56:43.482Z",
+              "colorOverride": "",
+              "radiusPx": 10,
+              "labelSizePx": 15,
+              "labelWeight": 900,
+              "labelColor": "#e6edf3",
+              "groupId": 0,
+              "chainStart": false,
+              "memo": "3번 보스",
+              "_autoYt": true,
+              "_autoMemo": true
+            },
+            {
+              "id": "xi2sqmj6-mjh5u51q",
+              "x": 0.43029276544017714,
+              "y": 0.657912209940457,
+              "category": "보스",
+              "title": "",
+              "youtubeUrl": "",
+              "youtubeLabel": "",
+              "createdAt": "2025-12-22T12:56:43.790Z",
+              "colorOverride": "",
+              "radiusPx": 10,
+              "labelSizePx": 15,
+              "labelWeight": 900,
+              "labelColor": "#e6edf3",
+              "groupId": 0,
+              "chainStart": false,
+              "memo": "",
+              "_autoYt": true,
+              "_autoMemo": true
+            },
+            {
+              "id": "7vpb2j1l-mjh5ugqd",
+              "x": 0.5333617344754348,
+              "y": 0.39807447287678227,
+              "category": "깃털",
+              "title": "1번 깃털",
+              "youtubeUrl": "",
+              "youtubeLabel": "1번 깃털",
+              "createdAt": "2025-12-22T12:56:58.933Z",
+              "colorOverride": "",
+              "radiusPx": 10,
+              "labelSizePx": 15,
+              "labelWeight": 900,
+              "labelColor": "#e6edf3",
+              "groupId": 1766408221529,
+              "chainStart": true,
+              "memo": "1번 깃털",
+              "_autoYt": true,
+              "_autoMemo": true
+            },
+            {
+              "id": "gm0gem2w-mjh5uqu6",
+              "x": 0.5472197471188307,
+              "y": 0.483820926107795,
+              "category": "깃털",
+              "title": "",
+              "youtubeUrl": "",
+              "youtubeLabel": "",
+              "createdAt": "2025-12-22T12:57:12.030Z",
+              "colorOverride": "",
+              "radiusPx": 10,
+              "labelSizePx": 15,
+              "labelWeight": 900,
+              "labelColor": "#e6edf3",
+              "groupId": 1766408221529,
+              "chainStart": false,
+              "memo": "",
+              "_autoYt": true,
+              "_autoMemo": true
+            },
+            {
+              "id": "itf48ou3-mjh5ur4r",
+              "x": 0.49958282865715703,
+              "y": 0.6189365493809058,
+              "category": "깃털",
+              "title": "",
+              "youtubeUrl": "",
+              "youtubeLabel": "",
+              "createdAt": "2025-12-22T12:57:12.411Z",
+              "colorOverride": "",
+              "radiusPx": 10,
+              "labelSizePx": 15,
+              "labelWeight": 900,
+              "labelColor": "#e6edf3",
+              "groupId": 1766408221529,
+              "chainStart": false,
+              "memo": "",
+              "_autoYt": true,
+              "_autoMemo": true
+            },
+            {
+              "id": "00iyjdhq-mjh5uras",
+              "x": 0.5913921624196554,
+              "y": 0.6570460841502447,
+              "category": "깃털",
+              "title": "",
+              "youtubeUrl": "",
+              "youtubeLabel": "",
+              "createdAt": "2025-12-22T12:57:12.628Z",
+              "colorOverride": "",
+              "radiusPx": 10,
+              "labelSizePx": 15,
+              "labelWeight": 900,
+              "labelColor": "#e6edf3",
+              "groupId": 1766408221529,
+              "chainStart": false,
+              "memo": "",
+              "_autoYt": true,
+              "_autoMemo": true
+            },
+            {
+              "id": "gib60z99-mjh5urt1",
+              "x": 0.6736741124898191,
+              "y": 0.44138076238739476,
+              "category": "깃털",
+              "title": "",
+              "youtubeUrl": "",
+              "youtubeLabel": "",
+              "createdAt": "2025-12-22T12:57:13.285Z",
+              "colorOverride": "",
+              "radiusPx": 10,
+              "labelSizePx": 15,
+              "labelWeight": 900,
+              "labelColor": "#e6edf3",
+              "groupId": 1766408221529,
+              "chainStart": false,
+              "memo": "",
+              "_autoYt": true,
+              "_autoMemo": true
+            },
+            {
+              "id": "61qbls33-mjh9vrh1",
+              "x": 0.507234710618785,
+              "y": 0.34995207320317867,
+              "category": "큐브",
+              "title": "",
+              "youtubeUrl": "",
+              "youtubeLabel": "",
+              "createdAt": "2025-12-22T14:49:57.973Z",
+              "colorOverride": "",
+              "radiusPx": 10,
+              "labelSizePx": 15,
+              "labelWeight": 900,
+              "labelColor": "#e6edf3",
+              "groupId": 1766415011425,
+              "chainStart": true,
+              "memo": ""
+            },
+            {
+              "id": "8pufngj0-mjh9vvu9",
+              "x": 0.7393564223956677,
+              "y": 0.48593382226650184,
+              "category": "큐브",
+              "title": "",
+              "youtubeUrl": "",
+              "youtubeLabel": "",
+              "createdAt": "2025-12-22T14:50:03.633Z",
+              "colorOverride": "",
+              "radiusPx": 10,
+              "labelSizePx": 15,
+              "labelWeight": 900,
+              "labelColor": "#e6edf3",
+              "groupId": 1766415011425,
+              "chainStart": false,
+              "memo": ""
+            },
+            {
+              "id": "w6t7wu47-mjh9w9u1",
+              "x": 0.4951089495558135,
+              "y": 0.680812125064258,
+              "category": "큐브",
+              "title": "",
+              "youtubeUrl": "",
+              "youtubeLabel": "",
+              "createdAt": "2025-12-22T14:50:21.769Z",
+              "colorOverride": "",
+              "radiusPx": 10,
+              "labelSizePx": 15,
+              "labelWeight": 900,
+              "labelColor": "#e6edf3",
+              "groupId": 1766415011425,
+              "chainStart": false,
+              "memo": ""
+            },
+            {
+              "id": "qxrvl5si-mjhblsdv",
+              "x": 0.7058491942310293,
+              "y": 0.747711956176657,
+              "category": "큐브",
+              "title": "",
+              "youtubeUrl": "",
+              "youtubeLabel": "",
+              "createdAt": "2025-12-22T15:38:11.827Z",
+              "colorOverride": "",
+              "radiusPx": 10,
+              "labelSizePx": 15,
+              "labelWeight": 900,
+              "labelColor": "#e6edf3",
+              "groupId": 1766415011425,
+              "chainStart": false,
+              "memo": ""
+            },
+            {
+              "id": "yfb07lsx-mjhblsli",
+              "x": 0.8323035596020175,
+              "y": 0.5597626597005991,
+              "category": "큐브",
+              "title": "",
+              "youtubeUrl": "",
+              "youtubeLabel": "",
+              "createdAt": "2025-12-22T15:38:12.102Z",
+              "colorOverride": "",
+              "radiusPx": 10,
+              "labelSizePx": 15,
+              "labelWeight": 900,
+              "labelColor": "#e6edf3",
+              "groupId": 1766415011425,
+              "chainStart": false,
+              "memo": ""
+            }
+          ],
+          "links": [
+            {
+              "id": "yoktbjps-mjhblsli",
+              "fromId": "ah8m54dk-mjh5twoz",
+              "toId": "7c5p2cat-mjh5u4jj"
+            },
+            {
+              "id": "g4ns98aj-mjhblsli",
+              "fromId": "7c5p2cat-mjh5u4jj",
+              "toId": "vgw9rvi0-mjh5u4t6"
+            },
+            {
+              "id": "r8tvk7j1-mjhblsli",
+              "fromId": "vgw9rvi0-mjh5u4t6",
+              "toId": "xi2sqmj6-mjh5u51q"
+            },
+            {
+              "id": "9qaxualy-mjhblsli",
+              "fromId": "7vpb2j1l-mjh5ugqd",
+              "toId": "gm0gem2w-mjh5uqu6"
+            },
+            {
+              "id": "3cokiq4f-mjhblsli",
+              "fromId": "gm0gem2w-mjh5uqu6",
+              "toId": "itf48ou3-mjh5ur4r"
+            },
+            {
+              "id": "ml66mipq-mjhblsli",
+              "fromId": "itf48ou3-mjh5ur4r",
+              "toId": "00iyjdhq-mjh5uras"
+            },
+            {
+              "id": "6edmo6xk-mjhblsli",
+              "fromId": "00iyjdhq-mjh5uras",
+              "toId": "gib60z99-mjh5urt1"
+            },
+            {
+              "id": "utblzu2t-mjhblsli",
+              "fromId": "61qbls33-mjh9vrh1",
+              "toId": "8pufngj0-mjh9vvu9"
+            },
+            {
+              "id": "zhlipjjf-mjhblsli",
+              "fromId": "8pufngj0-mjh9vvu9",
+              "toId": "w6t7wu47-mjh9w9u1"
+            },
+            {
+              "id": "pm3mdgxt-mjhblsli",
+              "fromId": "w6t7wu47-mjh9w9u1",
+              "toId": "qxrvl5si-mjhblsdv"
+            },
+            {
+              "id": "ygvt6mxo-mjhblsli",
+              "fromId": "qxrvl5si-mjhblsdv",
+              "toId": "yfb07lsx-mjhblsli"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
