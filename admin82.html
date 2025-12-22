@@ -2809,5 +2809,181 @@
 
 })();
 </script>
+  <!-- =======================
+ Admin Auth (24h) Add-on
+ 붙여넣기 위치: admin82.html의 </body> 바로 위
+======================== -->
+<style>
+  /* Admin Lock Overlay */
+  #__adminLockOverlay{
+    position: fixed; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(0,0,0,.78);
+    backdrop-filter: blur(6px);
+    z-index: 2147483647;
+  }
+  #__adminLockCard{
+    width: min(420px, calc(100vw - 32px));
+    background: rgba(20, 24, 36, .92);
+    border: 1px solid rgba(255,255,255,.14);
+    border-radius: 16px;
+    padding: 18px 18px 16px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.5);
+    color: #fff;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  }
+  #__adminLockCard h2{ margin: 0 0 8px; font-size: 18px; }
+  #__adminLockCard p{ margin: 0 0 14px; opacity: .85; font-size: 13px; line-height: 1.4; }
+  #__adminPw{
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,.16);
+    background: rgba(0,0,0,.25);
+    color: #fff;
+    outline: none;
+  }
+  #__adminLockRow{
+    display: flex; gap: 10px; margin-top: 12px;
+  }
+  #__adminUnlockBtn{
+    flex: 1;
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,.16);
+    background: rgba(124,196,255,.18);
+    color: #fff;
+    cursor: pointer;
+    font-weight: 700;
+  }
+  #__adminUnlockBtn:active{ transform: translateY(1px); }
+  #__adminLockMsg{ margin-top: 10px; font-size: 12px; opacity: .9; min-height: 16px; }
+
+  /* Optional: 작은 로그아웃 버튼 */
+  #__adminLogoutBtn{
+    position: fixed;
+    right: 12px; bottom: 12px;
+    z-index: 2147483646;
+    padding: 8px 10px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,.16);
+    background: rgba(255,80,80,.18);
+    color: #fff;
+    cursor: pointer;
+    font-size: 12px;
+    display: none;
+  }
+</style>
+
+<script>
+(() => {
+  // ===== 설정 =====
+  const ADMIN_PASSWORD = "0000000001"; // 사용자가 지정한 비밀번호
+  const AUTH_KEY = "mm_admin_auth_v1";
+  const SESSION_MS = 24 * 60 * 60 * 1000; // 24시간
+
+  // ===== 유틸 =====
+  const now = () => Date.now();
+
+  function getAuth() {
+    try {
+      const raw = localStorage.getItem(AUTH_KEY);
+      if (!raw) return null;
+      const obj = JSON.parse(raw);
+      if (!obj || typeof obj.exp !== "number") return null;
+      return obj;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function isAuthed() {
+    const a = getAuth();
+    return !!(a && a.exp > now());
+  }
+
+  function setAuthed() {
+    const payload = { exp: now() + SESSION_MS };
+    localStorage.setItem(AUTH_KEY, JSON.stringify(payload));
+  }
+
+  function clearAuthed() {
+    localStorage.removeItem(AUTH_KEY);
+  }
+
+  // ===== 잠금 UI =====
+  function createOverlay() {
+    const overlay = document.createElement("div");
+    overlay.id = "__adminLockOverlay";
+    overlay.innerHTML = `
+      <div id="__adminLockCard">
+        <h2>관리자 인증</h2>
+        <p>비밀번호를 입력하면 이 브라우저에서 24시간 동안 인증이 유지됩니다.</p>
+        <input id="__adminPw" type="password" inputmode="numeric" autocomplete="current-password" placeholder="관리자 비밀번호" />
+        <div id="__adminLockRow">
+          <button id="__adminUnlockBtn" type="button">확인</button>
+        </div>
+        <div id="__adminLockMsg"></div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+
+    const pw = overlay.querySelector("#__adminPw");
+    const btn = overlay.querySelector("#__adminUnlockBtn");
+    const msg = overlay.querySelector("#__adminLockMsg");
+
+    const unlock = () => {
+      if ((pw.value || "") === ADMIN_PASSWORD) {
+        setAuthed();
+        overlay.remove();
+        showLogout(true);
+      } else {
+        msg.textContent = "비밀번호가 올바르지 않습니다.";
+        pw.select();
+      }
+    };
+
+    btn.addEventListener("click", unlock);
+    pw.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") unlock();
+    });
+
+    // 자동 포커스
+    setTimeout(() => pw.focus(), 50);
+  }
+
+  // ===== 로그아웃 버튼(선택) =====
+  function ensureLogoutBtn() {
+    let b = document.getElementById("__adminLogoutBtn");
+    if (b) return b;
+    b = document.createElement("button");
+    b.id = "__adminLogoutBtn";
+    b.type = "button";
+    b.textContent = "관리자 로그아웃";
+    b.addEventListener("click", () => {
+      clearAuthed();
+      location.reload();
+    });
+    document.body.appendChild(b);
+    return b;
+  }
+
+  function showLogout(show) {
+    const b = ensureLogoutBtn();
+    b.style.display = show ? "block" : "none";
+  }
+
+  // ===== 실행 =====
+  window.addEventListener("DOMContentLoaded", () => {
+    if (!isAuthed()) {
+      createOverlay();
+      showLogout(false);
+    } else {
+      showLogout(true);
+    }
+  });
+})();
+</script>
+
 </body>
 </html>
