@@ -1047,8 +1047,8 @@ if (typeof structuredClone !== "function") {
     return c?.color || "#e6edf3";
   }
   function getMarkerColor(m){
-    const ov = (m.colorOverride || "").trim();
-    return ov ? ov : getCategoryColor(m.category);
+    // ✅ 카테고리 색상과 마커 색상을 동일하게 유지
+    return getCategoryColor(m.category);
   }
   function getMarkerLabel(m){
     const t = (m.title || "").trim();
@@ -1105,10 +1105,13 @@ if (typeof structuredClone !== "function") {
     const style = {
       category: (master.category || "").trim() || (currentCategories()[0]?.name || "default"),
       radiusPx: (typeof master.radiusPx === "number" && isFinite(master.radiusPx)) ? master.radiusPx : DEFAULT_MARKER_RADIUS_PX,
-      colorOverride: (master.colorOverride || "").trim(),
+      colorOverride: "", // ✅ 카테고리 색상과 동일 유지
       labelWeight: (typeof master.labelWeight === "number" && isFinite(master.labelWeight)) ? master.labelWeight : DEFAULT_LABEL_WEIGHT,
       labelColor: (typeof master.labelColor === "string" ? master.labelColor : DEFAULT_LABEL_COLOR),
     };
+
+    // 마스터도 오버라이드 제거
+    master.colorOverride = "";
 
     for(const id of chain.ids){
       const m = currentMarkers().find(x => x.id === id);
@@ -1116,7 +1119,7 @@ if (typeof structuredClone !== "function") {
       m.category = style.category;
       m.radiusPx = style.radiusPx;
       m.labelSizePx = clamp(calcLabelSizeFromRadius(style.radiusPx), 10, 48);
-      m.colorOverride = style.colorOverride;
+      m.colorOverride = ""; // ✅ 오버라이드 제거
       m.labelWeight = style.labelWeight;
       m.labelColor = style.labelColor;
     }
@@ -1262,6 +1265,10 @@ if (typeof structuredClone !== "function") {
 
   let activeCatRowEl = null;
   let modalMarkerId = "";
+
+  // ✅ 이름 입력 시 유튜브 표시명/메모 자동 동기화 제어
+  let modalAutoYt = true;
+  let modalAutoMemo = true;
 
   // ==========================================================
   // Admin-only visibility
@@ -1588,19 +1595,14 @@ if (typeof structuredClone !== "function") {
 
       const left = document.createElement("div");
       left.style.minWidth = "0";
+      left.style.display = "flex";
+      left.style.alignItems = "center";
 
       const name = document.createElement("div");
       name.className = "name";
       name.textContent = p.name || "Page";
 
-      const meta = document.createElement("div");
-      meta.className = "meta";
-      const mk = p.markers?.length || 0;
-      const hasUrl = (p.map?.imageUrl || "").trim() ? "URL✓" : "URL-";
-      meta.textContent = `마커 ${mk} · ${hasUrl}`;
-
       left.appendChild(name);
-      left.appendChild(meta);
 
       const actions = document.createElement("div");
       actions.className = "pageActions";
@@ -1778,17 +1780,7 @@ if (typeof structuredClone !== "function") {
     const m = currentMarkers().find(x => x.id === state.ui.selectedMarkerId);
     if(!m) return;
 
-    const chain = findChainByMarkerId(m.id);
-    if(chain){
-      const master = currentMarkers().find(x => x.id === chain.masterId);
-      if(master){
-        master.colorOverride = state.ui.activePaintColor;
-        applyChainMasterStyleByChain(chain);
-      }
-    }else{
-      m.colorOverride = state.ui.activePaintColor;
-    }
-
+    // ✅ 카테고리 색상과 동일 유지: 오버라이드 저장하지 않음
     saveState();
     draw();
     renderSelectedPanel();
@@ -1802,6 +1794,7 @@ if (typeof structuredClone !== "function") {
     const m = currentMarkers().find(x => x.id === state.ui.selectedMarkerId);
     if(!m) return;
 
+    // ✅ 카테고리 색상과 동일 유지: 오버라이드 제거만 수행
     const chain = findChainByMarkerId(m.id);
     if(chain){
       const master = currentMarkers().find(x => x.id === chain.masterId);
@@ -1981,6 +1974,13 @@ if (typeof structuredClone !== "function") {
     modalYoutubeLabel.value = m.youtubeLabel || "";
     modalMemo.value = m.memo || "";
 
+    // ✅ 자동 동기화 상태(이름 입력 -> 유튜브 표시명/메모)
+    const t0 = (m.title || "").trim();
+    const yl0 = (m.youtubeLabel || "").trim();
+    const memo0 = (m.memo || "").trim();
+    modalAutoYt = (m._autoYt !== false) && (!yl0 || yl0 === t0);
+    modalAutoMemo = (m._autoMemo !== false) && (!memo0 || memo0 === t0);
+
     const ov = (m.colorOverride || "").trim();
     modalUseCategoryColor.checked = !ov;
     const base = getCategoryColor(modalCategory.value);
@@ -2040,6 +2040,23 @@ if (typeof structuredClone !== "function") {
     }
   });
 
+  // ✅ 이름(마커이름) 입력 시: 유튜브 표시명/메모 자동 입력
+  modalTitle.addEventListener("input", () => {
+    if(!state.ui.admin) return;
+    const v = (modalTitle.value || "");
+    if(modalAutoYt) modalYoutubeLabel.value = v;
+    if(modalAutoMemo) modalMemo.value = v;
+  });
+  // ✅ 유튜브 표시명/메모를 사용자가 수정하면: 이후 이름 변경에도 자동 덮어쓰기 금지
+  modalYoutubeLabel.addEventListener("input", () => {
+    if(!state.ui.admin) return;
+    modalAutoYt = false;
+  });
+  modalMemo.addEventListener("input", () => {
+    if(!state.ui.admin) return;
+    modalAutoMemo = false;
+  });
+
   startNewGroupFromHereBtn.addEventListener("click", () => {
     if(!state.ui.admin) return;
     const m = currentMarkers().find(x => x.id === modalMarkerId);
@@ -2063,8 +2080,8 @@ if (typeof structuredClone !== "function") {
 
     state.ui.createGroupId = newGroupId;
     state.ui.createCategory = m.category || (currentCategories()[0]?.name || "default");
-    state.ui.createColorOverride = (m.colorOverride || "").trim();
-    if(state.ui.createColorOverride) state.ui.activePaintColor = state.ui.createColorOverride;
+    state.ui.createColorOverride = ""; // ✅ 카테고리 색상과 동일 유지
+    state.ui.activePaintColor = state.ui.activePaintColor; // 유지
 
     state.ui.insertAfterMarkerId = "";
     refreshHints();
@@ -2084,8 +2101,7 @@ if (typeof structuredClone !== "function") {
 
     state.ui.createGroupId = Number(m.groupId || 0);
     state.ui.createCategory = (m.category || "").trim() || (currentCategories()[0]?.name || "default");
-    state.ui.createColorOverride = (m.colorOverride || "").trim();
-    if(state.ui.createColorOverride) state.ui.activePaintColor = state.ui.createColorOverride;
+    state.ui.createColorOverride = ""; // ✅ 카테고리 색상과 동일 유지
 
     state.ui.insertAfterMarkerId = m.id;
     refreshHints();
@@ -2101,11 +2117,29 @@ if (typeof structuredClone !== "function") {
     const m = currentMarkers().find(x => x.id === modalMarkerId);
     if(!m) return;
 
-    // 텍스트/링크/메모는 개별 마커에만
-    m.title = (modalTitle.value || "").trim();
+    // 이름(마커이름)
+    const nextTitle = (modalTitle.value || "").trim();
+    m.title = nextTitle;
+
+    // 유튜브 표시명 / 메모: 이름 입력 시 자동 동기화(단, 사용자가 수정하면 고정)
+    if(modalAutoYt){
+      m.youtubeLabel = nextTitle;
+      m._autoYt = true;
+    }else{
+      m.youtubeLabel = (modalYoutubeLabel.value || "").trim();
+      m._autoYt = false;
+    }
+
+    if(modalAutoMemo){
+      m.memo = nextTitle;
+      m._autoMemo = true;
+    }else{
+      m.memo = (modalMemo.value || "");
+      m._autoMemo = false;
+    }
+
+    // 유튜브 링크(URL)
     m.youtubeUrl = (modalYoutubeUrl.value || "").trim();
-    m.youtubeLabel = (modalYoutubeLabel.value || "").trim();
-    m.memo = (modalMemo.value || "");
 
     // ✅ 스타일/카테고리/색상은 "체인 마스터"에 적용해서 전체가 일치하도록
     const chain = findChainByMarkerId(m.id);
@@ -2113,12 +2147,9 @@ if (typeof structuredClone !== "function") {
 
     target.category = (modalCategory.value || "").trim() || (currentCategories()[0]?.name || "default");
 
-    if(modalUseCategoryColor.checked){
-      target.colorOverride = ""; // 카테고리 색상과 일치
-    }else{
-      const c = (modalColor.value || "").trim();
-      target.colorOverride = (c && /^#([0-9a-fA-F]{6})$/.test(c)) ? c : "";
-    }
+    // ✅ 카테고리 색상과 마커 색상을 동일하게: 오버라이드 저장하지 않음
+    target.colorOverride = "";
+    m.colorOverride = "";
 
     const radiusPx = clamp(Number(modalRadius.value || DEFAULT_MARKER_RADIUS_PX), 6, 30);
     target.radiusPx = radiusPx;
@@ -2310,7 +2341,8 @@ if (typeof structuredClone !== "function") {
     const fallbackCat = g.categories[0]?.name || "default";
     for(const m of currentMarkers()){
       if(!validSet.has(m.category)) m.category = fallbackCat;
-      // 카테고리 변경/정리 후: "카테고리 색상 사용"이 기본이 되도록 오버라이드는 유지(사용자 선택)
+      // ✅ 카테고리 색상과 마커 색상을 동일하게: 오버라이드 제거
+      m.colorOverride = "";
     }
     normalizeAllChainsCurrentPage();
 
@@ -2347,11 +2379,7 @@ if (typeof structuredClone !== "function") {
   // Create markers (admin, page-local)
   // ==========================================================
   function getDefaultCreateColorOverride(){
-    const a = (state.ui.createColorOverride || "").trim();
-    if(a) return a;
-    const b = (state.ui.activePaintColor || "").trim();
-    if(b) return b;
-    return "";
+    return ""; // ✅ 카테고리 색상과 동일 유지
   }
 
   function computeCreatedAtForInsertion(groupId, insertAfterMarkerId){
@@ -2431,7 +2459,7 @@ if (typeof structuredClone !== "function") {
 
     const baseCat = (master?.category || "").trim() || (state.ui.createCategory || "").trim() || (currentCategories()[0]?.name || "default");
     const baseRadius = (typeof master?.radiusPx === "number" ? master.radiusPx : DEFAULT_MARKER_RADIUS_PX);
-    const baseColorOverride = (master?.colorOverride || getDefaultCreateColorOverride()).trim();
+    const baseColorOverride = ""; // ✅ 카테고리 색상과 동일 유지
     const baseWeight = (typeof master?.labelWeight === "number" ? master.labelWeight : DEFAULT_LABEL_WEIGHT);
     const baseLabelColor = (typeof master?.labelColor === "string" ? master.labelColor : DEFAULT_LABEL_COLOR);
 
@@ -2450,7 +2478,9 @@ if (typeof structuredClone !== "function") {
       labelColor: baseLabelColor,
       groupId,
       chainStart: false,
-      memo: ""
+      memo: "",
+      _autoYt: true,
+      _autoMemo: true
     };
 
     currentMarkers().push(m);
@@ -2915,7 +2945,7 @@ if (typeof structuredClone !== "function") {
     p.markers = [
       {
         id: uid(), x:0.35, y:0.42, category:"boss", title:"보스",
-        youtubeUrl:"https://www.youtube.com/watch?v=dQw4w9WgXcQ", youtubeLabel:"보스 영상",
+        youtubeUrl:"https://www.youtube.com/watch?v=dQw4w9WgXcQ", youtubeLabel:"보스",
         createdAt: nowISO(), colorOverride:"",
         radiusPx: DEFAULT_MARKER_RADIUS_PX,
         labelSizePx: calcLabelSizeFromRadius(DEFAULT_MARKER_RADIUS_PX),
@@ -2923,11 +2953,13 @@ if (typeof structuredClone !== "function") {
         labelColor: DEFAULT_LABEL_COLOR,
         groupId: 0,
         chainStart: true,
-        memo: ""
+        memo: "보스",
+        _autoYt: true,
+        _autoMemo: true
       },
       {
         id: uid(), x:0.58, y:0.55, category:"boss", title:"채집",
-        youtubeUrl:"", youtubeLabel:"",
+        youtubeUrl:"", youtubeLabel:"채집",
         createdAt: nowISO(), colorOverride:"",
         radiusPx: DEFAULT_MARKER_RADIUS_PX,
         labelSizePx: calcLabelSizeFromRadius(DEFAULT_MARKER_RADIUS_PX),
@@ -2935,11 +2967,13 @@ if (typeof structuredClone !== "function") {
         labelColor: DEFAULT_LABEL_COLOR,
         groupId: 0,
         chainStart: false,
-        memo: ""
+        memo: "채집",
+        _autoYt: true,
+        _autoMemo: true
       },
       {
         id: uid(), x:0.22, y:0.63, category:"boss", title:"퀘스트",
-        youtubeUrl:"", youtubeLabel:"",
+        youtubeUrl:"", youtubeLabel:"퀘스트",
         createdAt: nowISO(), colorOverride:"",
         radiusPx: DEFAULT_MARKER_RADIUS_PX,
         labelSizePx: calcLabelSizeFromRadius(DEFAULT_MARKER_RADIUS_PX),
@@ -2947,7 +2981,9 @@ if (typeof structuredClone !== "function") {
         labelColor: DEFAULT_LABEL_COLOR,
         groupId: 0,
         chainStart: false,
-        memo: ""
+        memo: "퀘스트",
+        _autoYt: true,
+        _autoMemo: true
       },
     ];
     normalizeAllChainsCurrentPage();
@@ -2979,6 +3015,11 @@ if (typeof structuredClone !== "function") {
       if(typeof m.groupId !== "number" || !isFinite(m.groupId)) m.groupId = 0;
       if(typeof m.chainStart !== "boolean") m.chainStart = false;
       if(typeof m.memo !== "string") m.memo = "";
+      if(typeof m._autoYt !== "boolean") m._autoYt = true;
+      if(typeof m._autoMemo !== "boolean") m._autoMemo = true;
+
+      // ✅ 카테고리 색상과 동일 유지
+      m.colorOverride = "";
     }
 
     normalizeAllChainsCurrentPage();
