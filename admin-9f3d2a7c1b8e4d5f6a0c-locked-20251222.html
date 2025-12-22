@@ -411,15 +411,6 @@
       color: var(--muted);
       margin-top:4px;
     }
-
-    /* ✅ Admin auth modal tweaks (same modal style) */
-    .authHintBox{
-      border:1px solid rgba(39,52,74,.9);
-      border-radius: var(--r16);
-      background: rgba(8,12,20,.45);
-      padding:10px 12px;
-      line-height:1.5;
-    }
   </style>
 </head>
 
@@ -434,15 +425,12 @@
     <div class="drop" id="gameDrop"></div>
   </div>
 
-  <!-- ✅ 관리자 모드 토글 (항상 표시) -->
+  <!-- ✅ 관리자 모드로 돌아갈 수 있는 버튼(토글)은 유지 + 항상 표시 -->
   <span class="pill">
     <span class="badge" id="modeBadge">USER</span>
     <label class="muted" style="margin:0;">관리자</label>
     <input id="adminToggle" type="checkbox" />
   </span>
-
-  <!-- ✅ 로그아웃 버튼(관리자 인증 있을 때만) -->
-  <button id="adminLogoutBtn" class="adminOnly ghost" title="관리자 인증 해제">로그아웃</button>
 
   <!-- ✅ 상단 메뉴: Map Demo 제외 전부 "관리자 모드에서만" 보이게 -->
   <button id="uploadBtn" class="adminOnly">지도 업로드</button>
@@ -452,7 +440,7 @@
 </header>
 
 <div class="wrap">
-  <!-- ✅ 좌측: 페이지 섹션 (관리자/유저 모두) -->
+  <!-- ✅ 좌측: (요청) 페이지 섹션을 좌측에 배치 (관리자/유저 모두) -->
   <aside class="panel left">
     <div class="section">
       <h3>
@@ -697,59 +685,8 @@
   </div>
 </div>
 
-<!-- ✅ Admin Login Modal (비밀번호 + 24시간 유지) -->
-<div class="modalBackdrop" id="adminAuthBackdrop" aria-hidden="true">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="adminAuthTitle" style="width:min(520px, 100%);">
-    <div class="modalHeader">
-      <b id="adminAuthTitle">관리자 로그인</b>
-      <button id="adminAuthCloseBtn" class="ghost" type="button">닫기</button>
-    </div>
-    <div class="modalBody">
-      <div class="authHintBox muted">
-        • 관리자 모드는 비밀번호 인증이 필요합니다.<br/>
-        • 인증 성공 시 <b>24시간</b> 동안 유지됩니다.
-      </div>
-
-      <label style="margin-top:14px;">비밀번호</label>
-      <input id="adminAuthPw" type="password" inputmode="numeric" autocomplete="current-password" placeholder="비밀번호 입력" />
-
-      <div class="muted" id="adminAuthMsg" style="margin-top:10px; min-height:18px;"></div>
-    </div>
-    <div class="modalFooter">
-      <button id="adminAuthLoginBtn" class="ok" type="button">로그인</button>
-    </div>
-  </div>
-</div>
-
 <script>
 (() => {
-  // ==========================================================
-  // ✅ Admin Auth (비밀번호 + 24시간 유지)
-  // ==========================================================
-  const ADMIN_PASSWORD = "0000000001";
-  const AUTH_TTL_MS = 24 * 60 * 60 * 1000; // 24h
-  const LS_AUTH_KEY = "imgmap_admin_auth_v700"; // { exp: number }
-
-  function getAuth(){
-    const raw = localStorage.getItem(LS_AUTH_KEY) || "";
-    try{
-      const obj = JSON.parse(raw);
-      if(!obj || typeof obj.exp !== "number") return { ok:false, exp:0 };
-      if(Date.now() > obj.exp) return { ok:false, exp:obj.exp };
-      return { ok:true, exp:obj.exp };
-    }catch{
-      return { ok:false, exp:0 };
-    }
-  }
-  function setAuth(){
-    const exp = Date.now() + AUTH_TTL_MS;
-    localStorage.setItem(LS_AUTH_KEY, JSON.stringify({ exp }));
-    return exp;
-  }
-  function clearAuth(){
-    localStorage.removeItem(LS_AUTH_KEY);
-  }
-
   // ==========================================================
   // Storage / DB
   // ==========================================================
@@ -1125,8 +1062,6 @@
   const adminToggle = document.getElementById("adminToggle");
   const modeBadge = document.getElementById("modeBadge");
 
-  const adminLogoutBtn = document.getElementById("adminLogoutBtn");
-
   const uploadBtn = document.getElementById("uploadBtn");
   const resetViewBtn = document.getElementById("resetViewBtn");
   const clearAllBtn = document.getElementById("clearAllBtn");
@@ -1199,13 +1134,6 @@
   const addCategoryRowBtn = document.getElementById("addCategoryRowBtn");
   const resetCategoriesBtn = document.getElementById("resetCategoriesBtn");
   const saveCatListBtn = document.getElementById("saveCatListBtn");
-
-  // ✅ admin auth modal
-  const adminAuthBackdrop = document.getElementById("adminAuthBackdrop");
-  const adminAuthCloseBtn = document.getElementById("adminAuthCloseBtn");
-  const adminAuthPw = document.getElementById("adminAuthPw");
-  const adminAuthMsg = document.getElementById("adminAuthMsg");
-  const adminAuthLoginBtn = document.getElementById("adminAuthLoginBtn");
 
   let activeCatRowEl = null;
   let modalMarkerId = "";
@@ -1293,107 +1221,14 @@
   }
 
   // ==========================================================
-  // ✅ Admin Auth UI helpers
-  // ==========================================================
-  function openAdminAuthModal(){
-    adminAuthMsg.textContent = "";
-    adminAuthPw.value = "";
-    adminAuthBackdrop.style.display = "flex";
-    adminAuthBackdrop.setAttribute("aria-hidden","false");
-    setTimeout(() => adminAuthPw.focus(), 0);
-  }
-  function closeAdminAuthModal(){
-    adminAuthBackdrop.style.display = "none";
-    adminAuthBackdrop.setAttribute("aria-hidden","true");
-  }
-  adminAuthCloseBtn.addEventListener("click", () => {
-    closeAdminAuthModal();
-    // 로그인 취소: 토글은 OFF 유지
-    adminToggle.checked = false;
-  });
-  adminAuthBackdrop.addEventListener("click", (e) => {
-    if(e.target === adminAuthBackdrop){
-      closeAdminAuthModal();
-      adminToggle.checked = false;
-    }
-  });
-
-  function tryAdminLogin(){
-    const pw = String(adminAuthPw.value || "");
-    if(pw !== ADMIN_PASSWORD){
-      adminAuthMsg.textContent = "비밀번호가 올바르지 않습니다.";
-      adminAuthMsg.className = "muted danger";
-      return;
-    }
-    setAuth(); // 24h
-    closeAdminAuthModal();
-    adminToggle.checked = true;
-    setAdminMode(true);
-  }
-  adminAuthLoginBtn.addEventListener("click", tryAdminLogin);
-  adminAuthPw.addEventListener("keydown", (e) => {
-    if(e.key === "Enter"){
-      e.preventDefault();
-      tryAdminLogin();
-    }
-    if(e.key === "Escape"){
-      e.preventDefault();
-      closeAdminAuthModal();
-      adminToggle.checked = false;
-    }
-  });
-
-  // 로그아웃
-  adminLogoutBtn.addEventListener("click", () => {
-    if(!confirm("관리자 로그아웃(인증 해제)할까요?")) return;
-    clearAuth();
-    adminToggle.checked = false;
-    setAdminMode(false);
-  });
-
-  // ==========================================================
   // Mode
   // ==========================================================
-  function syncModeBadge(){
-    modeBadge.textContent = state.ui.admin ? "ADMIN" : "USER";
-    modeBadge.className = "badge " + (state.ui.admin ? "ok" : "");
-  }
-
-  // 초기 토글 상태는 state.ui.admin이 아니라 "인증 유효 여부"로 결정
-  const authInit = getAuth();
-  if(state.ui.admin && !authInit.ok){
-    state.ui.admin = false;
-    saveState();
-  }
   adminToggle.checked = !!state.ui.admin;
 
   function setAdminMode(on){
-    // ✅ 관리자 ON은 반드시 인증 통과해야 함
-    if(on){
-      const auth = getAuth();
-      if(!auth.ok){
-        // 인증 없음: 로그인 모달
-        state.ui.admin = false;
-        adminToggle.checked = false;
-        syncModeBadge();
-
-        overlayPinned = false;
-        pinnedMarkerId = "";
-        hoverOverlay.style.display = "none";
-
-        ensureCreateDefaults();
-        refreshHints();
-        saveState();
-        syncAdminOnlyVisibility();
-        refreshAll();
-
-        openAdminAuthModal();
-        return;
-      }
-    }
-
     state.ui.admin = !!on;
-    syncModeBadge();
+    modeBadge.textContent = state.ui.admin ? "ADMIN" : "USER";
+    modeBadge.className = "badge " + (state.ui.admin ? "ok" : "");
 
     overlayPinned = false;
     pinnedMarkerId = "";
@@ -1406,7 +1241,6 @@
     syncAdminOnlyVisibility();
     refreshAll();
   }
-
   adminToggle.addEventListener("change", () => setAdminMode(adminToggle.checked));
 
   // ==========================================================
@@ -1434,7 +1268,6 @@
     if(!confirm("localStorage + 모든 지도 이미지(IndexedDB)까지 전체 초기화할까요?")) return;
     try{ indexedDB.deleteDatabase(IDB_NAME); }catch(e){ console.warn(e); }
     localStorage.removeItem(LS_KEY);
-    clearAuth();
     location.reload();
   });
 
@@ -2564,7 +2397,7 @@
     if(m){
       state.ui.selectedMarkerId = m.id;
 
-      // ✅ 유저모드: 아이콘 클릭 시 "불투명 30%" 토글
+      // ✅ 유저모드: 아이콘 클릭 시 "불투명 30%" 토글 (한 번 더 클릭하면 그 마커만 해제)
       if(!state.ui.admin){
         const set = new Set(state.ui.dimmedMarkerIds || []);
         if(set.has(m.id)) set.delete(m.id);
@@ -2768,12 +2601,12 @@
       ctx.font = `800 ${28 / view.scale}px system-ui`;
       const g = getCurrentGame();
       const p = getCurrentPage();
-      ctx.fillText(\`"\${g.name} / \${p.name}" 지도 이미지를 업로드하세요 (관리자 모드)\`, 40/view.scale, 80/view.scale);
+      ctx.fillText(`"${g.name} / ${p.name}" 지도 이미지를 업로드하세요 (관리자 모드)`, 40/view.scale, 80/view.scale);
     }
 
     const visible = getVisibleMarkers();
     const visibleSet = new Set(visible.map(m => m.id));
-    countInfo.textContent = \`표시 중 마커: \${visible.length} / 페이지 전체: \${currentMarkers().length}\`;
+    countInfo.textContent = `표시 중 마커: ${visible.length} / 페이지 전체: ${currentMarkers().length}`;
 
     ctx.save();
     ctx.strokeStyle = "#ffffff";
@@ -2827,7 +2660,7 @@
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         const fs = Math.max((radiusPx * 0.95) / view.scale, 9 / view.scale);
-        ctx.font = \`900 \${fs}px system-ui\`;
+        ctx.font = `900 ${fs}px system-ui`;
         ctx.fillText(String(num), 0, 0);
         ctx.restore();
       }
@@ -2838,7 +2671,7 @@
       const lcolor = (typeof m.labelColor === "string" && /^#([0-9a-fA-F]{6})$/.test(m.labelColor)) ? m.labelColor : DEFAULT_LABEL_COLOR;
 
       ctx.fillStyle = lcolor;
-      ctx.font = \`\${weight} \${sizePx / view.scale}px system-ui\`;
+      ctx.font = `${weight} ${sizePx / view.scale}px system-ui`;
       ctx.textBaseline = "middle";
       ctx.textAlign = "left";
       const gap = 10 / view.scale;
@@ -2949,18 +2782,7 @@
     rebuildLinks();
     saveState();
 
-    // ✅ 인증이 없으면 강제로 USER로 시작
-    const auth = getAuth();
-    if(state.ui.admin && !auth.ok){
-      state.ui.admin = false;
-      saveState();
-    }
-
-    // 상태 반영
-    adminToggle.checked = !!state.ui.admin;
-    syncModeBadge();
-    syncAdminOnlyVisibility();
-    refreshAll();
+    setAdminMode(!!state.ui.admin);
 
     resizeCanvas();
     resetView();
