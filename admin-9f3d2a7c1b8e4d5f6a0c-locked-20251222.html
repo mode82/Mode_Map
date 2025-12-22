@@ -3,8 +3,212 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Interactive Multi-Map Demo v7.0.0</title>
+  <title>Interactive Multi-Map Demo v7.0.0 (ADMIN)</title>
 
+  <!-- =========================================================
+       ✅ ADMIN 잠금(비번 0000000001, 24시간 유지)
+       - 이 파일(admin)에서만 적용
+       ========================================================= -->
+  <style>
+    /* ===== Admin Lock (24h) ===== */
+    html:not(.admin-authed) body { visibility: hidden; }
+
+    #adminLockOverlay{
+      position: fixed; inset: 0;
+      display: none;
+      align-items: center; justify-content: center;
+      background: rgba(0,0,0,.72);
+      z-index: 999999;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    html:not(.admin-authed) #adminLockOverlay{ display: flex; }
+
+    #adminLockCard{
+      width: min(420px, 92vw);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 18px;
+      background: rgba(10,16,28,.92);
+      box-shadow: 0 18px 60px rgba(0,0,0,.55);
+      padding: 16px 16px 14px;
+      color: #e7eef8;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    }
+    #adminLockCard h2{
+      margin: 0 0 10px;
+      font-size: 16px;
+      letter-spacing: .2px;
+    }
+    #adminLockCard p{
+      margin: 0 0 12px;
+      font-size: 13px;
+      color: rgba(231,238,248,.72);
+      line-height: 1.45;
+    }
+    #adminLockRow{ display:flex; gap:8px; }
+    #adminLockPass{
+      flex: 1;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(16,24,38,.65);
+      color: #e7eef8;
+      outline: none;
+      font-size: 14px;
+    }
+    #adminLockBtn{
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(124,196,255,.55);
+      background: rgba(124,196,255,.16);
+      color: #e7eef8;
+      font-weight: 900;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    #adminLockBtn:hover{ border-color: rgba(124,196,255,.85); }
+    #adminLockErr{
+      margin-top: 10px;
+      font-size: 12px;
+      color: rgba(255,93,93,.92);
+      display:none;
+    }
+    #adminLockMeta{
+      margin-top: 10px;
+      font-size: 12px;
+      color: rgba(231,238,248,.55);
+      display:flex;
+      justify-content: space-between;
+      gap:10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    #adminLockLogout{
+      border: 1px solid rgba(255,93,93,.35);
+      background: rgba(255,93,93,.10);
+      color: rgba(231,238,248,.9);
+      border-radius: 12px;
+      padding: 6px 10px;
+      cursor: pointer;
+      font-weight: 800;
+    }
+  </style>
+
+  <script>
+  /* ===== Admin Lock (24h) ===== */
+  (() => {
+    const AUTH_KEY = "admin_auth_v1";
+    const PASS = "0000000001";          // ✅ 비밀번호
+    const TTL_MS = 24 * 60 * 60 * 1000; // ✅ 24시간
+
+    function now(){ return Date.now(); }
+    function loadAuth(){
+      try { return JSON.parse(localStorage.getItem(AUTH_KEY) || "null"); }
+      catch { return null; }
+    }
+    function saveAuth(){
+      const expiresAt = now() + TTL_MS;
+      localStorage.setItem(AUTH_KEY, JSON.stringify({ expiresAt }));
+    }
+    function clearAuth(){
+      localStorage.removeItem(AUTH_KEY);
+    }
+    function isAuthed(){
+      const a = loadAuth();
+      return a && typeof a.expiresAt === "number" && a.expiresAt > now();
+    }
+    function setAuthedClass(on){
+      document.documentElement.classList.toggle("admin-authed", !!on);
+    }
+
+    // 초기 체크
+    setAuthedClass(isAuthed());
+
+    window.addEventListener("DOMContentLoaded", () => {
+      // 오버레이 DOM
+      const overlay = document.createElement("div");
+      overlay.id = "adminLockOverlay";
+      overlay.innerHTML = `
+        <div id="adminLockCard" role="dialog" aria-modal="true">
+          <h2>관리자 잠금</h2>
+          <p>비밀번호를 입력해야 관리자 페이지가 열립니다.<br>인증은 24시간 유지됩니다.</p>
+          <div id="adminLockRow">
+            <input id="adminLockPass" type="password" inputmode="numeric" autocomplete="off" placeholder="비밀번호 입력" />
+            <button id="adminLockBtn" type="button">잠금 해제</button>
+          </div>
+          <div id="adminLockErr">비밀번호가 올바르지 않습니다.</div>
+          <div id="adminLockMeta">
+            <span id="adminLockRemain">-</span>
+            <button id="adminLockLogout" type="button">로그아웃</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+
+      const passEl = document.getElementById("adminLockPass");
+      const btnEl = document.getElementById("adminLockBtn");
+      const errEl = document.getElementById("adminLockErr");
+      const remainEl = document.getElementById("adminLockRemain");
+      const logoutEl = document.getElementById("adminLockLogout");
+
+      function refreshRemain(){
+        const a = loadAuth();
+        if(!a || !a.expiresAt){
+          remainEl.textContent = "인증 없음";
+          return;
+        }
+        const ms = a.expiresAt - now();
+        if(ms <= 0){
+          remainEl.textContent = "인증 만료";
+          return;
+        }
+        const hours = Math.floor(ms / (60*60*1000));
+        const mins = Math.floor((ms % (60*60*1000)) / (60*1000));
+        remainEl.textContent = `남은 인증: ${hours}시간 ${mins}분`;
+      }
+
+      function tryUnlock(){
+        const v = (passEl.value || "").trim();
+        if(v !== PASS){
+          errEl.style.display = "block";
+          passEl.value = "";
+          passEl.focus();
+          return;
+        }
+        errEl.style.display = "none";
+        saveAuth();
+        setAuthedClass(true);
+        refreshRemain();
+      }
+
+      btnEl.addEventListener("click", tryUnlock);
+      passEl.addEventListener("keydown", (e) => {
+        if(e.key === "Enter") tryUnlock();
+      });
+
+      logoutEl.addEventListener("click", () => {
+        clearAuth();
+        setAuthedClass(false);
+        refreshRemain();
+        passEl.value = "";
+        passEl.focus();
+      });
+
+      refreshRemain();
+      if(!isAuthed()){
+        passEl.focus();
+      }else{
+        setAuthedClass(true);
+      }
+
+      setInterval(refreshRemain, 30000);
+    });
+  })();
+  </script>
+
+  <!-- =========================================================
+       (아래부터는 기존 스타일)
+       ========================================================= -->
   <style>
     :root{
       color-scheme: dark;
@@ -411,12 +615,25 @@
       color: var(--muted);
       margin-top:4px;
     }
+
+    /* Admin page: USER 이동 버튼 */
+    .toUserBtn{
+      border: 1px solid rgba(57,217,138,.45);
+      background: rgba(57,217,138,.12);
+      font-weight: 900;
+    }
+    .toUserBtn:hover{
+      border-color: rgba(57,217,138,.85);
+      box-shadow: 0 0 0 3px rgba(57,217,138,.10);
+    }
   </style>
 </head>
 
 <body>
+<!-- ✅ 잠금 오버레이는 head의 스크립트가 body 끝에 자동으로 붙입니다 -->
+
 <header>
-  <!-- ✅ MAP DEMO = 게임 이름 자리 + 클릭 시 드롭다운 (항상 표시) -->
+  <!-- ✅ MAP DEMO = 게임 이름 자리 + 클릭 시 드롭다운 -->
   <div class="titleWrap" id="titleWrap">
     <div class="titleBtn" id="gameTitleBtn" title="클릭해서 게임 목록/추가">
       <span id="gameTitleText">Map Demo</span>
@@ -425,14 +642,16 @@
     <div class="drop" id="gameDrop"></div>
   </div>
 
-  <!-- ✅ 관리자 모드로 돌아갈 수 있는 버튼(토글)은 유지 + 항상 표시 -->
+  <!-- ✅ 관리자/유저 모드 토글(관리자 페이지에서는 활성) -->
   <span class="pill">
-    <span class="badge" id="modeBadge">USER</span>
+    <span class="badge" id="modeBadge">ADMIN</span>
     <label class="muted" style="margin:0;">관리자</label>
     <input id="adminToggle" type="checkbox" />
   </span>
 
-  <!-- ✅ 상단 메뉴: Map Demo 제외 전부 "관리자 모드에서만" 보이게 -->
+  <!-- ✅ 유저 페이지로 이동 -->
+  <button id="goUserBtn" class="toUserBtn" type="button">USER 페이지</button>
+
   <button id="uploadBtn" class="adminOnly">지도 업로드</button>
   <button id="resetViewBtn" class="adminOnly">뷰 리셋</button>
   <button id="clearAllBtn" class="danger adminOnly">전체 초기화</button>
@@ -440,7 +659,7 @@
 </header>
 
 <div class="wrap">
-  <!-- ✅ 좌측: (요청) 페이지 섹션을 좌측에 배치 (관리자/유저 모두) -->
+  <!-- ✅ 좌측: 페이지 -->
   <aside class="panel left">
     <div class="section">
       <h3>
@@ -448,7 +667,6 @@
         <span class="badge" id="pageBadge" style="margin-left:auto;">-</span>
       </h3>
 
-      <!-- 관리자 모드에서만 보이는 +페이지추가 -->
       <button id="addPageBtn" class="pageBtn adminOnly" style="justify-content:center;">
         <span class="name">+ 페이지 추가</span>
       </button>
@@ -799,7 +1017,7 @@
   // ==========================================================
   const defaultState = {
     ui: {
-      admin:false,
+      admin:true,
       selectedCategory:"",
       selectedMarkerId:"",
       lastCreatedMarkerId:"",
@@ -1062,12 +1280,13 @@
   const adminToggle = document.getElementById("adminToggle");
   const modeBadge = document.getElementById("modeBadge");
 
+  const goUserBtn = document.getElementById("goUserBtn");
+
   const uploadBtn = document.getElementById("uploadBtn");
   const resetViewBtn = document.getElementById("resetViewBtn");
   const clearAllBtn = document.getElementById("clearAllBtn");
   const fileInput = document.getElementById("fileInput");
 
-  const adminToolsSection = document.getElementById("adminToolsSection");
   const paletteBar = document.getElementById("paletteBar");
   const applyPaletteToSelectedBtn = document.getElementById("applyPaletteToSelectedBtn");
   const clearOverrideBtn = document.getElementById("clearOverrideBtn");
@@ -1078,7 +1297,6 @@
 
   const categoryBar = document.getElementById("categoryBar");
   const countInfo = document.getElementById("countInfo");
-  const adminCategoryTools = document.getElementById("adminCategoryTools");
   const editCategoriesBtn = document.getElementById("editCategoriesBtn");
 
   const pageBadge = document.getElementById("pageBadge");
@@ -1139,7 +1357,7 @@
   let modalMarkerId = "";
 
   // ==========================================================
-  // Admin-only header controls visibility
+  // Admin-only visibility
   // ==========================================================
   function syncAdminOnlyVisibility(){
     document.querySelectorAll(".adminOnly").forEach(el => {
@@ -1224,8 +1442,6 @@
   // Mode
   // ==========================================================
   adminToggle.checked = !!state.ui.admin;
-  state.ui.admin = true;
-  adminToggle.checked = true;
 
   function setAdminMode(on){
     state.ui.admin = !!on;
@@ -1246,7 +1462,15 @@
   adminToggle.addEventListener("change", () => setAdminMode(adminToggle.checked));
 
   // ==========================================================
-  // Header buttons (admin only visible)
+  // User page 이동
+  // ==========================================================
+  goUserBtn.addEventListener("click", () => {
+    // index.html로 이동 (같은 폴더 기준)
+    location.href = "./index.html";
+  });
+
+  // ==========================================================
+  // Header buttons
   // ==========================================================
   uploadBtn.addEventListener("click", () => fileInput.click());
   fileInput.addEventListener("change", async (e) => {
@@ -1414,7 +1638,7 @@
   }
 
   // ==========================================================
-  // Page list (LEFT, both modes)
+  // Page list (LEFT)
   // ==========================================================
   function rebuildPageList(){
     const g = getCurrentGame();
@@ -2399,7 +2623,7 @@
     if(m){
       state.ui.selectedMarkerId = m.id;
 
-      // ✅ 유저모드: 아이콘 클릭 시 "불투명 30%" 토글 (한 번 더 클릭하면 그 마커만 해제)
+      // ✅ 유저모드: 아이콘 클릭 시 "불투명 30%" 토글
       if(!state.ui.admin){
         const set = new Set(state.ui.dimmedMarkerIds || []);
         if(set.has(m.id)) set.delete(m.id);
@@ -2784,6 +3008,10 @@
     rebuildLinks();
     saveState();
 
+    // ✅ 관리자 페이지는 기본 ADMIN 모드
+    if(typeof state.ui.admin !== "boolean") state.ui.admin = true;
+    adminToggle.checked = !!state.ui.admin;
+    adminToggle.disabled = false;
     setAdminMode(!!state.ui.admin);
 
     resizeCanvas();
