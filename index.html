@@ -412,10 +412,9 @@
       margin-top:4px;
     }
 
-     /* user page only: hide admin toggle block */
-      #adminToggle { display:none !important; }
-      #modeBadge { display:none !important; }
-
+    /* user page only: hide admin toggle block */
+    #adminToggle { display:none !important; }
+    #modeBadge { display:none !important; }
   </style>
 </head>
 
@@ -445,7 +444,7 @@
 </header>
 
 <div class="wrap">
-  <!-- ✅ 좌측: (요청) 페이지 섹션을 좌측에 배치 (관리자/유저 모두) -->
+  <!-- ✅ 좌측: 페이지 섹션 -->
   <aside class="panel left">
     <div class="section">
       <h3>
@@ -477,7 +476,7 @@
     </div>
   </div>
 
-  <!-- ✅ 우측: 카테고리 + 관리자툴 + 유저 마커초기화 + 선택패널 -->
+  <!-- ✅ 우측 -->
   <aside class="panel right">
     <div class="section" id="categorySection">
       <h3>카테고리</h3>
@@ -1228,7 +1227,6 @@
   // ==========================================================
   // Mode
   // ==========================================================
-  adminToggle.checked = !!state.ui.admin;
 
   function setAdminMode(on){
     state.ui.admin = !!on;
@@ -1246,7 +1244,10 @@
     syncAdminOnlyVisibility();
     refreshAll();
   }
-  adminToggle.addEventListener("change", () => setAdminMode(adminToggle.checked));
+
+  // (index.html은 무조건 USER로 고정)
+  // adminToggle 이벤트는 남겨도 되지만, 토글 자체를 disabled 처리해서 절대 변경되지 않게 함.
+  adminToggle.addEventListener("change", () => setAdminMode(false));
 
   // ==========================================================
   // Header buttons (admin only visible)
@@ -1319,34 +1320,7 @@
     const gcur = getCurrentGame();
     gameDrop.innerHTML = "";
 
-    if(state.ui.admin){
-      const add = document.createElement("div");
-      add.className = "item";
-      add.innerHTML = `
-        <div class="left">
-          <div class="gname">+ 게임 추가</div>
-          <div class="gmeta">Map Demo 아래로 게임을 계속 추가</div>
-        </div>
-        <div style="display:flex; gap:8px;">
-          <button class="iconBtn ok" type="button">추가</button>
-        </div>
-      `;
-      add.querySelector("button").addEventListener("click", () => {
-        const name = prompt("새 게임 이름을 입력하세요 (예: 아이온2)", "아이온2");
-        if(!name) return;
-        const ng = {
-          id: uid(),
-          name: String(name).trim(),
-          categories: structuredClone(DEFAULT_CATEGORIES),
-          pages: [{ id: uid(), name:"1번마을", map:{ imageKey:"", width:2200, height:1400 }, markers:[], links:[] }]
-        };
-        state.games.push(ng);
-        setCurrentGame(ng.id);
-        closeGameDrop();
-      });
-      gameDrop.appendChild(add);
-    }
-
+    // 유저페이지에서는 게임 추가/삭제/이름변경 버튼이 절대 나오지 않음
     for(const g of state.games){
       const item = document.createElement("div");
       item.className = "item";
@@ -1373,42 +1347,6 @@
       goBtn.disabled = isActive;
       goBtn.addEventListener("click", () => { setCurrentGame(g.id); closeGameDrop(); });
       right.appendChild(goBtn);
-
-      if(state.ui.admin){
-        const renameBtn = document.createElement("button");
-        renameBtn.className = "iconBtn";
-        renameBtn.type = "button";
-        renameBtn.textContent = "이름";
-        renameBtn.addEventListener("click", () => {
-          const name = prompt("게임 이름 변경", g.name);
-          if(!name) return;
-          g.name = String(name).trim();
-          saveState();
-          refreshAll();
-          rebuildGameDrop();
-        });
-
-        const delBtn = document.createElement("button");
-        delBtn.className = "iconBtn danger";
-        delBtn.type = "button";
-        delBtn.textContent = "삭제";
-        delBtn.addEventListener("click", async () => {
-          if(!confirm(`게임 "${g.name}" 을 삭제할까요?\n(페이지/마커는 localStorage에서 제거됩니다. 이미지 blob은 DB에 남을 수 있습니다)`)) return;
-          state.games = state.games.filter(x => x.id !== g.id);
-          if(state.games.length === 0){
-            state.games = structuredClone(defaultState.games);
-          }
-          state.currentGameId = state.games[0].id;
-          state.currentPageId = state.games[0].pages[0].id;
-          saveState();
-          refreshAll();
-          loadMapImageForCurrentPage();
-          rebuildGameDrop();
-        });
-
-        right.appendChild(renameBtn);
-        right.appendChild(delBtn);
-      }
 
       item.appendChild(left);
       item.appendChild(right);
@@ -1451,51 +1389,7 @@
 
       btn.addEventListener("click", () => setCurrentPage(p.id));
 
-      if(state.ui.admin){
-        const rename = document.createElement("button");
-        rename.className = "iconBtn";
-        rename.type = "button";
-        rename.textContent = "✎";
-        rename.title = "페이지 이름 편집";
-        rename.addEventListener("click", (e) => {
-          e.stopPropagation();
-          const v = prompt("페이지 이름 변경", p.name || "페이지");
-          if(!v) return;
-          p.name = String(v).trim();
-          saveState();
-          rebuildPageList();
-          refreshHeaderTitle();
-        });
-
-        const del = document.createElement("button");
-        del.className = "iconBtn danger";
-        del.type = "button";
-        del.textContent = "🗑";
-        del.title = "페이지 삭제";
-        del.addEventListener("click", async (e) => {
-          e.stopPropagation();
-          if(!confirm(`페이지 "${p.name}" 을 삭제할까요?\n(이미지 blob은 DB에 남을 수 있습니다)`)) return;
-
-          try{
-            const key = `mapimg_${g.id}_${p.id}`;
-            await idbDel(key);
-          }catch(e2){}
-
-          g.pages = g.pages.filter(x => x.id !== p.id);
-          if(g.pages.length === 0){
-            g.pages.push({ id: uid(), name:"1번마을", map:{ imageKey:"", width:2200, height:1400 }, markers:[], links:[] });
-          }
-          if(state.currentPageId === p.id){
-            state.currentPageId = g.pages[0].id;
-          }
-          saveState();
-          refreshAll();
-          loadMapImageForCurrentPage();
-        });
-
-        actions.appendChild(rename);
-        actions.appendChild(del);
-      }
+      // 유저페이지에서는 페이지 rename/delete 버튼이 절대 나오지 않음
 
       btn.appendChild(left);
       btn.appendChild(actions);
@@ -1785,6 +1679,7 @@
   modalRadius.addEventListener("input", () => setRadiusUI(Number(modalRadius.value)));
 
   function openMarkerModal(markerId){
+    if(!state.ui.admin) return; // 유저페이지에서는 더블클릭 편집 차단
     const m = currentMarkers().find(x => x.id === markerId);
     if(!m) return;
 
@@ -1990,6 +1885,7 @@
   editCategoriesBtn.addEventListener("click", () => openCatModal());
 
   function openCatModal(){
+    if(!state.ui.admin) return; // 유저페이지에서는 편집 차단
     buildCatEditorRows(structuredClone(currentCategories()));
     buildCatPalette();
     activeCatRowEl = null;
@@ -2233,6 +2129,7 @@
   }
 
   function createMarkerAtWorld(wx, wy){
+    if(!state.ui.admin) return; // 유저페이지에서는 우클릭 생성 차단
     const mp = currentMap();
     const xr = clamp01(wx / mp.width);
     const yr = clamp01(wy / mp.height);
@@ -2402,7 +2299,7 @@
     if(m){
       state.ui.selectedMarkerId = m.id;
 
-      // ✅ 유저모드: 아이콘 클릭 시 "불투명 30%" 토글 (한 번 더 클릭하면 그 마커만 해제)
+      // ✅ 유저모드: 아이콘 클릭 시 "불투명 30%" 토글
       if(!state.ui.admin){
         const set = new Set(state.ui.dimmedMarkerIds || []);
         if(set.has(m.id)) set.delete(m.id);
@@ -2764,6 +2661,10 @@
     getCurrentGame();
     getCurrentPage();
 
+    // ✅✅✅ index.html은 무조건 USER로 강제 (localStorage에 admin=true가 남아있어도 무시)
+    state.ui.admin = false;
+    saveState();
+
     ensureCreateDefaults();
     ensureSampleMarkersOnce();
 
@@ -2785,13 +2686,13 @@
 
     normalizeAllChainsCurrentPage();
     rebuildLinks();
-    saveState();
 
-    setAdminMode(!!state.ui.admin);
-    state.ui.admin = false;
+    // ✅ USER 모드로 UI 렌더링을 "setAdminMode(false)"로 확정
+    setAdminMode(false);
+
+    // ✅ 토글은 보이더라도(현재 CSS로 숨김), JS에서도 확실히 비활성화
     adminToggle.checked = false;
     adminToggle.disabled = true;
-   
 
     resizeCanvas();
     resetView();
