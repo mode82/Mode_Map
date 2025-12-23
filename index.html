@@ -1188,6 +1188,7 @@ if (typeof structuredClone !== "function") {
 
 async function loadMapImageForCurrentPage(){
   mapImgReady = false;
+
   if(mapObjectUrl){
     URL.revokeObjectURL(mapObjectUrl);
     mapObjectUrl = null;
@@ -1195,10 +1196,11 @@ async function loadMapImageForCurrentPage(){
 
   const mp = currentMap();
 
-  // ✅ 1) URL 먼저 (공유/모바일 우선)
+  // 1️⃣ URL 우선 (모바일/공유용)
   const url = (mp.imageUrl || "").trim();
   if(url && isValidUrl(url)){
     const abs = new URL(url, location.href).toString();
+
     mapImg.onload = () => {
       mapImgReady = true;
       mp.width = mapImg.naturalWidth || mapImg.width;
@@ -1207,8 +1209,9 @@ async function loadMapImageForCurrentPage(){
       resetView();
       draw();
     };
+
     mapImg.onerror = async () => {
-      // ✅ 2) URL 실패 시에만 IDB fallback
+      // 2️⃣ URL 실패 시 IDB fallback
       const key = currentMapImageKey();
       const blob = await idbGet(key).catch(()=>null);
       if(blob){
@@ -1228,12 +1231,12 @@ async function loadMapImageForCurrentPage(){
       mapImgReady = false;
       draw();
     };
-    // 캐시 버스트
+
     mapImg.src = abs + (abs.includes("?") ? "&" : "?") + "v=" + Date.now();
     return;
   }
 
-  // ✅ URL이 없으면 IDB 사용
+  // 3️⃣ URL이 없으면 IDB만 사용
   const key = currentMapImageKey();
   const blob = await idbGet(key).catch(()=>null);
   if(blob){
@@ -1256,9 +1259,8 @@ async function loadMapImageForCurrentPage(){
 }
 
 
-  // ==========================================================
-  // View
-  // ==========================================================
+  
+
   const view = { scale:1, minScale:0.05, maxScale:10, offsetX:0, offsetY:0 };
 
   function resizeCanvas(){
@@ -2153,4 +2155,5 @@ async function loadMapImageForCurrentPage(){
 </script>
 </body>
 </html>
+
 
