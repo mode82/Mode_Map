@@ -879,7 +879,7 @@ if (typeof structuredClone !== "function") {
   try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch(e){ console.warn(e); }
 }
 
-  }
+  
   function escapeHtml(s){
     return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
