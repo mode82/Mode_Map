@@ -29,9 +29,7 @@
       --shadow2: 0 8px 24px rgba(0,0,0,.35);
       --blur: 14px;
     }
-
     *{ box-sizing:border-box; }
-
     body{
       margin:0;
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
@@ -42,7 +40,6 @@
         linear-gradient(180deg, var(--bg), #050812 70%);
       color: var(--text);
     }
-
     a{ color: var(--accent); text-decoration:none; }
     a:hover{ text-decoration:underline; }
 
@@ -70,9 +67,11 @@
       outline:none;
       transition: transform .08s ease, border-color .15s ease, box-shadow .15s ease, background .15s ease;
     }
-
     button{ cursor:pointer; font-weight:800; }
-    button:hover{ border-color: rgba(124,196,255,.55); box-shadow: 0 0 0 3px rgba(124,196,255,.12); }
+    button:hover{
+      border-color: rgba(124,196,255,.55);
+      box-shadow: 0 0 0 3px rgba(124,196,255,.12);
+    }
     button:active{ transform: translateY(1px); }
     button:disabled{ opacity:.45; cursor:not-allowed; transform:none; box-shadow:none; }
     input:focus, select:focus, textarea:focus, button:focus-visible{
@@ -95,7 +94,6 @@
       background: rgba(14,22,38,.55);
       box-shadow: 0 10px 30px rgba(0,0,0,.25);
     }
-
     .badge{
       display:inline-block;
       font-size:12px;
@@ -104,18 +102,18 @@
       border:1px solid rgba(39,52,74,.9);
       background: rgba(8,12,20,.6);
     }
-
     .badge.ok{ border-color: rgba(57,217,138,.6); background: rgba(10,22,16,.55); }
-
     .muted{ color: var(--muted); font-size:12px; }
-    .k{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size:12px; }
+    .k{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size:12px;
+    }
 
     .wrap{
       display:grid;
       grid-template-columns: 380px 1fr 380px;
       height: calc(100vh - 56px);
     }
-
     .panel{
       background: rgba(8,12,20,.55);
       backdrop-filter: blur(var(--blur));
@@ -123,12 +121,16 @@
       overflow:auto;
       padding:14px;
     }
-
     .panel.left{ border-right:1px solid rgba(31,42,58,.85); }
     .panel.right{ border-left:1px solid rgba(31,42,58,.85); }
-
     .center{ position:relative; overflow:hidden; }
-    #canvas{ width:100%; height:100%; display:block; background:#0b0f14; }
+
+    #canvas{
+      width:100%;
+      height:100%;
+      display:block;
+      background:#0b0f14;
+    }
 
     .section{
       border:1px solid rgba(31,42,58,.9);
@@ -138,7 +140,6 @@
       background: linear-gradient(180deg, rgba(14,22,38,.72), rgba(10,16,28,.58));
       box-shadow: var(--shadow2);
     }
-
     .section h3{
       margin:0 0 10px;
       font-size:13px;
@@ -148,10 +149,8 @@
       align-items:center;
       gap:8px;
     }
-
     .row{ display:flex; gap:8px; margin:8px 0; }
     .row > *{ flex:1; }
-
     .hr{ height:1px; background: rgba(31,42,58,.9); margin:12px 0; }
 
     .catGrid{ display:flex; flex-wrap:wrap; gap:8px; }
@@ -166,7 +165,6 @@
       align-items:center;
       gap:8px;
     }
-
     .catDot{
       width:10px;
       height:10px;
@@ -174,7 +172,6 @@
       border:1px solid rgba(39,52,74,.9);
       display:inline-block;
     }
-
     .catBtn.active{
       border-color: rgba(124,196,255,.9);
       box-shadow: 0 0 0 3px rgba(124,196,255,.14);
@@ -183,7 +180,8 @@
     .palette{ display:flex; flex-wrap:wrap; gap:10px; }
     .swatchWrap{ display:flex; flex-direction:column; align-items:center; gap:4px; }
     .swatch{
-      width:36px; height:36px;
+      width:36px;
+      height:36px;
       border-radius:12px;
       border:1px solid rgba(39,52,74,.9);
       display:inline-flex;
@@ -193,15 +191,18 @@
       box-shadow: 0 10px 22px rgba(0,0,0,.18);
     }
     .swatch button{
-      width:28px; height:28px;
+      width:28px;
+      height:28px;
       border-radius:10px;
       border:1px solid rgba(39,52,74,.9);
       padding:0;
       background:transparent;
     }
-    .swatch.active{ outline:2px solid rgba(124,196,255,.9); outline-offset:2px; }
+    .swatch.active{
+      outline:2px solid rgba(124,196,255,.9);
+      outline-offset:2px;
+    }
     .swatchLabel{ font-size:11px; color: var(--muted); }
-
     .smallBtn{ padding:9px 11px; font-size:13px; }
 
     .linkBox{
@@ -228,7 +229,6 @@
       -webkit-backdrop-filter: blur(var(--blur));
       pointer-events:auto;
     }
-
     #hoverOverlay .memoLabel{
       font-size:12px;
       color: var(--muted);
@@ -236,7 +236,6 @@
       font-weight:800;
       letter-spacing:.2px;
     }
-
     #hoverOverlay textarea{
       width: 100%;
       resize:none;
@@ -246,7 +245,6 @@
       margin-bottom:10px;
       font-size:13px;
     }
-
     #hoverOverlay textarea[readonly]{ opacity: .95; }
     #hoverOverlay .yt{ font-size:14px; font-weight:900; letter-spacing:.2px; }
     #hoverOverlay .yt a{ color: rgba(231,238,248,.95); text-decoration:none; }
@@ -265,7 +263,6 @@
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
     }
-
     .modal{
       width:min(860px, 100%);
       border:1px solid rgba(39,52,74,.95);
@@ -277,7 +274,6 @@
       display:flex;
       flex-direction:column;
     }
-
     .modalHeader{
       display:flex;
       align-items:center;
@@ -287,11 +283,9 @@
       background: rgba(8,12,20,.35);
       flex:0 0 auto;
     }
-
     .modalHeader b{ font-size:14px; letter-spacing:.2px; }
     .modalBody{ padding:12px 14px; overflow:auto; flex: 1 1 auto; }
     .modalBody label{ display:block; font-size:12px; color: var(--muted); margin:10px 0 6px; }
-
     .modalFooter{
       display:flex;
       gap:8px;
@@ -303,7 +297,6 @@
       flex-wrap:wrap;
       align-items:center;
     }
-
     .grid2{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
 
     @media (max-width: 1100px){
@@ -322,10 +315,10 @@
       border:1px solid rgba(39,52,74,.9);
       background: rgba(16,24,38,.65);
     }
-
     .quickColorRow{ display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
     .qc{
-      width:30px; height:30px;
+      width:30px;
+      height:30px;
       border-radius:10px;
       border:1px solid rgba(39,52,74,.9);
       background: rgba(8,12,20,.55);
@@ -335,7 +328,13 @@
       cursor:pointer;
       box-shadow: 0 10px 18px rgba(0,0,0,.18);
     }
-    .qc > i{ width:20px; height:20px; border-radius:8px; display:block; border:1px solid rgba(39,52,74,.9); }
+    .qc > i{
+      width:20px;
+      height:20px;
+      border-radius:8px;
+      display:block;
+      border:1px solid rgba(39,52,74,.9);
+    }
 
     .styleRow{ display:flex; gap:10px; flex-wrap:wrap; align-items:stretch; }
     .styleCard{
@@ -349,11 +348,9 @@
       flex-direction:column;
       gap:8px;
     }
-
     .styleCard .head{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; }
     .styleCard .head .t{ font-weight:900; }
     .styleCard .head .d{ color: var(--muted); font-size:12px; }
-
     .rangeRow{ display:flex; align-items:center; gap:10px; }
     .rangeRow input[type="range"]{ flex:1; }
     .rangeRow input[type="number"]{ width:86px; }
@@ -400,7 +397,6 @@
       white-space:nowrap;
       flex:0 0 auto;
     }
-
     .pageActions{ display:flex; gap:6px; flex:0 0 auto; }
     .iconBtn{
       padding:6px 8px;
@@ -427,9 +423,11 @@
       cursor:pointer;
       user-select:none;
     }
-    .titleBtn:hover{ border-color: rgba(124,196,255,.55); box-shadow: 0 0 0 3px rgba(124,196,255,.12); }
+    .titleBtn:hover{
+      border-color: rgba(124,196,255,.55);
+      box-shadow: 0 0 0 3px rgba(124,196,255,.12);
+    }
     .titleBtn .caret{ opacity:.8; }
-
     .drop{
       position:absolute;
       top: calc(100% + 10px);
@@ -460,28 +458,88 @@
     .drop .item .left{ min-width:0; }
     .drop .item .gname{ font-weight:900; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .drop .item .gmeta{ font-size:12px; color: var(--muted); margin-top:4px; }
+
+    /* Admin Lock Overlay (only on admin82.html) */
+    #__adminLockOverlay{
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,.78);
+      backdrop-filter: blur(6px);
+      z-index: 2147483647;
+    }
+    #__adminLockCard{
+      width: min(420px, calc(100vw - 32px));
+      background: rgba(20, 24, 36, .92);
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 16px;
+      padding: 18px 18px 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.5);
+      color: #fff;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    }
+    #__adminLockCard h2{ margin: 0 0 8px; font-size: 18px; }
+    #__adminLockCard p{ margin: 0 0 14px; opacity: .85; font-size: 13px; line-height: 1.4; }
+    #__adminPw{
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(0,0,0,.25);
+      color: #fff;
+      outline: none;
+    }
+    #__adminLockRow{ display:flex; gap:10px; margin-top:12px; }
+    #__adminUnlockBtn{
+      flex: 1;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(124,196,255,.18);
+      color: #fff;
+      cursor: pointer;
+      font-weight: 700;
+    }
+    #__adminUnlockBtn:active{ transform: translateY(1px); }
+    #__adminLockMsg{ margin-top: 10px; font-size: 12px; opacity: .9; min-height: 16px; }
+    #__adminLogoutBtn{
+      position: fixed;
+      right: 12px;
+      bottom: 12px;
+      z-index: 2147483646;
+      padding: 8px 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(255,80,80,.18);
+      color: #fff;
+      cursor: pointer;
+      font-size: 12px;
+      display: none;
+    }
   </style>
 </head>
 
 <body>
   <header>
-    <!-- ✅ MAP DEMO = 게임 이름 자리 + 클릭 시 드롭다운 -->
+    <!-- ✅ MAP DEMO = 게임 이름 자리 + 클릭 시 드롭다운 (항상 표시) -->
     <div class="titleWrap" id="titleWrap">
-      <div class="titleBtn" id="gameTitleBtn" title="클릭해서 게임 목록">
+      <div class="titleBtn" id="gameTitleBtn" title="클릭해서 게임 목록/추가">
         <span id="gameTitleText">Map Demo</span>
         <span class="muted caret">▾</span>
       </div>
       <div class="drop" id="gameDrop"></div>
     </div>
 
-    <!-- ✅ 관리자 토글은 유저(index)에서는 자동 숨김/비활성 -->
+    <!-- ✅ 관리자 모드 토글(유저 페이지에서는 숨김 처리됨) -->
     <span class="pill" id="adminToggleWrap">
       <span class="badge" id="modeBadge">USER</span>
       <label class="muted" style="margin:0;">관리자</label>
       <input id="adminToggle" type="checkbox" />
     </span>
 
-    <!-- 상단 관리자 버튼들(유저에서는 숨김 처리됨) -->
+    <!-- ✅ 상단 메뉴: 관리자 모드에서만 -->
     <button id="uploadBtn" class="adminOnly">지도 업로드</button>
     <button id="exportStateBtn" class="adminOnly">state.json 내보내기</button>
     <button id="resetViewBtn" class="adminOnly">뷰 리셋</button>
@@ -503,7 +561,7 @@
           <span class="name">+ 페이지 추가</span>
         </button>
 
-        <!-- (유저에서는 숨김) -->
+        <!-- ✅ [PATCH] 안내 문구는 관리자에서만 보이게 -->
         <div class="muted adminOnly" style="margin:10px 0 8px; line-height:1.4;">
           • 페이지 버튼 클릭 → 같은 게임 안에서 지도 페이지 이동<br/>
           • <b>폰/다른 기기</b>에서도 지도 보이게 하려면: 관리자에서 <b>URL</b> 버튼으로 지도 이미지 URL 설정
@@ -516,7 +574,7 @@
     <div class="center" id="centerStage">
       <canvas id="canvas"></canvas>
 
-      <!-- 유저모드: 텍스트 hover/click 했을 때만 표시 -->
+      <!-- 유저모드: 텍스트에 hover/click 했을 때만 표시 -->
       <div id="hoverOverlay">
         <div class="memoLabel">메모</div>
         <textarea id="hoverMemo" cols="10" rows="3" placeholder="" readonly></textarea>
@@ -530,7 +588,6 @@
         <h3>카테고리</h3>
         <div class="catGrid" id="categoryBar"></div>
         <div class="muted" id="countInfo" style="margin-top:10px;">-</div>
-
         <div class="row adminOnly" id="adminCategoryTools" style="margin-top:10px;">
           <button id="editCategoriesBtn">카테고리/색상 편집</button>
         </div>
@@ -584,7 +641,7 @@
     </aside>
   </div>
 
-  <!-- Marker Edit Modal (유저에서는 열리지 않지만 구조 유지) -->
+  <!-- Marker Edit Modal -->
   <div class="modalBackdrop" id="markerModalBackdrop" aria-hidden="true">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="markerModalTitle">
       <div class="modalHeader">
@@ -639,7 +696,6 @@
         <div class="hr"></div>
 
         <h3 style="margin:0 0 8px; font-size:13px; letter-spacing:.3px;">마커 스타일</h3>
-
         <div class="styleRow">
           <div class="styleCard">
             <div class="head">
@@ -713,7 +769,7 @@
     </div>
   </div>
 
-  <!-- Category Edit Modal (유저에서는 열리지 않지만 구조 유지) -->
+  <!-- Category Edit Modal -->
   <div class="modalBackdrop" id="catModalBackdrop" aria-hidden="true">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="catModalTitle">
       <div class="modalHeader">
@@ -723,7 +779,6 @@
 
       <div class="modalBody">
         <div class="muted">저장하면 현재 게임의 카테고리 목록이 완전히 교체됩니다.</div>
-
         <div class="hr"></div>
 
         <div class="muted">빠른 색상 (선택한 카테고리 행에 적용)</div>
@@ -746,6 +801,20 @@
     </div>
   </div>
 
+  <!-- Admin Lock UI (only on admin82.html) -->
+  <div id="__adminLockOverlay">
+    <div id="__adminLockCard">
+      <h2>관리자 인증</h2>
+      <p>비밀번호를 입력하면 이 브라우저에서 24시간 동안 인증이 유지됩니다.</p>
+      <input id="__adminPw" type="password" inputmode="numeric" autocomplete="current-password" placeholder="관리자 비밀번호" />
+      <div id="__adminLockRow">
+        <button id="__adminUnlockBtn" type="button">확인</button>
+      </div>
+      <div id="__adminLockMsg"></div>
+    </div>
+  </div>
+  <button id="__adminLogoutBtn" type="button">관리자 로그아웃</button>
+
   <!-- ✅ iOS 폴리필: structuredClone 없으면 흰 화면 방지 -->
   <script>
     if (typeof structuredClone !== "function") {
@@ -761,9 +830,46 @@
       const IS_ADMIN_PAGE = /admin82\.html$/i.test(location.pathname);
       const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-      // ✅ 모바일(터치)에서는 마커도 줌 비율에 맞춰 같이 스케일
-      const IS_COARSE_POINTER = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
-      const SCALE_MARKERS_WITH_ZOOM = IS_COARSE_POINTER; // 모바일에서만 true
+      // ==========================================================
+      // Admin Auth (24h) - only admin page
+      // ==========================================================
+      const ADMIN_PASSWORD = "0000000001";
+      const AUTH_KEY = "mm_admin_auth_v1";
+      const SESSION_MS = 24 * 60 * 60 * 1000;
+
+      const $lock = document.getElementById("__adminLockOverlay");
+      const $pw = document.getElementById("__adminPw");
+      const $unlock = document.getElementById("__adminUnlockBtn");
+      const $msg = document.getElementById("__adminLockMsg");
+      const $logout = document.getElementById("__adminLogoutBtn");
+
+      function getAuth(){
+        try{
+          const raw = localStorage.getItem(AUTH_KEY);
+          if(!raw) return null;
+          const obj = JSON.parse(raw);
+          if(!obj || typeof obj.exp !== "number") return null;
+          return obj;
+        }catch{
+          return null;
+        }
+      }
+      function isAuthed(){
+        const a = getAuth();
+        return !!(a && a.exp > Date.now());
+      }
+      function setAuthed(){
+        localStorage.setItem(AUTH_KEY, JSON.stringify({ exp: Date.now() + SESSION_MS }));
+      }
+      function clearAuthed(){
+        localStorage.removeItem(AUTH_KEY);
+      }
+      function showLock(show){
+        if(!IS_ADMIN_PAGE) return;
+        $lock.style.display = show ? "flex" : "none";
+        $logout.style.display = show ? "none" : "block";
+        if(show) setTimeout(()=> $pw.focus(), 50);
+      }
 
       // ==========================================================
       // Storage / DB
@@ -783,7 +889,6 @@
           req.onerror = () => reject(req.error);
         });
       }
-
       async function idbPut(key, blob){
         const db = await openDB();
         return new Promise((resolve, reject) => {
@@ -793,7 +898,6 @@
           tx.onerror = () => { db.close(); reject(tx.error); };
         });
       }
-
       async function idbGet(key){
         const db = await openDB();
         return new Promise((resolve, reject) => {
@@ -803,7 +907,6 @@
           req.onerror = () => { db.close(); reject(req.error); };
         });
       }
-
       async function idbDel(key){
         const db = await openDB();
         return new Promise((resolve, reject) => {
@@ -825,27 +928,22 @@
       function safeParse(json, fallback){
         try { return JSON.parse(json); } catch { return fallback; }
       }
-
       function saveState(){
+        // ✅ [SYNC] 마지막 저장 시각 기록 (모바일이 “최신 여부” 판단에 사용)
         state._updatedAt = Date.now();
         state._updatedAtISO = new Date().toISOString();
         try{
           localStorage.setItem(LS_KEY, JSON.stringify(state));
-        }catch(e){
+        } catch(e){
           console.warn(e);
         }
       }
-
       function escapeHtml(s){
-        return String(s).replace(/[&<>"']/g, c => ({
-          '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
-        }[c]));
+        return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
       }
-
       function isValidUrl(url){
         try { new URL(url, location.href); return true; } catch { return false; }
       }
-
       function uniqByName(list){
         const seen = new Set();
         const out = [];
@@ -859,12 +957,13 @@
         }
         return out;
       }
-
       function msFromIso(iso){
         const t = Date.parse(iso);
         return Number.isFinite(t) ? t : Date.now();
       }
-      function isoFromMs(ms){ return new Date(ms).toISOString(); }
+      function isoFromMs(ms){
+        return new Date(ms).toISOString();
+      }
 
       // ==========================================================
       // Config
@@ -875,7 +974,6 @@
         { name:"quest",  color:"#66d9e8" },
         { name:"hunt",   color:"#e6edf3" },
       ];
-
       const PALETTE = [
         { key:"red",    label:"빨", color:"#ff3b30" },
         { key:"orange", label:"주", color:"#ff9500" },
@@ -885,7 +983,6 @@
         { key:"white",  label:"흰", color:"#ffffff" },
         { key:"black",  label:"검", color:"#000000" },
       ];
-
       const DEFAULT_MARKER_RADIUS_PX = 10;
       const DEFAULT_LABEL_COLOR = "#e6edf3";
       const DEFAULT_LABEL_WEIGHT = 900;
@@ -922,13 +1019,16 @@
         ]
       };
 
+      // Load or init
       const loaded = safeParse(localStorage.getItem(LS_KEY) || "", null);
       const state = (loaded && loaded.games && Array.isArray(loaded.games)) ? loaded : structuredClone(defaultState);
 
+      // Normalize
       if(!state.ui) state.ui = structuredClone(defaultState.ui);
       if(!Array.isArray(state.ui.dimmedMarkerIds)) state.ui.dimmedMarkerIds = [];
-      if(!Array.isArray(state.games) || state.games.length === 0) state.games = structuredClone(defaultState.games);
-
+      if(!Array.isArray(state.games) || state.games.length === 0){
+        state.games = structuredClone(defaultState.games);
+      }
       for(const g of state.games){
         if(!g.id) g.id = uid();
         if(typeof g.name !== "string") g.name = "Game";
@@ -950,30 +1050,20 @@
       }
 
       function getGameById(id){ return state.games.find(g => g.id === id) || null; }
-
       function getCurrentGame(){
         if(!state.currentGameId) state.currentGameId = state.games[0].id;
         const g = getGameById(state.currentGameId);
-        if(!g){
-          state.currentGameId = state.games[0].id;
-          return state.games[0];
-        }
+        if(!g){ state.currentGameId = state.games[0].id; return state.games[0]; }
         return g;
       }
-
       function getPageById(game, pid){ return game.pages.find(p => p.id === pid) || null; }
-
       function getCurrentPage(){
         const g = getCurrentGame();
         if(!state.currentPageId) state.currentPageId = g.pages[0].id;
         const p = getPageById(g, state.currentPageId);
-        if(!p){
-          state.currentPageId = g.pages[0].id;
-          return g.pages[0];
-        }
+        if(!p){ state.currentPageId = g.pages[0].id; return g.pages[0]; }
         return p;
       }
-
       function currentCategories(){ return getCurrentGame().categories; }
       function currentMarkers(){ return getCurrentPage().markers; }
       function currentLinks(){ return getCurrentPage().links; }
@@ -994,7 +1084,6 @@
         refreshAll();
         loadMapImageForCurrentPage();
       }
-
       function setCurrentPage(pageId){
         const g = getCurrentGame();
         const p = getPageById(g, pageId);
@@ -1017,17 +1106,14 @@
         const c = currentCategories().find(x => x.name === name);
         return c?.color || "#e6edf3";
       }
-
       function getMarkerColor(m){
         const ov = (m.colorOverride || "").trim();
         return ov ? ov : getCategoryColor(m.category);
       }
-
       function getMarkerLabel(m){
         const t = (m.title || "").trim();
         return t ? t : (m.category || "").trim();
       }
-
       function getUserYoutubeDisplay(m){
         const name = (m.youtubeLabel || "").trim();
         if(name) return name;
@@ -1035,13 +1121,11 @@
         if(t) return t;
         return "유튜브";
       }
-
       function getSortedGroupMarkers(groupId){
         return currentMarkers()
           .filter(x => Number(x.groupId||0) === Number(groupId||0))
           .sort((a,b) => (a.createdAt||"").localeCompare(b.createdAt||""));
       }
-
       function computeChainsForGroup(groupId){
         const list = getSortedGroupMarkers(groupId);
         const chains = [];
@@ -1063,7 +1147,6 @@
         }
         return chains;
       }
-
       function findChainByMarkerId(markerId){
         const m = currentMarkers().find(x => x.id === markerId);
         if(!m) return null;
@@ -1073,11 +1156,11 @@
         }
         return null;
       }
-
       function applyChainMasterStyleByChain(chain){
         if(!chain) return;
         const master = currentMarkers().find(x => x.id === chain.masterId);
         if(!master) return;
+
         const style = {
           category: (master.category || "").trim() || (currentCategories()[0]?.name || "default"),
           radiusPx: (typeof master.radiusPx === "number" && isFinite(master.radiusPx)) ? master.radiusPx : DEFAULT_MARKER_RADIUS_PX,
@@ -1085,6 +1168,7 @@
           labelWeight: (typeof master.labelWeight === "number" && isFinite(master.labelWeight)) ? master.labelWeight : DEFAULT_LABEL_WEIGHT,
           labelColor: (typeof master.labelColor === "string" ? master.labelColor : DEFAULT_LABEL_COLOR),
         };
+
         for(const id of chain.ids){
           const m = currentMarkers().find(x => x.id === id);
           if(!m) continue;
@@ -1096,12 +1180,10 @@
           m.labelColor = style.labelColor;
         }
       }
-
       function applyAllChainsInGroup(groupId){
         const chains = computeChainsForGroup(groupId);
         for(const ch of chains) applyChainMasterStyleByChain(ch);
       }
-
       function normalizeAllChainsCurrentPage(){
         const groups = new Set(currentMarkers().map(m => Number(m.groupId||0)));
         for(const g of groups) applyAllChainsInGroup(g);
@@ -1116,6 +1198,7 @@
           if(!byGroup.has(g)) byGroup.set(g, []);
           byGroup.get(g).push(m);
         }
+
         const nextLinks = [];
         for(const [g, list] of byGroup.entries()){
           const sorted = [...list].sort((a,b) => (a.createdAt||"").localeCompare(b.createdAt||""));
@@ -1145,7 +1228,6 @@
         if(markers.length === 0) return null;
         return [...markers].sort((a,b)=> (a.createdAt||"").localeCompare(b.createdAt||""))[0] || null;
       }
-
       function ensureCreateDefaults(){
         const first = getFirstCreatedMarker();
         if(!state.ui.createCategory){
@@ -1176,7 +1258,6 @@
       const paletteBar = document.getElementById("paletteBar");
       const applyPaletteToSelectedBtn = document.getElementById("applyPaletteToSelectedBtn");
       const clearOverrideBtn = document.getElementById("clearOverrideBtn");
-
       const removeAllLinksBtn = document.getElementById("removeAllLinksBtn");
       const resetChainBtn = document.getElementById("resetChainBtn");
 
@@ -1185,7 +1266,6 @@
 
       const categoryBar = document.getElementById("categoryBar");
       const countInfo = document.getElementById("countInfo");
-
       const editCategoriesBtn = document.getElementById("editCategoriesBtn");
 
       const pageBadge = document.getElementById("pageBadge");
@@ -1274,7 +1354,6 @@
           URL.revokeObjectURL(mapObjectUrl);
           mapObjectUrl = null;
         }
-
         const key = currentMapImageKey();
 
         // 1) IDB first (device-local)
@@ -1323,12 +1402,14 @@
       // ==========================================================
       const view = { scale:1, minScale:0.05, maxScale:10, offsetX:0, offsetY:0 };
 
-      // ✅ 마커 스케일 분모(모바일만 줌 따라감)
-      const markerScaleDenom = () => (SCALE_MARKERS_WITH_ZOOM ? 1 : view.scale);
-
       function resizeCanvas(){
         const rect = canvas.getBoundingClientRect();
-        const dpr = isIOS ? 1 : (window.devicePixelRatio || 1);
+
+        // ✅ [해상도 PATCH] iOS 포함 “무조건 DPR 사용” (선명도 개선)
+        // - 기존: iOS에서 dpr=1로 강제 → 모바일이 흐릿해짐
+        // - 변경: devicePixelRatio 사용 (너무 큰 값은 성능 때문에 2로 캡)
+        const dpr = Math.min((window.devicePixelRatio || 1), 2);
+
         canvas.width = Math.floor(rect.width * dpr);
         canvas.height = Math.floor(rect.height * dpr);
         ctx.setTransform(dpr,0,0,dpr,0,0);
@@ -1342,7 +1423,6 @@
       function screenToWorld(sx, sy){
         return { x: (sx - view.offsetX) / view.scale, y: (sy - view.offsetY) / view.scale };
       }
-
       function resetView(){
         const rect = canvas.getBoundingClientRect();
         const w = rect.width, h = rect.height;
@@ -1355,7 +1435,7 @@
       }
 
       // ==========================================================
-      // Mode (유저 페이지는 항상 USER)
+      // Mode
       // ==========================================================
       function setAdminMode(on){
         state.ui.admin = !!on;
@@ -1371,13 +1451,18 @@
         refreshAll();
       }
 
-      // ✅ index.html: 관리자 토글 숨김 + 강제 USER
-      adminToggleWrap.style.display = "none";
-      state.ui.admin = false;
-      adminToggle.checked = false;
+      // Admin toggle: user page에서는 숨김 + 강제 USER
+      if(!IS_ADMIN_PAGE){
+        adminToggleWrap.style.display = "none";
+        state.ui.admin = false;
+        adminToggle.checked = false;
+      }else{
+        adminToggleWrap.style.display = "";
+        adminToggle.addEventListener("change", () => setAdminMode(adminToggle.checked));
+      }
 
       // ==========================================================
-      // Header buttons (admin only)
+      // Header buttons (admin only visible)
       // ==========================================================
       uploadBtn.addEventListener("click", () => fileInput.click());
       fileInput.addEventListener("change", async (e) => {
@@ -1441,9 +1526,15 @@
       // Game dropdown (Map Demo 클릭)
       // ==========================================================
       let gameDropOpen = false;
-      function closeGameDrop(){ gameDropOpen = false; gameDrop.style.display = "none"; }
-      function openGameDrop(){ gameDropOpen = true; rebuildGameDrop(); gameDrop.style.display = "block"; }
-
+      function closeGameDrop(){
+        gameDropOpen = false;
+        gameDrop.style.display = "none";
+      }
+      function openGameDrop(){
+        gameDropOpen = true;
+        rebuildGameDrop();
+        gameDrop.style.display = "block";
+      }
       gameTitleBtn.addEventListener("click", (e) => {
         e.stopPropagation();
         if(gameDropOpen) closeGameDrop();
@@ -1456,7 +1547,34 @@
         const gcur = getCurrentGame();
         gameDrop.innerHTML = "";
 
-        // ✅ 유저에서는 "게임 추가/이름/삭제" 없이 "이동"만
+        if(state.ui.admin){
+          const add = document.createElement("div");
+          add.className = "item";
+          add.innerHTML = `
+            <div class="left">
+              <div class="gname">+ 게임 추가</div>
+              <div class="gmeta">Map Demo 아래로 게임을 계속 추가</div>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button class="iconBtn ok" type="button">추가</button>
+            </div>
+          `;
+          add.querySelector("button").addEventListener("click", () => {
+            const name = prompt("새 게임 이름을 입력하세요 (예: 아이온2)", "아이온2");
+            if(!name) return;
+            const ng = {
+              id: uid(),
+              name: String(name).trim(),
+              categories: structuredClone(DEFAULT_CATEGORIES),
+              pages: [{ id: uid(), name:"1번마을", map:{ imageKey:"", imageUrl:"", width:2200, height:1400 }, markers:[], links:[] }]
+            };
+            state.games.push(ng);
+            setCurrentGame(ng.id);
+            closeGameDrop();
+          });
+          gameDrop.appendChild(add);
+        }
+
         for(const g of state.games){
           const item = document.createElement("div");
           item.className = "item";
@@ -1481,8 +1599,47 @@
           goBtn.type = "button";
           goBtn.textContent = isActive ? "선택됨" : "이동";
           goBtn.disabled = isActive;
-          goBtn.addEventListener("click", () => { setCurrentGame(g.id); closeGameDrop(); });
+          goBtn.addEventListener("click", () => {
+            setCurrentGame(g.id);
+            closeGameDrop();
+          });
           right.appendChild(goBtn);
+
+          if(state.ui.admin){
+            const renameBtn = document.createElement("button");
+            renameBtn.className = "iconBtn";
+            renameBtn.type = "button";
+            renameBtn.textContent = "이름";
+            renameBtn.addEventListener("click", () => {
+              const name = prompt("게임 이름 변경", g.name);
+              if(!name) return;
+              g.name = String(name).trim();
+              saveState();
+              refreshAll();
+              rebuildGameDrop();
+            });
+
+            const delBtn = document.createElement("button");
+            delBtn.className = "iconBtn danger";
+            delBtn.type = "button";
+            delBtn.textContent = "삭제";
+            delBtn.addEventListener("click", async () => {
+              if(!confirm(`게임 "${g.name}" 을 삭제할까요?\n(페이지/마커는 localStorage에서 제거됩니다. 이미지 blob은 DB에 남을 수 있습니다)`)) return;
+              state.games = state.games.filter(x => x.id !== g.id);
+              if(state.games.length === 0){
+                state.games = structuredClone(defaultState.games);
+              }
+              state.currentGameId = state.games[0].id;
+              state.currentPageId = state.games[0].pages[0].id;
+              saveState();
+              refreshAll();
+              loadMapImageForCurrentPage();
+              rebuildGameDrop();
+            });
+
+            right.appendChild(renameBtn);
+            right.appendChild(delBtn);
+          }
 
           item.appendChild(left);
           item.appendChild(right);
@@ -1496,6 +1653,7 @@
       function rebuildPageList(){
         const g = getCurrentGame();
         const curPage = getCurrentPage();
+
         pageBadge.textContent = `${g.name} / ${curPage.name}`;
         pageList.innerHTML = "";
 
@@ -1511,15 +1669,86 @@
           name.className = "name";
           name.textContent = p.name || "Page";
 
-          // ✅ 마커/URL meta 제거 유지
+          /* ✅ [수정] 마커 숫자 / URL표시(meta) 제거 */
+          // const meta = document.createElement("div");
+          // meta.className = "meta";
+          // const mk = p.markers?.length || 0;
+          // const hasUrl = (p.map?.imageUrl || "").trim() ? "URL✓" : "URL-";
+          // meta.textContent = `마커 ${mk} · ${hasUrl}`;
+
           left.appendChild(name);
+          // left.appendChild(meta);
 
           const actions = document.createElement("div");
           actions.className = "pageActions";
 
           btn.addEventListener("click", () => setCurrentPage(p.id));
 
-          // ✅ 유저는 액션 버튼 없음(관리자만)
+          if(state.ui.admin){
+            const urlBtn = document.createElement("button");
+            urlBtn.className = "iconBtn";
+            urlBtn.type = "button";
+            urlBtn.textContent = "URL";
+            urlBtn.title = "지도 이미지 URL 설정(폰/다른 기기 공유용)";
+            urlBtn.addEventListener("click", (e) => {
+              e.stopPropagation();
+              const cur = (p.map?.imageUrl || "").trim();
+              const v = prompt(
+                "지도 이미지 URL을 입력하세요.\n예) ./assets/maps/map1.png\n(이 URL이 설정되면 다른 기기에서도 지도가 보입니다)",
+                cur || "./assets/maps/map1.png"
+              );
+              if(v == null) return;
+              if(!p.map) p.map = { imageKey:"", imageUrl:"", width:2200, height:1400 };
+              p.map.imageUrl = String(v).trim();
+              saveState();
+              if(p.id === getCurrentPage().id) loadMapImageForCurrentPage();
+              rebuildPageList();
+            });
+
+            const rename = document.createElement("button");
+            rename.className = "iconBtn";
+            rename.type = "button";
+            rename.textContent = "✎";
+            rename.title = "페이지 이름 편집";
+            rename.addEventListener("click", (e) => {
+              e.stopPropagation();
+              const v = prompt("페이지 이름 변경", p.name || "페이지");
+              if(!v) return;
+              p.name = String(v).trim();
+              saveState();
+              rebuildPageList();
+              refreshHeaderTitle();
+            });
+
+            const del = document.createElement("button");
+            del.className = "iconBtn danger";
+            del.type = "button";
+            del.textContent = "🗑";
+            del.title = "페이지 삭제";
+            del.addEventListener("click", async (e) => {
+              e.stopPropagation();
+              if(!confirm(`페이지 "${p.name}" 을 삭제할까요?\n(이미지 blob은 DB에 남을 수 있습니다)`)) return;
+              try{
+                const key = `mapimg_${g.id}_${p.id}`;
+                await idbDel(key);
+              }catch(e2){}
+              g.pages = g.pages.filter(x => x.id !== p.id);
+              if(g.pages.length === 0){
+                g.pages.push({ id: uid(), name:"1번마을", map:{ imageKey:"", imageUrl:"", width:2200, height:1400 }, markers:[], links:[] });
+              }
+              if(state.currentPageId === p.id){
+                state.currentPageId = g.pages[0].id;
+              }
+              saveState();
+              refreshAll();
+              loadMapImageForCurrentPage();
+            });
+
+            actions.appendChild(urlBtn);
+            actions.appendChild(rename);
+            actions.appendChild(del);
+          }
+
           btn.appendChild(left);
           btn.appendChild(actions);
           pageList.appendChild(btn);
@@ -1548,20 +1777,16 @@
           categoryBar.appendChild(makeCatButton(c.name, c.name, c.color || "#e6edf3"));
         }
       }
-
       function makeCatButton(label, value, color){
         const btn = document.createElement("button");
         btn.className = "catBtn" + ((state.ui.selectedCategory === value) ? " active" : "");
-
         const dot = document.createElement("span");
         dot.className = "catDot";
         dot.style.background = color || "#223042";
         btn.appendChild(dot);
-
         const txt = document.createElement("span");
         txt.textContent = label;
         btn.appendChild(txt);
-
         btn.addEventListener("click", () => {
           state.ui.selectedCategory = value;
           saveState();
@@ -1576,10 +1801,8 @@
           renderSelectedPanel();
           draw();
         });
-
         return btn;
       }
-
       function getVisibleMarkers(){
         const cat = state.ui.selectedCategory || "";
         if(!cat) return currentMarkers();
@@ -1587,14 +1810,13 @@
       }
 
       // ==========================================================
-      // Palette (유저에서는 숨김)
+      // Palette
       // ==========================================================
       function rebuildPalette(){
         paletteBar.innerHTML = "";
         for(const p of PALETTE){
           const wrap = document.createElement("div");
           wrap.className = "swatch" + (state.ui.activePaintColor === p.color ? " active" : "");
-
           const b = document.createElement("button");
           b.title = `${p.label} (${p.color})`;
           b.style.background = p.color;
@@ -1603,7 +1825,6 @@
             saveState();
             rebuildPalette();
           });
-
           wrap.appendChild(b);
 
           const lab = document.createElement("div");
@@ -1617,17 +1838,49 @@
 
           paletteBar.appendChild(container);
         }
-
         applyPaletteToSelectedBtn.disabled = !state.ui.admin || !state.ui.selectedMarkerId || !state.ui.activePaintColor;
         clearOverrideBtn.disabled = !state.ui.admin || !state.ui.selectedMarkerId;
       }
 
       applyPaletteToSelectedBtn.addEventListener("click", () => {
         if(!state.ui.admin) return;
+        if(!state.ui.selectedMarkerId) return;
+        if(!state.ui.activePaintColor) return;
+        const m = currentMarkers().find(x => x.id === state.ui.selectedMarkerId);
+        if(!m) return;
+        const chain = findChainByMarkerId(m.id);
+        if(chain){
+          const master = currentMarkers().find(x => x.id === chain.masterId);
+          if(master){
+            master.colorOverride = state.ui.activePaintColor;
+            applyChainMasterStyleByChain(chain);
+          }
+        }else{
+          m.colorOverride = state.ui.activePaintColor;
+        }
+        saveState();
+        draw();
+        renderSelectedPanel();
+        rebuildPalette();
       });
 
       clearOverrideBtn.addEventListener("click", () => {
         if(!state.ui.admin) return;
+        if(!state.ui.selectedMarkerId) return;
+        const m = currentMarkers().find(x => x.id === state.ui.selectedMarkerId);
+        if(!m) return;
+        const chain = findChainByMarkerId(m.id);
+        if(chain){
+          const master = currentMarkers().find(x => x.id === chain.masterId);
+          if(master) master.colorOverride = "";
+          applyChainMasterStyleByChain(chain);
+        }else{
+          m.colorOverride = "";
+        }
+        saveState();
+        draw();
+        renderSelectedPanel();
+        rebuildPalette();
       });
 
       // ==========================================================
@@ -1640,19 +1893,16 @@
           youtubeBox.textContent = "-";
           return;
         }
-
         const name = (m.title || "").trim() || "(이름 없음)";
         selectedHeader.textContent = `선택한 마커: ${name}`;
 
         const url = (m.youtubeUrl || "").trim();
         const display = getUserYoutubeDisplay(m);
-
         if(url && isValidUrl(url)){
           youtubeBox.innerHTML = `<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(display)}</a>`;
         }else{
           youtubeBox.textContent = display ? display : "없음";
         }
-
         rebuildPalette();
       }
 
@@ -1670,30 +1920,31 @@
         if(overlayPinned) return;
         hoverOverlay.style.display = "none";
       }
-
       function unpinOverlay(){
         overlayPinned = false;
         pinnedMarkerId = "";
         hideHoverOverlay(true);
       }
-
       function positionOverlay(clientX, clientY){
         const stageRect = centerStage.getBoundingClientRect();
         const pad = 10;
         let x = clientX - stageRect.left + 16;
         let y = clientY - stageRect.top + 16;
+
         hoverOverlay.style.left = x + "px";
         hoverOverlay.style.top = y + "px";
         hoverOverlay.style.display = "block";
+
         const overlayRect = hoverOverlay.getBoundingClientRect();
         const maxX = stageRect.width - overlayRect.width - pad;
         const maxY = stageRect.height - overlayRect.height - pad;
+
         x = clamp(x, pad, Math.max(pad, maxX));
         y = clamp(y, pad, Math.max(pad, maxY));
+
         hoverOverlay.style.left = x + "px";
         hoverOverlay.style.top = y + "px";
       }
-
       function renderOverlayForMarker(m){
         hoverMemo.value = m.memo || "";
         const url = (m.youtubeUrl || "").trim();
@@ -1704,13 +1955,14 @@
           hoverYt.innerHTML = `<span class="muted">유튜브 없음</span>`;
         }
       }
-
       function showHoverOverlayForMarker(m, clientX, clientY){
+        if(state.ui.admin) return;
+        if(overlayPinned) return;
         renderOverlayForMarker(m);
         positionOverlay(clientX, clientY);
       }
-
       function showPinnedOverlayForMarker(m, clientX, clientY){
+        if(state.ui.admin) return;
         overlayPinned = true;
         pinnedMarkerId = m.id;
         renderOverlayForMarker(m);
@@ -1719,16 +1971,15 @@
 
       hoverOverlay.addEventListener("mousedown", (e) => e.stopPropagation());
       hoverOverlay.addEventListener("click", (e) => e.stopPropagation());
-
       window.addEventListener("keydown", (e) => {
-        if(e.key === "Escape" && overlayPinned){
+        if(e.key === "Escape" && overlayPinned && !state.ui.admin){
           unpinOverlay();
           draw();
         }
       });
 
       // ==========================================================
-      // Marker modal helpers (구조 유지)
+      // Marker modal
       // ==========================================================
       function buildFontColorQuick(){
         modalFontColorQuick.innerHTML = "";
@@ -1740,7 +1991,9 @@
           const i = document.createElement("i");
           i.style.background = p.color;
           b.appendChild(i);
-          b.addEventListener("click", () => { modalFontColor.value = p.color; });
+          b.addEventListener("click", () => {
+            modalFontColor.value = p.color;
+          });
           modalFontColorQuick.appendChild(b);
         }
       }
@@ -1755,20 +2008,23 @@
           numberEl.value = String(v);
           rangeEl.value = String(v);
         };
-        rangeEl.addEventListener("input", () => { numberEl.value = rangeEl.value; });
+        rangeEl.addEventListener("input", () => {
+          numberEl.value = rangeEl.value;
+        });
         numberEl.addEventListener("input", clampVal);
         numberEl.addEventListener("blur", clampVal);
       }
       syncRangeNumber(modalRadiusRange, modalRadius);
       syncRangeNumber(modalFontSizeRange, modalFontSize);
 
-      modalFontColorResetBtn.addEventListener("click", () => { modalFontColor.value = DEFAULT_LABEL_COLOR; });
+      modalFontColorResetBtn.addEventListener("click", () => {
+        modalFontColor.value = DEFAULT_LABEL_COLOR;
+      });
 
       function setRadiusUI(radiusPx){
         const r = clamp(radiusPx, Number(modalRadiusRange.min), Number(modalRadiusRange.max));
         modalRadiusRange.value = String(r);
         modalRadius.value = String(r);
-
         const nextFont = clamp(calcLabelSizeFromRadius(r), Number(modalFontSizeRange.min), Number(modalFontSizeRange.max));
         modalFontSizeRange.value = String(nextFont);
         modalFontSize.value = String(nextFont);
@@ -1777,8 +2033,42 @@
       modalRadius.addEventListener("input", () => setRadiusUI(Number(modalRadius.value)));
 
       function openMarkerModal(markerId){
-        // 유저에서는 열지 않음
-        return;
+        const m = currentMarkers().find(x => x.id === markerId);
+        if(!m) return;
+
+        modalMarkerId = markerId;
+        modalCategory.innerHTML = "";
+        for(const c of currentCategories()){
+          const opt = document.createElement("option");
+          opt.value = c.name;
+          opt.textContent = c.name;
+          modalCategory.appendChild(opt);
+        }
+        modalCategory.value = m.category || (currentCategories()[0]?.name || "");
+        modalTitle.value = m.title || "";
+        modalYoutubeUrl.value = m.youtubeUrl || "";
+        modalYoutubeLabel.value = m.youtubeLabel || "";
+        modalMemo.value = m.memo || "";
+
+        const ov = (m.colorOverride || "").trim();
+        modalUseCategoryColor.checked = !ov;
+        const base = getCategoryColor(modalCategory.value);
+        modalColor.value = (ov && /^#([0-9a-fA-F]{6})$/.test(ov)) ? ov : (base || "#e6edf3");
+        modalColor.disabled = modalUseCategoryColor.checked;
+
+        setRadiusUI(m.radiusPx ?? DEFAULT_MARKER_RADIUS_PX);
+
+        const w = Number(m.labelWeight ?? DEFAULT_LABEL_WEIGHT);
+        modalFontWeight.value = String([400,600,800,900].includes(w) ? w : DEFAULT_LABEL_WEIGHT);
+
+        const lc = (m.labelColor || "").trim();
+        modalFontColor.value = (lc && /^#([0-9a-fA-F]{6})$/.test(lc)) ? lc : DEFAULT_LABEL_COLOR;
+
+        modalCoord.textContent = `${m.x.toFixed(6)}, ${m.y.toFixed(6)}`;
+
+        markerModalBackdrop.style.display = "flex";
+        markerModalBackdrop.setAttribute("aria-hidden","false");
+        modalTitle.focus();
       }
 
       function closeMarkerModal(){
@@ -1786,38 +2076,323 @@
         markerModalBackdrop.setAttribute("aria-hidden","true");
         modalMarkerId = "";
       }
-
       closeMarkerModalBtn.addEventListener("click", closeMarkerModal);
-      markerModalBackdrop.addEventListener("click", (e) => { if(e.target === markerModalBackdrop) closeMarkerModal(); });
+      markerModalBackdrop.addEventListener("click", (e) => {
+        if(e.target === markerModalBackdrop) closeMarkerModal();
+      });
+
+      function shouldSaveOnEnter(e){
+        if(!state.ui.admin) return false;
+        if(e.key !== "Enter") return false;
+        const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
+        if(tag === "textarea") return false;
+        return true;
+      }
+      markerModalBackdrop.addEventListener("keydown", (e) => {
+        if(shouldSaveOnEnter(e)){
+          e.preventDefault();
+          saveMarkerBtn.click();
+        }
+      });
+
+      modalUseCategoryColor.addEventListener("change", () => {
+        modalColor.disabled = modalUseCategoryColor.checked;
+        if(modalUseCategoryColor.checked){
+          const base = getCategoryColor(modalCategory.value);
+          modalColor.value = (base && /^#([0-9a-fA-F]{6})$/.test(base)) ? base : "#e6edf3";
+        }
+      });
+      modalCategory.addEventListener("change", () => {
+        if(modalUseCategoryColor.checked){
+          const base = getCategoryColor(modalCategory.value);
+          modalColor.value = (base && /^#([0-9a-fA-F]{6})$/.test(base)) ? base : "#e6edf3";
+        }
+      });
+
+      startNewGroupFromHereBtn.addEventListener("click", () => {
+        if(!state.ui.admin) return;
+        const m = currentMarkers().find(x => x.id === modalMarkerId);
+        if(!m) return;
+
+        if(!confirm("이 마커부터 '새로운 번호(1번)'로 시작할까요?\n(현재 페이지 내에서 새 체인으로 분리됩니다)")) return;
+
+        const oldGroup = Number(m.groupId || 0);
+        const pivotTime = (m.createdAt || "");
+        const newGroupId = Date.now();
+
+        for(const x of currentMarkers()){
+          if(Number(x.groupId || 0) !== oldGroup) continue;
+          const t = (x.createdAt || "");
+          if(t.localeCompare(pivotTime) >= 0){
+            x.groupId = newGroupId;
+          }
+        }
+        m.chainStart = true;
+
+        state.ui.createGroupId = newGroupId;
+        state.ui.createCategory = m.category || (currentCategories()[0]?.name || "default");
+        state.ui.createColorOverride = (m.colorOverride || "").trim();
+        if(state.ui.createColorOverride) state.ui.activePaintColor = state.ui.createColorOverride;
+        state.ui.insertAfterMarkerId = "";
+
+        refreshHints();
+        applyAllChainsInGroup(newGroupId);
+        rebuildLinks();
+        saveState();
+        draw();
+        alert("현재 페이지에서 새 체인(새 1번)으로 분리되었습니다.");
+      });
+
+      continueNumberingFromHereBtn.addEventListener("click", () => {
+        if(!state.ui.admin) return;
+        const m = currentMarkers().find(x => x.id === modalMarkerId);
+        if(!m) return;
+
+        state.ui.createGroupId = Number(m.groupId || 0);
+        state.ui.createCategory = (m.category || "").trim() || (currentCategories()[0]?.name || "default");
+        state.ui.createColorOverride = (m.colorOverride || "").trim();
+        if(state.ui.createColorOverride) state.ui.activePaintColor = state.ui.createColorOverride;
+        state.ui.insertAfterMarkerId = m.id;
+
+        refreshHints();
+        saveState();
+        draw();
+        alert("설정 완료: 이제 우클릭으로 마커를 추가하면 선택한 마커 '뒤'에 번호가 이어지도록 삽입됩니다.");
+      });
+
+      saveMarkerBtn.addEventListener("click", () => {
+        if(!state.ui.admin) return;
+        const m = currentMarkers().find(x => x.id === modalMarkerId);
+        if(!m) return;
+
+        m.title = (modalTitle.value || "").trim();
+        m.youtubeUrl = (modalYoutubeUrl.value || "").trim();
+        m.youtubeLabel = (modalYoutubeLabel.value || "").trim();
+        m.memo = (modalMemo.value || "");
+
+        const chain = findChainByMarkerId(m.id);
+        const target = chain ? (currentMarkers().find(x => x.id === chain.masterId) || m) : m;
+
+        target.category = (modalCategory.value || "").trim() || (currentCategories()[0]?.name || "default");
+
+        if(modalUseCategoryColor.checked){
+          target.colorOverride = "";
+        }else{
+          const c = (modalColor.value || "").trim();
+          target.colorOverride = (c && /^#([0-9a-fA-F]{6})$/.test(c)) ? c : "";
+        }
+
+        const radiusPx = clamp(Number(modalRadius.value || DEFAULT_MARKER_RADIUS_PX), 6, 30);
+        target.radiusPx = radiusPx;
+        target.labelSizePx = clamp(calcLabelSizeFromRadius(radiusPx), 10, 48);
+        target.labelWeight = Number(modalFontWeight.value || DEFAULT_LABEL_WEIGHT);
+
+        const lc = (modalFontColor.value || "").trim();
+        target.labelColor = (lc && /^#([0-9a-fA-F]{6})$/.test(lc)) ? lc : DEFAULT_LABEL_COLOR;
+
+        if(chain) applyChainMasterStyleByChain(chain);
+        else applyAllChainsInGroup(Number(m.groupId||0));
+
+        saveState();
+        renderSelectedPanel();
+        rebuildPageList();
+        draw();
+        closeMarkerModal();
+      });
+
+      deleteMarkerBtn.addEventListener("click", () => {
+        if(!state.ui.admin) return;
+        const id = modalMarkerId;
+        const m = currentMarkers().find(x => x.id === id);
+        if(!m) return;
+        if(!confirm("이 마커를 삭제할까요?")) return;
+
+        const gid = Number(m.groupId||0);
+        const page = getCurrentPage();
+
+        page.markers = page.markers.filter(x => x.id !== id);
+        page.links = page.links.filter(l => l.fromId !== id && l.toId !== id);
+
+        state.ui.dimmedMarkerIds = (state.ui.dimmedMarkerIds || []).filter(x => x !== id);
+        if(state.ui.lastCreatedMarkerId === id) state.ui.lastCreatedMarkerId = "";
+        if(state.ui.selectedMarkerId === id) state.ui.selectedMarkerId = "";
+        if(state.ui.insertAfterMarkerId === id) state.ui.insertAfterMarkerId = "";
+
+        applyAllChainsInGroup(gid);
+        rebuildLinks();
+
+        saveState();
+        renderSelectedPanel();
+        rebuildPageList();
+        draw();
+        closeMarkerModal();
+      });
 
       // ==========================================================
-      // Category Modal (유저에서는 열리지 않지만 구조 유지)
+      // Category Modal (game-local)
       // ==========================================================
-      editCategoriesBtn.addEventListener("click", () => { /* user: no-op */ });
+      editCategoriesBtn.addEventListener("click", () => openCatModal());
 
-      function openCatModal(){}
-
+      function openCatModal(){
+        buildCatEditorRows(structuredClone(currentCategories()));
+        buildCatPalette();
+        activeCatRowEl = null;
+        catPaletteHint.textContent = "카테고리 행을 먼저 클릭해서 선택하세요.";
+        catModalBackdrop.style.display = "flex";
+        catModalBackdrop.setAttribute("aria-hidden","false");
+      }
       function closeCatModal(){
         catModalBackdrop.style.display = "none";
         catModalBackdrop.setAttribute("aria-hidden","true");
       }
-
       closeCatModalBtn.addEventListener("click", closeCatModal);
-      catModalBackdrop.addEventListener("click", (e) => { if(e.target === catModalBackdrop) closeCatModal(); });
+      catModalBackdrop.addEventListener("click", (e) => {
+        if(e.target === catModalBackdrop) closeCatModal();
+      });
 
-      function buildCatPalette(){}
-      function buildCatEditorRows(list){}
-      function makeCatRow(name, color){}
+      function buildCatPalette(){
+        catPaletteBar.innerHTML = "";
+        for(const p of PALETTE){
+          const wrap = document.createElement("div");
+          wrap.className = "swatch";
+          const btn = document.createElement("button");
+          btn.title = `${p.label} (${p.color})`;
+          btn.style.background = p.color;
+          btn.addEventListener("click", () => {
+            if(!activeCatRowEl){
+              catPaletteHint.textContent = "먼저 카테고리 행을 클릭해서 선택하세요.";
+              return;
+            }
+            const colorInput = activeCatRowEl.querySelector('input[type="color"]');
+            if(colorInput){
+              colorInput.value = p.color;
+              catPaletteHint.textContent = `선택된 카테고리 색상이 ${p.color} 로 변경됨`;
+            }
+          });
+          wrap.appendChild(btn);
 
-      addCategoryRowBtn.addEventListener("click", () => {});
-      resetCategoriesBtn.addEventListener("click", () => {});
-      saveCatListBtn.addEventListener("click", () => {});
+          const lab = document.createElement("div");
+          lab.className = "swatchLabel";
+          lab.textContent = p.label;
+
+          const container = document.createElement("div");
+          container.className = "swatchWrap";
+          container.appendChild(wrap);
+          container.appendChild(lab);
+
+          catPaletteBar.appendChild(container);
+        }
+      }
+
+      function buildCatEditorRows(list){
+        catEditorList.innerHTML = "";
+        for(const item of list){
+          catEditorList.appendChild(makeCatRow(item.name, item.color));
+        }
+        if(!list.length){
+          catEditorList.appendChild(makeCatRow("", "#e6edf3"));
+        }
+      }
+
+      function makeCatRow(name, color){
+        const row = document.createElement("div");
+        row.className = "catRow";
+        row.style.display = "grid";
+        row.style.gridTemplateColumns = "1fr 60px 110px";
+        row.style.gap = "8px";
+        row.style.alignItems = "center";
+        row.style.border = "1px solid rgba(39,52,74,.95)";
+        row.style.borderRadius = "18px";
+        row.style.padding = "10px";
+        row.style.background = "rgba(8,12,20,.55)";
+        row.style.boxShadow = "0 10px 22px rgba(0,0,0,.18)";
+
+        const nameInput = document.createElement("input");
+        nameInput.type = "text";
+        nameInput.placeholder = "카테고리명 (예: boss)";
+        nameInput.value = name || "";
+
+        const colorInput = document.createElement("input");
+        colorInput.type = "color";
+        colorInput.value = (color && /^#([0-9a-fA-F]{6})$/.test(color)) ? color : "#e6edf3";
+
+        const delBtn = document.createElement("button");
+        delBtn.className = "smallBtn danger";
+        delBtn.textContent = "삭제";
+        delBtn.addEventListener("click", () => {
+          if(activeCatRowEl === row){
+            activeCatRowEl = null;
+            catPaletteHint.textContent = "카테고리 행을 먼저 클릭해서 선택하세요.";
+          }
+          row.remove();
+        });
+
+        row.appendChild(nameInput);
+        row.appendChild(colorInput);
+        row.appendChild(delBtn);
+
+        row.addEventListener("click", () => {
+          [...catEditorList.querySelectorAll(".catRow")].forEach(r => r.style.outline = "none");
+          row.style.outline = "2px solid rgba(124,196,255,.85)";
+          row.style.outlineOffset = "2px";
+          activeCatRowEl = row;
+          catPaletteHint.textContent = "이제 위 빠른 색상을 눌러 선택된 행의 색을 바꿀 수 있어요.";
+        });
+
+        return row;
+      }
+
+      addCategoryRowBtn.addEventListener("click", () => {
+        catEditorList.appendChild(makeCatRow("", "#e6edf3"));
+      });
+
+      resetCategoriesBtn.addEventListener("click", () => {
+        if(!confirm("기본 카테고리/색상으로 되돌릴까요?")) return;
+        buildCatEditorRows(structuredClone(DEFAULT_CATEGORIES));
+        activeCatRowEl = null;
+        catPaletteHint.textContent = "카테고리 행을 먼저 클릭해서 선택하세요.";
+      });
+
+      saveCatListBtn.addEventListener("click", () => {
+        if(!state.ui.admin) return;
+
+        const rows = [...catEditorList.querySelectorAll(".catRow")];
+        const next = [];
+        for(const r of rows){
+          const name = (r.querySelector('input[type="text"]').value || "").trim();
+          const color = (r.querySelector('input[type="color"]').value || "").trim();
+          next.push({ name, color });
+        }
+        const cleaned = uniqByName(next);
+        if(cleaned.length === 0) return;
+
+        const g = getCurrentGame();
+        g.categories = cleaned;
+
+        if(state.ui.selectedCategory && !g.categories.some(c => c.name === state.ui.selectedCategory)){
+          state.ui.selectedCategory = "";
+        }
+
+        const validSet = new Set(g.categories.map(c => c.name));
+        const fallbackCat = g.categories[0]?.name || "default";
+        for(const m of currentMarkers()){
+          if(!validSet.has(m.category)) m.category = fallbackCat;
+        }
+
+        normalizeAllChainsCurrentPage();
+        saveState();
+        rebuildCategoryBar();
+        renderSelectedPanel();
+        draw();
+        closeCatModal();
+      });
 
       // ==========================================================
-      // Admin hints (유저에서도 표시값 유지)
+      // Admin hints
       // ==========================================================
       function refreshHints(){
         createCategoryHint.textContent = state.ui.createCategory || "-";
+
         const id = (state.ui.insertAfterMarkerId || "").trim();
         if(!id){
           insertAfterHint.textContent = "없음";
@@ -1830,33 +2405,165 @@
           saveState();
           return;
         }
-        insertAfterHint.textContent = `${(m.title||"").trim() || "(이름 없음)"}`;
+        const chain = findChainByMarkerId(m.id);
+        const chainNo = chain ? (chain.chainIndex + 1) : 1;
+        insertAfterHint.textContent = `${(m.title||"").trim() || "(이름 없음)"} / chain ${chainNo}`;
+      }
+
+      // ==========================================================
+      // Create markers (admin, page-local)
+      // ==========================================================
+      function getDefaultCreateColorOverride(){
+        const a = (state.ui.createColorOverride || "").trim();
+        if(a) return a;
+        const b = (state.ui.activePaintColor || "").trim();
+        if(b) return b;
+        return "";
+      }
+
+      function computeCreatedAtForInsertion(groupId, insertAfterMarkerId){
+        const afterId = (insertAfterMarkerId || "").trim();
+        if(!afterId) return nowISO();
+
+        const after = currentMarkers().find(x => x.id === afterId);
+        if(!after) return nowISO();
+        if(Number(after.groupId||0) !== Number(groupId||0)) return nowISO();
+
+        const list = currentMarkers()
+          .filter(x => Number(x.groupId||0) === Number(groupId||0))
+          .sort((a,b) => (a.createdAt||"").localeCompare(b.createdAt||""));
+
+        const idx = list.findIndex(x => x.id === afterId);
+        if(idx < 0) return nowISO();
+
+        const afterMs = msFromIso(after.createdAt || nowISO());
+        const next = list[idx+1] || null;
+        if(!next) return nowISO();
+
+        const nextMs = msFromIso(next.createdAt || nowISO());
+        if(nextMs - afterMs >= 2) return isoFromMs(afterMs + 1);
+
+        for(let k=idx+1; k<list.length; k++){
+          const mk = list[k];
+          const t = msFromIso(mk.createdAt || nowISO());
+          mk.createdAt = isoFromMs(t + 1);
+        }
+        return isoFromMs(afterMs + 1);
+      }
+
+      function getChainMasterForCreate(groupId){
+        const gid = Number(groupId||0);
+
+        const afterId = (state.ui.insertAfterMarkerId || "").trim();
+        if(afterId){
+          const ch = findChainByMarkerId(afterId);
+          if(ch){
+            const master = currentMarkers().find(x => x.id === ch.masterId);
+            if(master) return { chain: ch, master };
+          }
+        }
+
+        const lastId = (state.ui.lastCreatedMarkerId || "").trim();
+        if(lastId){
+          const last = currentMarkers().find(x => x.id === lastId);
+          if(last && Number(last.groupId||0) === gid){
+            const ch = findChainByMarkerId(last.id);
+            if(ch){
+              const master = currentMarkers().find(x => x.id === ch.masterId);
+              if(master) return { chain: ch, master };
+            }
+          }
+        }
+
+        const chains = computeChainsForGroup(gid);
+        const first = chains[0] || null;
+        if(first){
+          const master = currentMarkers().find(x => x.id === first.masterId);
+          if(master) return { chain:first, master };
+        }
+        return { chain:null, master:null };
+      }
+
+      function createMarkerAtWorld(wx, wy){
+        if(!state.ui.admin) return;
+
+        const mp = currentMap();
+        const xr = clamp01(wx / mp.width);
+        const yr = clamp01(wy / mp.height);
+
+        ensureCreateDefaults();
+
+        const groupId = Number(state.ui.createGroupId || 0);
+        const createdAt = computeCreatedAtForInsertion(groupId, state.ui.insertAfterMarkerId);
+
+        const { chain, master } = getChainMasterForCreate(groupId);
+
+        const baseCat = (master?.category || "").trim() || (state.ui.createCategory || "").trim() || (currentCategories()[0]?.name || "default");
+        const baseRadius = (typeof master?.radiusPx === "number" ? master.radiusPx : DEFAULT_MARKER_RADIUS_PX);
+        const baseColorOverride = (master?.colorOverride || getDefaultCreateColorOverride()).trim();
+        const baseWeight = (typeof master?.labelWeight === "number" ? master.labelWeight : DEFAULT_LABEL_WEIGHT);
+        const baseLabelColor = (typeof master?.labelColor === "string" ? master.labelColor : DEFAULT_LABEL_COLOR);
+
+        const m = {
+          id: uid(),
+          x: xr, y: yr,
+          category: baseCat,
+          title: "",
+          youtubeUrl: "",
+          youtubeLabel: "",
+          createdAt,
+          colorOverride: baseColorOverride,
+          radiusPx: baseRadius,
+          labelSizePx: calcLabelSizeFromRadius(baseRadius),
+          labelWeight: baseWeight,
+          labelColor: baseLabelColor,
+          groupId,
+          chainStart: false,
+          memo: ""
+        };
+
+        currentMarkers().push(m);
+
+        if((state.ui.insertAfterMarkerId || "").trim()){
+          state.ui.insertAfterMarkerId = m.id;
+          refreshHints();
+        }
+
+        state.ui.lastCreatedMarkerId = m.id;
+        state.ui.selectedMarkerId = m.id;
+
+        applyAllChainsInGroup(groupId);
+        rebuildLinks();
+
+        saveState();
+        renderSelectedPanel();
+        rebuildPageList();
+        draw();
       }
 
       // ==========================================================
       // User: dim reset
       // ==========================================================
       resetDimBtn.addEventListener("click", () => {
+        if(state.ui.admin) return;
         state.ui.dimmedMarkerIds = [];
         saveState();
         draw();
       });
 
       // ==========================================================
-      // Input (pan/zoom/hover/click)
+      // Input (pan/zoom/drag/hover)
       // ==========================================================
       function getPointerPos(evt){
         const rect = canvas.getBoundingClientRect();
         return { x: evt.clientX - rect.left, y: evt.clientY - rect.top };
       }
-
       function worldToMarkerScreen(m){
         const mp = currentMap();
         const wx = m.x * mp.width;
         const wy = m.y * mp.height;
         return worldToScreen(wx, wy);
       }
-
       function findMarkerAtScreen(sx, sy){
         const list = getVisibleMarkers();
         for(let i=list.length-1; i>=0; i--){
@@ -1868,27 +2575,22 @@
         }
         return null;
       }
-
       function getLabelRectScreen(m){
         const p = worldToMarkerScreen(m);
         const radiusPx = (typeof m.radiusPx === "number" ? m.radiusPx : DEFAULT_MARKER_RADIUS_PX);
         const sizePx = (typeof m.labelSizePx === "number" ? m.labelSizePx : calcLabelSizeFromRadius(radiusPx));
         const weight = (typeof m.labelWeight === "number" ? m.labelWeight : DEFAULT_LABEL_WEIGHT);
         const label = getMarkerLabel(m);
-
         ctx.save();
         ctx.font = `${weight} ${sizePx}px system-ui`;
         const w = ctx.measureText(label).width;
         ctx.restore();
-
         const gap = 10;
         const x = p.x + radiusPx + gap;
         const yMid = p.y;
         const h = sizePx * 1.2;
-
         return { x, y: yMid - h/2, w, h };
       }
-
       function findMarkerLabelAtScreen(sx, sy){
         const list = getVisibleMarkers();
         for(let i=list.length-1; i>=0; i--){
@@ -1905,59 +2607,81 @@
         evt.preventDefault();
         const { x:sx, y:sy } = getPointerPos(evt);
         const before = screenToWorld(sx, sy);
-
         const delta = -evt.deltaY;
         const zoomFactor = Math.exp(delta * 0.0015);
-
         view.scale = clamp(view.scale * zoomFactor, view.minScale, view.maxScale);
-
         const after = screenToWorld(sx, sy);
         view.offsetX += (after.x - before.x) * view.scale;
         view.offsetY += (after.y - before.y) * view.scale;
-
         draw();
       }, { passive:false });
 
       let isPanning = false;
       let panStart = { x:0, y:0 };
       let viewStart = { ox:0, oy:0 };
+      let draggingMarkerId = "";
+      let dragOffsetWorld = { x:0, y:0 };
       let didDrag = false;
 
       canvas.addEventListener("mousedown", (evt) => {
         const { x:sx, y:sy } = getPointerPos(evt);
         didDrag = false;
 
-        if(evt.button !== 0) return;
-
-        // 텍스트 클릭 -> 오버레이 고정
-        const labelHit = findMarkerLabelAtScreen(sx, sy);
-        if(labelHit){
-          state.ui.selectedMarkerId = labelHit.id;
-          saveState();
-          renderSelectedPanel();
-          showPinnedOverlayForMarker(labelHit, evt.clientX, evt.clientY);
-          draw();
+        // 우클릭: 관리자 마커 추가
+        if(evt.button === 2){
+          if(state.ui.admin){
+            const w = screenToWorld(sx, sy);
+            createMarkerAtWorld(w.x, w.y);
+          }
           return;
         }
+        if(evt.button !== 0) return;
 
-        // 마커 아이콘 클릭 -> 불투명 토글
+        // 유저모드: 텍스트 클릭 -> 오버레이 고정
+        if(!state.ui.admin){
+          const labelHit = findMarkerLabelAtScreen(sx, sy);
+          if(labelHit){
+            state.ui.selectedMarkerId = labelHit.id;
+            saveState();
+            renderSelectedPanel();
+            showPinnedOverlayForMarker(labelHit, evt.clientX, evt.clientY);
+            draw();
+            return;
+          }
+        }
+
+        // 마커 아이콘 hit?
         const m = findMarkerAtScreen(sx, sy);
         if(m){
           state.ui.selectedMarkerId = m.id;
 
-          const set = new Set(state.ui.dimmedMarkerIds || []);
-          if(set.has(m.id)) set.delete(m.id);
-          else set.add(m.id);
-          state.ui.dimmedMarkerIds = [...set];
+          // 유저모드: 아이콘 클릭 시 "불투명 30%" 토글
+          if(!state.ui.admin){
+            const set = new Set(state.ui.dimmedMarkerIds || []);
+            if(set.has(m.id)) set.delete(m.id);
+            else set.add(m.id);
+            state.ui.dimmedMarkerIds = [...set];
+            saveState();
+            renderSelectedPanel();
+            draw();
+            return;
+          }
 
+          // 관리자모드: 드래그 이동
           saveState();
           renderSelectedPanel();
+          draggingMarkerId = m.id;
+          const w = screenToWorld(sx, sy);
+          const mp = currentMap();
+          const mwx = m.x * mp.width;
+          const mwy = m.y * mp.height;
+          dragOffsetWorld = { x: mwx - w.x, y: mwy - w.y };
           draw();
           return;
         }
 
-        // 빈 곳 클릭하면 pin 해제
-        if(overlayPinned){
+        // 유저모드: 빈 곳 클릭하면 pin 해제
+        if(!state.ui.admin && overlayPinned){
           unpinOverlay();
           draw();
           return;
@@ -1972,10 +2696,29 @@
       canvas.addEventListener("mousemove", (evt) => {
         const { x:sx, y:sy } = getPointerPos(evt);
 
-        if(!overlayPinned){
-          const labelHit = findMarkerLabelAtScreen(sx, sy);
-          if(labelHit) showHoverOverlayForMarker(labelHit, evt.clientX, evt.clientY);
-          else hideHoverOverlay(false);
+        // 유저모드: 텍스트 hover일 때만 오버레이
+        if(!state.ui.admin){
+          if(!overlayPinned){
+            const labelHit = findMarkerLabelAtScreen(sx, sy);
+            if(labelHit) showHoverOverlayForMarker(labelHit, evt.clientX, evt.clientY);
+            else hideHoverOverlay(false);
+          }
+        }
+
+        if(draggingMarkerId && state.ui.admin){
+          const m = currentMarkers().find(x => x.id === draggingMarkerId);
+          if(!m) return;
+          const w = screenToWorld(sx, sy);
+          const mp = currentMap();
+          const mwx = w.x + dragOffsetWorld.x;
+          const mwy = w.y + dragOffsetWorld.y;
+          const nx = clamp01(mwx / mp.width);
+          const ny = clamp01(mwy / mp.height);
+          if(Math.abs(nx - m.x) > 0.0001 || Math.abs(ny - m.y) > 0.0001) didDrag = true;
+          m.x = nx;
+          m.y = ny;
+          draw();
+          return;
         }
 
         if(isPanning){
@@ -1989,11 +2732,26 @@
       });
 
       window.addEventListener("mouseup", () => {
+        if(draggingMarkerId){
+          saveState();
+          draggingMarkerId = "";
+          renderSelectedPanel();
+          rebuildPageList();
+          draw();
+        }
         isPanning = false;
       });
 
+      canvas.addEventListener("dblclick", (evt) => {
+        if(!state.ui.admin) return;
+        if(didDrag) return;
+        const { x:sx, y:sy } = getPointerPos(evt);
+        const m = findMarkerAtScreen(sx, sy);
+        if(m) openMarkerModal(m.id);
+      });
+
       centerStage.addEventListener("mouseleave", () => {
-        hideHoverOverlay(true);
+        if(!state.ui.admin) hideHoverOverlay(true);
       });
 
       // ==========================================================
@@ -2009,14 +2767,21 @@
         ctx.globalAlpha = 0.10;
         ctx.strokeStyle = "#243447";
         for(let x=0; x<w; x+=40){
-          ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h); ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(x,0);
+          ctx.lineTo(x,h);
+          ctx.stroke();
         }
         for(let y=0; y<h; y+=40){
-          ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(0,y);
+          ctx.lineTo(w,y);
+          ctx.stroke();
         }
         ctx.restore();
       }
 
+      // ✅ [PATCH] 선/화살표가 줌해도 원 마커에 딱 붙게: "보정된 좌표"를 받아서 그림
       function drawArrow(ax, ay, bx, by){
         const dx = bx - ax;
         const dy = by - ay;
@@ -2048,18 +2813,22 @@
         ctx.fill();
       }
 
+      // ✅ [PATCH] 두 점을 "마커 원 테두리" 기준으로 안쪽으로 당겨서 반환
       function shrinkSegmentToCircles(ax, ay, arWorld, bx, by, brWorld){
         const dx = bx - ax;
         const dy = by - ay;
         const len = Math.hypot(dx, dy) || 1;
         const ux = dx / len;
         const uy = dy / len;
+
         const aShrink = Math.min(arWorld, len * 0.49);
         const bShrink = Math.min(brWorld, len * 0.49);
+
         const sx = ax + ux * aShrink;
         const sy = ay + uy * aShrink;
         const ex = bx - ux * bShrink;
         const ey = by - uy * bShrink;
+
         return { sx, sy, ex, ey };
       }
 
@@ -2075,6 +2844,7 @@
               .filter(Boolean)
               .sort((a,b)=> (a.createdAt||"").localeCompare(b.createdAt||""))
               .map(m => m.id);
+
             for(let i=0;i<ids.length;i++) map.set(ids[i], i+1);
           }
         }
@@ -2109,7 +2879,10 @@
           const g = getCurrentGame();
           const p = getCurrentPage();
 
-          const msg = `"${g.name} / ${p.name}" 지도 이미지가 설정되지 않았습니다.\n관리자에서 URL을 설정하면 폰에서도 동일하게 보입니다.`;
+          const msg = IS_ADMIN_PAGE
+            ? `${g.name} / ${p.name}\n지도 이미지를 업로드하거나, URL을 설정하세요 (관리자 모드)`
+            : `${g.name} / ${p.name}\n지도 이미지가 설정되지 않았습니다.\n관리자에서 URL을 설정하면 폰에서도 동일하게 보입니다.`;
+
           const lines = String(msg).split("\n");
           let y = 70/view.scale;
           for(const line of lines){
@@ -2122,16 +2895,16 @@
         const visibleSet = new Set(visible.map(m => m.id));
         countInfo.textContent = `표시 중 마커: ${visible.length} / 페이지 전체: ${currentMarkers().length}`;
 
-        // 링크
+        // links
         ctx.save();
         ctx.strokeStyle = "#ffffff";
         ctx.fillStyle = "#ffffff";
         ctx.globalAlpha = 0.85;
         ctx.lineWidth = 2 / view.scale;
 
+        // ✅ [PATCH] 링크 그릴 때: 마커 반지름(월드좌표)만큼 시작/끝 보정해서 "딱 붙게"
         for(const l of currentLinks()){
           if(!visibleSet.has(l.fromId) || !visibleSet.has(l.toId)) continue;
-
           const a = currentMarkers().find(m => m.id === l.fromId);
           const b = currentMarkers().find(m => m.id === l.toId);
           if(!a || !b) continue;
@@ -2142,72 +2915,66 @@
           const arPx = (typeof a.radiusPx === "number" ? a.radiusPx : DEFAULT_MARKER_RADIUS_PX);
           const brPx = (typeof b.radiusPx === "number" ? b.radiusPx : DEFAULT_MARKER_RADIUS_PX);
 
-          const arWorld = arPx / markerScaleDenom();
-          const brWorld = brPx / markerScaleDenom();
+          const arWorld = arPx / view.scale;
+          const brWorld = brPx / view.scale;
 
           const seg = shrinkSegmentToCircles(ax, ay, arWorld, bx, by, brWorld);
           drawArrow(seg.sx, seg.sy, seg.ex, seg.ey);
         }
         ctx.restore();
 
-        // 마커/라벨
         const dimSet = new Set(state.ui.dimmedMarkerIds || []);
 
         for(const m of visible){
           const wx = m.x * mp.width;
           const wy = m.y * mp.height;
-
           const isSelected = (state.ui.selectedMarkerId === m.id);
           const color = getMarkerColor(m);
 
           const radiusPx = (typeof m.radiusPx === "number" ? m.radiusPx : DEFAULT_MARKER_RADIUS_PX);
-          const denom = markerScaleDenom();
-          const r = radiusPx / denom;
+          const r = radiusPx / view.scale;
 
           ctx.save();
           ctx.translate(wx, wy);
 
-          const dimIcon = dimSet.has(m.id);
+          const dimIcon = (!state.ui.admin && dimSet.has(m.id));
           const iconAlpha = dimIcon ? 0.30 : 1.0;
 
-          // 원 + 테두리 + 번호
+          // icon circle
           ctx.save();
           ctx.globalAlpha = iconAlpha;
-
           ctx.beginPath();
           ctx.fillStyle = color;
           ctx.arc(0,0,r,0,Math.PI*2);
           ctx.fill();
-
-          ctx.lineWidth = (isSelected ? 4 : 2) / denom;
+          ctx.lineWidth = (isSelected ? 4 : 2) / view.scale;
           ctx.strokeStyle = isSelected ? "#ffd43b" : "#0b0f14";
           ctx.stroke();
 
+          // number
           const num = numMap.get(m.id);
           if(num != null){
             ctx.save();
             ctx.fillStyle = "#000000";
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
-            const fs = Math.max((radiusPx * 0.95) / denom, 9 / denom);
+            const fs = Math.max((radiusPx * 0.95) / view.scale, 9 / view.scale);
             ctx.font = `900 ${fs}px system-ui`;
             ctx.fillText(String(num), 0, 0);
             ctx.restore();
           }
-
           ctx.restore();
 
-          // 라벨 텍스트
+          // label
           const sizePx = (typeof m.labelSizePx === "number" ? m.labelSizePx : calcLabelSizeFromRadius(radiusPx));
           const weight = (typeof m.labelWeight === "number" ? m.labelWeight : DEFAULT_LABEL_WEIGHT);
-
           const lcolor = (typeof m.labelColor === "string" && /^#([0-9a-fA-F]{6})$/.test(m.labelColor)) ? m.labelColor : DEFAULT_LABEL_COLOR;
+
           ctx.fillStyle = lcolor;
-          ctx.font = `${weight} ${sizePx / denom}px system-ui`;
+          ctx.font = `${weight} ${sizePx / view.scale}px system-ui`;
           ctx.textBaseline = "middle";
           ctx.textAlign = "left";
-
-          const gap = 10 / denom;
+          const gap = 10 / view.scale;
           ctx.fillText(getMarkerLabel(m), r + gap, 0);
 
           ctx.restore();
@@ -2223,7 +2990,6 @@
         const g = getCurrentGame();
         gameTitleText.textContent = g.name || "Map Demo";
       }
-
       function refreshAll(){
         refreshHeaderTitle();
         rebuildGameDrop();
@@ -2241,10 +3007,11 @@
       function ensureSampleMarkersOnce(){
         const p = getCurrentPage();
         if(p.markers.length > 0) return;
-
         p.markers = [
           {
-            id: uid(), x:0.35, y:0.42, category:"boss",
+            id: uid(),
+            x:0.35, y:0.42,
+            category:"boss",
             title:"보스",
             youtubeUrl:"https://www.youtube.com/watch?v=dQw4w9WgXcQ",
             youtubeLabel:"보스 영상",
@@ -2259,7 +3026,9 @@
             memo: ""
           },
           {
-            id: uid(), x:0.58, y:0.55, category:"boss",
+            id: uid(),
+            x:0.58, y:0.55,
+            category:"boss",
             title:"채집",
             youtubeUrl:"",
             youtubeLabel:"",
@@ -2274,7 +3043,9 @@
             memo: ""
           },
           {
-            id: uid(), x:0.22, y:0.63, category:"boss",
+            id: uid(),
+            x:0.22, y:0.63,
+            category:"boss",
             title:"퀘스트",
             youtubeUrl:"",
             youtubeLabel:"",
@@ -2289,7 +3060,6 @@
             memo: ""
           },
         ];
-
         normalizeAllChainsCurrentPage();
         rebuildLinks();
         saveState();
@@ -2324,13 +3094,69 @@
         rebuildLinks();
         saveState();
 
-        setAdminMode(false); // 강제 USER
-
         refreshAll();
         resizeCanvas();
         resetView();
         loadMapImageForCurrentPage();
         draw();
+      }
+
+      // ==========================================================
+      // Extra: click blank area to unpin overlay (user)
+      // ==========================================================
+      canvas.addEventListener("mousedown", (evt) => {
+        if(state.ui.admin) return;
+        if(evt.button !== 0) return;
+        const { x:sx, y:sy } = getPointerPos(evt);
+        const labelHit = findMarkerLabelAtScreen(sx, sy);
+        const iconHit = findMarkerAtScreen(sx, sy);
+        if(labelHit || iconHit) return;
+        if(overlayPinned) unpinOverlay();
+      });
+
+      // ==========================================================
+      // Admin auth wiring
+      // ==========================================================
+      function unlockAdmin(){
+        setAuthed();
+        showLock(false);
+        adminToggleWrap.style.display = "";
+        adminToggle.checked = true;
+        setAdminMode(true);
+      }
+      function lockAdmin(){
+        showLock(true);
+        adminToggle.checked = false;
+        setAdminMode(false);
+      }
+
+      if(IS_ADMIN_PAGE){
+        if(!isAuthed()){
+          lockAdmin();
+        }else{
+          showLock(false);
+          adminToggle.checked = true;
+          setAdminMode(true);
+        }
+
+        $unlock.addEventListener("click", () => {
+          if(($pw.value || "") === ADMIN_PASSWORD) unlockAdmin();
+          else {
+            $msg.textContent = "비밀번호가 올바르지 않습니다.";
+            $pw.select();
+          }
+        });
+
+        $pw.addEventListener("keydown", (e) => {
+          if(e.key === "Enter") $unlock.click();
+        });
+
+        $logout.addEventListener("click", () => {
+          clearAuthed();
+          location.reload();
+        });
+      }else{
+        setAdminMode(false);
       }
 
       init();
