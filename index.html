@@ -1186,52 +1186,75 @@ if (typeof structuredClone !== "function") {
     return `mapimg_${g.id}_${p.id}`;
   }
 
-  async function loadMapImageForCurrentPage(){
-    mapImgReady = false;
-    if(mapObjectUrl){
-      URL.revokeObjectURL(mapObjectUrl);
-      mapObjectUrl = null;
-    }
-
-    const key = currentMapImageKey();
-
-    const blob = await idbGet(key).catch(()=>null);
-    if(blob){
-      mapObjectUrl = URL.createObjectURL(blob);
-      mapImg.onload = () => {
-        mapImgReady = true;
-        const mp = currentMap();
-        mp.width = mapImg.naturalWidth || mapImg.width;
-        mp.height = mapImg.naturalHeight || mapImg.height;
-        saveState();
-        resetView();
-        draw();
-      };
-      mapImg.onerror = () => { mapImgReady = false; draw(); };
-      mapImg.src = mapObjectUrl;
-      return;
-    }
-
-    const mp = currentMap();
-    const url = (mp.imageUrl || "").trim();
-    if(url && isValidUrl(url)){
-      const abs = new URL(url, location.href).toString();
-      mapImg.onload = () => {
-        mapImgReady = true;
-        mp.width = mapImg.naturalWidth || mapImg.width;
-        mp.height = mapImg.naturalHeight || mapImg.height;
-        saveState();
-        resetView();
-        draw();
-      };
-      mapImg.onerror = () => { mapImgReady = false; draw(); };
-      mapImg.src = abs + (abs.includes("?") ? "&" : "?") + "v=" + Date.now();
-      return;
-    }
-
-    mapImgReady = false;
-    draw();
+async function loadMapImageForCurrentPage(){
+  mapImgReady = false;
+  if(mapObjectUrl){
+    URL.revokeObjectURL(mapObjectUrl);
+    mapObjectUrl = null;
   }
+
+  const mp = currentMap();
+
+  // ✅ 1) URL 먼저 (공유/모바일 우선)
+  const url = (mp.imageUrl || "").trim();
+  if(url && isValidUrl(url)){
+    const abs = new URL(url, location.href).toString();
+    mapImg.onload = () => {
+      mapImgReady = true;
+      mp.width = mapImg.naturalWidth || mapImg.width;
+      mp.height = mapImg.naturalHeight || mapImg.height;
+      saveState();
+      resetView();
+      draw();
+    };
+    mapImg.onerror = async () => {
+      // ✅ 2) URL 실패 시에만 IDB fallback
+      const key = currentMapImageKey();
+      const blob = await idbGet(key).catch(()=>null);
+      if(blob){
+        mapObjectUrl = URL.createObjectURL(blob);
+        mapImg.onload = () => {
+          mapImgReady = true;
+          mp.width = mapImg.naturalWidth || mapImg.width;
+          mp.height = mapImg.naturalHeight || mapImg.height;
+          saveState();
+          resetView();
+          draw();
+        };
+        mapImg.onerror = () => { mapImgReady = false; draw(); };
+        mapImg.src = mapObjectUrl;
+        return;
+      }
+      mapImgReady = false;
+      draw();
+    };
+    // 캐시 버스트
+    mapImg.src = abs + (abs.includes("?") ? "&" : "?") + "v=" + Date.now();
+    return;
+  }
+
+  // ✅ URL이 없으면 IDB 사용
+  const key = currentMapImageKey();
+  const blob = await idbGet(key).catch(()=>null);
+  if(blob){
+    mapObjectUrl = URL.createObjectURL(blob);
+    mapImg.onload = () => {
+      mapImgReady = true;
+      mp.width = mapImg.naturalWidth || mapImg.width;
+      mp.height = mapImg.naturalHeight || mapImg.height;
+      saveState();
+      resetView();
+      draw();
+    };
+    mapImg.onerror = () => { mapImgReady = false; draw(); };
+    mapImg.src = mapObjectUrl;
+    return;
+  }
+
+  mapImgReady = false;
+  draw();
+}
+
 
   // ==========================================================
   // View
@@ -2130,3 +2153,4 @@ if (typeof structuredClone !== "function") {
 </script>
 </body>
 </html>
+
