@@ -177,7 +177,6 @@
       box-shadow: 0 10px 22px rgba(0,0,0,.18);
     }
 
-    /* Hover overlay (user mode) */
     #hoverOverlay{
       position:absolute;
       display:none;
@@ -213,7 +212,6 @@
     #hoverOverlay .yt a{ color: rgba(231,238,248,.95); text-decoration:none; }
     #hoverOverlay .yt a:hover{ text-decoration: underline; }
 
-    /* Modals */
     .modalBackdrop{
       position:fixed; inset:0;
       background:rgba(0,0,0,.55);
@@ -306,14 +304,12 @@
     .rangeRow input[type="range"]{ flex:1; }
     .rangeRow input[type="number"]{ width:86px; }
 
-    /* Reset button (shape baseline) */
     .resetDanger{
       border: 2px solid rgba(255,93,93,.92) !important;
       background: rgba(26,10,12,.45) !important;
       box-shadow: 0 0 0 4px rgba(255,93,93,.10);
     }
 
-    /* Page buttons: keep same size/shape as resetDanger, but different colors */
     .pageBtn{
       width:100%;
       padding:12px 12px;
@@ -342,12 +338,6 @@
       overflow:hidden;
       text-overflow:ellipsis;
     }
-    .pageBtn .meta{
-      font-size:12px;
-      color: var(--muted);
-      white-space:nowrap;
-      flex:0 0 auto;
-    }
     .pageActions{
       display:flex; gap:6px; flex:0 0 auto;
     }
@@ -361,7 +351,6 @@
     .iconBtn:hover{ border-color: rgba(124,196,255,.55); box-shadow:none; }
     .iconBtn.danger{ border-color: rgba(255,93,93,.55) !important; }
 
-    /* Title dropdown */
     .titleWrap{ position:relative; }
     .titleBtn{
       display:flex; align-items:center; gap:10px;
@@ -416,7 +405,6 @@
 
 <body>
 <header>
-  <!-- ✅ MAP DEMO = 게임 이름 자리 + 클릭 시 드롭다운 (항상 표시) -->
   <div class="titleWrap" id="titleWrap">
     <div class="titleBtn" id="gameTitleBtn" title="클릭해서 게임 목록/추가">
       <span id="gameTitleText">Map Demo</span>
@@ -425,14 +413,12 @@
     <div class="drop" id="gameDrop"></div>
   </div>
 
-  <!-- ✅ 관리자 모드 토글(인덱스에서는 JS에서 숨김 처리됨) -->
   <span class="pill" id="adminToggleWrap">
     <span class="badge" id="modeBadge">USER</span>
     <label class="muted" style="margin:0;">관리자</label>
     <input id="adminToggle" type="checkbox" />
   </span>
 
-  <!-- ✅ 상단 메뉴: 관리자 모드에서만 -->
   <button id="uploadBtn" class="adminOnly">지도 업로드</button>
   <button id="resetViewBtn" class="adminOnly">뷰 리셋</button>
   <button id="clearAllBtn" class="danger adminOnly">전체 초기화</button>
@@ -440,7 +426,6 @@
 </header>
 
 <div class="wrap">
-  <!-- ✅ 좌측: 페이지 -->
   <aside class="panel left">
     <div class="section">
       <h3>
@@ -448,12 +433,10 @@
         <span class="badge" id="pageBadge" style="margin-left:auto;">-</span>
       </h3>
 
-      <!-- 관리자 모드에서만 보이는 +페이지추가 -->
       <button id="addPageBtn" class="pageBtn adminOnly" style="justify-content:center;">
         <span class="name">+ 페이지 추가</span>
       </button>
 
-      <!-- ✅ [PATCH] 안내 문구는 관리자에서만 보이게 -->
       <div class="muted adminOnly" style="margin:10px 0 8px; line-height:1.4;">
         • 페이지 버튼 클릭 → 같은 게임 안에서 지도 페이지 이동<br/>
         • <b>폰/다른 기기</b>에서도 지도 보이게 하려면: 관리자에서 <b>URL</b> 버튼으로 지도 이미지 URL 설정
@@ -466,7 +449,6 @@
   <div class="center" id="centerStage">
     <canvas id="canvas"></canvas>
 
-    <!-- 유저모드: 텍스트에 hover/click 했을 때만 표시 -->
     <div id="hoverOverlay">
       <div class="memoLabel">메모</div>
       <textarea id="hoverMemo" cols="10" rows="3" placeholder="" readonly></textarea>
@@ -474,7 +456,6 @@
     </div>
   </div>
 
-  <!-- ✅ 우측 -->
   <aside class="panel right">
     <div class="section" id="categorySection">
       <h3>카테고리</h3>
@@ -515,7 +496,6 @@
       </div>
     </div>
 
-    <!-- 유저모드: 마커 초기화 -->
     <div class="section" id="userResetSection">
       <button id="resetDimBtn" class="smallBtn resetDanger" style="width:100%;">마커 초기화</button>
     </div>
@@ -529,7 +509,6 @@
   </aside>
 </div>
 
-<!-- Marker Edit Modal (인덱스에선 관리자모드가 없으니 사실상 사용되지 않지만, 코드 유지) -->
 <div class="modalBackdrop" id="markerModalBackdrop" aria-hidden="true">
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="markerModalTitle">
     <div class="modalHeader">
@@ -655,7 +634,6 @@
   </div>
 </div>
 
-<!-- Category Edit Modal (인덱스에선 관리자모드가 없으니 사실상 사용되지 않지만, 코드 유지) -->
 <div class="modalBackdrop" id="catModalBackdrop" aria-hidden="true">
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="catModalTitle">
     <div class="modalHeader">
@@ -687,7 +665,6 @@
   </div>
 </div>
 
-<!-- ✅ iOS 폴리필: structuredClone 없으면 흰 화면 방지 -->
 <script>
 if (typeof structuredClone !== "function") {
   window.structuredClone = (obj) => JSON.parse(JSON.stringify(obj));
@@ -697,10 +674,16 @@ if (typeof structuredClone !== "function") {
 <script>
 (() => {
   // ==========================================================
-  // ✅ INDEX 전용: 무조건 유저 페이지로 동작 (어드민 로직/인증 제거)
+  // ✅ INDEX 전용 (USER 고정)
   // ==========================================================
   const IS_ADMIN_PAGE = false;
   const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+  // ==========================================================
+  // ✅ Remote state.json (GitHub Pages 동기화)
+  // ==========================================================
+  const REMOTE_STATE_FILE = "state.json"; // 저장소 루트에 state.json 올려두면 OK
+  const REMOTE_POLL_MS = 3000;
 
   // ==========================================================
   // Storage / DB
@@ -753,33 +736,28 @@ if (typeof structuredClone !== "function") {
   // ==========================================================
   const nowISO = () => new Date().toISOString();
   const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
-  const clamp01 = v => clamp(v,0,1);
   const uid = () => Math.random().toString(36).slice(2, 10) + "-" + Date.now().toString(36);
 
   function safeParse(json, fallback){
     try { return JSON.parse(json); } catch { return fallback; }
   }
+
+  // ✅ localStorage 저장 시 "갱신 시간"도 같이 찍어둠
   function saveState(){
-    try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch(e){ console.warn(e); }
+    try{
+      state._updatedAt = Date.now();
+      state._updatedAtISO = new Date().toISOString();
+      localStorage.setItem(LS_KEY, JSON.stringify(state));
+    } catch(e){
+      console.warn(e);
+    }
   }
+
   function escapeHtml(s){
     return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
   function isValidUrl(url){
     try { new URL(url, location.href); return true; } catch { return false; }
-  }
-  function uniqByName(list){
-    const seen = new Set();
-    const out = [];
-    for(const item of list){
-      const n = (item.name||"").trim();
-      if(!n) continue;
-      const key = n.toLowerCase();
-      if(seen.has(key)) continue;
-      seen.add(key);
-      out.push({ name:n, color: item.color || "#ffffff" });
-    }
-    return out;
   }
   function msFromIso(iso){ const t = Date.parse(iso); return Number.isFinite(t) ? t : Date.now(); }
   function isoFromMs(ms){ return new Date(ms).toISOString(); }
@@ -813,6 +791,8 @@ if (typeof structuredClone !== "function") {
   // Data Model
   // ==========================================================
   const defaultState = {
+    _updatedAt: 0,
+    _updatedAtISO: "",
     ui: {
       admin:false,
       selectedCategory:"",
@@ -845,11 +825,69 @@ if (typeof structuredClone !== "function") {
     ]
   };
 
-  // Load or init
+  // Load or init (local first)
   const loaded = safeParse(localStorage.getItem(LS_KEY) || "", null);
   let state = (loaded && loaded.games && Array.isArray(loaded.games)) ? loaded : structuredClone(defaultState);
 
-  // Normalize
+  // ==========================================================
+  // ✅ Remote sync helpers (state.json)
+  // ==========================================================
+  function isValidStateShape(s){
+    return !!(s && s.games && Array.isArray(s.games));
+  }
+
+  async function fetchRemoteState(){
+    const url = new URL(REMOTE_STATE_FILE, location.href).toString() + "?v=" + Date.now();
+    const res = await fetch(url, { cache: "no-store" });
+    if(!res.ok) return null;
+    const txt = await res.text();
+    const json = safeParse(txt, null);
+    if(!isValidStateShape(json)) return null;
+    return json;
+  }
+
+  // remote 적용: UI 일부는 유저 기기 상태를 유지
+  function applyRemoteState(remote){
+    const prevUI = state?.ui ? structuredClone(state.ui) : structuredClone(defaultState.ui);
+
+    state = remote;
+
+    if(!state.ui) state.ui = structuredClone(defaultState.ui);
+
+    // ✅ index는 USER 고정 + 유저별 UI는 유지
+    state.ui.admin = false;
+    state.ui.dimmedMarkerIds = Array.isArray(prevUI.dimmedMarkerIds) ? prevUI.dimmedMarkerIds : [];
+    state.ui.selectedMarkerId = "";
+    state.ui.selectedCategory = prevUI.selectedCategory || "";
+
+    saveState();
+  }
+
+  let _lastRemoteSig = ""; // JSON 문자열 서명(업데이트 판단)
+
+  async function syncFromRemoteIfChanged(){
+    const remote = await fetchRemoteState();
+    if(!remote) return false;
+
+    const sig = String(remote._updatedAt || "") + "|" + JSON.stringify(remote.games)?.length;
+    // _updatedAt이 없을 수도 있으니 length도 섞음(간단 변경 감지)
+    if(sig && sig === _lastRemoteSig) return false;
+
+    _lastRemoteSig = sig;
+    applyRemoteState(remote);
+
+    // 화면 갱신
+    refreshAll();
+    resizeCanvas();
+    resetView();
+    await loadMapImageForCurrentPage();
+    draw();
+    return true;
+  }
+
+  // ==========================================================
+  // Normalize (기존 로직 유지)
+  // ==========================================================
   if(!state.ui) state.ui = structuredClone(defaultState.ui);
   if(!Array.isArray(state.ui.dimmedMarkerIds)) state.ui.dimmedMarkerIds = [];
   if(!Array.isArray(state.games) || state.games.length === 0){
@@ -874,37 +912,6 @@ if (typeof structuredClone !== "function") {
       if(!Array.isArray(p.links)) p.links = [];
     }
   }
-// ✅ [SYNC] localStorage에 저장된 최신 저장시간 읽기
-function getSavedUpdatedAt(){
-  try{
-    const json = localStorage.getItem(LS_KEY);
-    if(!json) return 0;
-    const s = JSON.parse(json);
-    return Number(s?._updatedAt || 0);
-  }catch(e){
-    return 0;
-  }
-}
-
-// ✅ [SYNC] 저장된 state를 다시 읽어서 화면에 반영
-function applyLatestStateFromStorage(){
-  try{
-    const json = localStorage.getItem(LS_KEY);
-    if(!json) return false;
-    const next = safeParse(json, null);
-    if(!next) return false;
-
-    // state 교체
-    state = next;
-
-    // 다시 그리기
-    try{ buildUI(); }catch(e){}
-    try{ draw(); }catch(e){}
-    return true;
-  }catch(e){
-    return false;
-  }
-}
 
   function getGameById(id){ return state.games.find(g => g.id === id) || null; }
   function getCurrentGame(){
@@ -1051,7 +1058,6 @@ function applyLatestStateFromStorage(){
     for(const g of groups) applyAllChainsInGroup(g);
   }
 
-  // Links rebuild (page-local)
   function rebuildLinks(){
     const markers = currentMarkers();
     const byGroup = new Map();
@@ -1140,49 +1146,22 @@ function applyLatestStateFromStorage(){
 
   const resetDimBtn = document.getElementById("resetDimBtn");
 
-  // game dropdown
   const gameTitleBtn = document.getElementById("gameTitleBtn");
   const gameTitleText = document.getElementById("gameTitleText");
   const gameDrop = document.getElementById("gameDrop");
 
-  // Marker modal
   const markerModalBackdrop = document.getElementById("markerModalBackdrop");
   const closeMarkerModalBtn = document.getElementById("closeMarkerModalBtn");
-  const modalTitle = document.getElementById("modalTitle");
-  const modalCategory = document.getElementById("modalCategory");
-  const modalColor = document.getElementById("modalColor");
-  const modalUseCategoryColor = document.getElementById("modalUseCategoryColor");
-  const modalYoutubeUrl = document.getElementById("modalYoutubeUrl");
-  const modalYoutubeLabel = document.getElementById("modalYoutubeLabel");
-  const modalMemo = document.getElementById("modalMemo");
-  const modalCoord = document.getElementById("modalCoord");
-  const deleteMarkerBtn = document.getElementById("deleteMarkerBtn");
-  const saveMarkerBtn = document.getElementById("saveMarkerBtn");
-  const startNewGroupFromHereBtn = document.getElementById("startNewGroupFromHereBtn");
-  const continueNumberingFromHereBtn = document.getElementById("continueNumberingFromHereBtn");
-
-  // style controls
+  const modalFontColorQuick = document.getElementById("modalFontColorQuick");
   const modalRadiusRange = document.getElementById("modalRadiusRange");
   const modalRadius = document.getElementById("modalRadius");
   const modalFontSizeRange = document.getElementById("modalFontSizeRange");
   const modalFontSize = document.getElementById("modalFontSize");
-  const modalFontWeight = document.getElementById("modalFontWeight");
   const modalFontColor = document.getElementById("modalFontColor");
-  const modalFontColorQuick = document.getElementById("modalFontColorQuick");
   const modalFontColorResetBtn = document.getElementById("modalFontColorResetBtn");
 
-  // category modal
   const catModalBackdrop = document.getElementById("catModalBackdrop");
   const closeCatModalBtn = document.getElementById("closeCatModalBtn");
-  const catPaletteBar = document.getElementById("catPaletteBar");
-  const catPaletteHint = document.getElementById("catPaletteHint");
-  const catEditorList = document.getElementById("catEditorList");
-  const addCategoryRowBtn = document.getElementById("addCategoryRowBtn");
-  const resetCategoriesBtn = document.getElementById("resetCategoriesBtn");
-  const saveCatListBtn = document.getElementById("saveCatListBtn");
-
-  let activeCatRowEl = null;
-  let modalMarkerId = "";
 
   // ==========================================================
   // Admin-only visibility
@@ -1216,7 +1195,6 @@ function applyLatestStateFromStorage(){
 
     const key = currentMapImageKey();
 
-    // 1) IDB first (device-local)
     const blob = await idbGet(key).catch(()=>null);
     if(blob){
       mapObjectUrl = URL.createObjectURL(blob);
@@ -1234,7 +1212,6 @@ function applyLatestStateFromStorage(){
       return;
     }
 
-    // 2) Fallback: public URL (shared across devices)
     const mp = currentMap();
     const url = (mp.imageUrl || "").trim();
     if(url && isValidUrl(url)){
@@ -1252,7 +1229,6 @@ function applyLatestStateFromStorage(){
       return;
     }
 
-    // 3) Nothing
     mapImgReady = false;
     draw();
   }
@@ -1293,7 +1269,7 @@ function applyLatestStateFromStorage(){
   // Mode (INDEX = USER 고정)
   // ==========================================================
   function setAdminMode(on){
-    state.ui.admin = false; // ✅ 인덱스는 항상 USER
+    state.ui.admin = false;
     modeBadge.textContent = "USER";
     modeBadge.className = "badge";
 
@@ -1309,13 +1285,12 @@ function applyLatestStateFromStorage(){
     refreshAll();
   }
 
-  // ✅ 인덱스에서 관리자 토글 숨김 + 강제 USER
   adminToggleWrap.style.display = "none";
   state.ui.admin = false;
   adminToggle.checked = false;
 
   // ==========================================================
-  // Header buttons (admin only visible) - 유지하지만 index에서는 숨김 처리됨
+  // Header buttons (admin only) - 유지
   // ==========================================================
   uploadBtn.addEventListener("click", () => fileInput.click());
   fileInput.addEventListener("change", async (e) => {
@@ -1362,7 +1337,7 @@ function applyLatestStateFromStorage(){
   });
 
   // ==========================================================
-  // Game dropdown (Map Demo 클릭)
+  // Game dropdown
   // ==========================================================
   let gameDropOpen = false;
 
@@ -1387,7 +1362,6 @@ function applyLatestStateFromStorage(){
     const gcur = getCurrentGame();
     gameDrop.innerHTML = "";
 
-    // ✅ 인덱스에서는 게임 추가/삭제/이름변경 UI 없음 (상태.ui.admin이 false라 자동으로 안 생성됨)
     for(const g of state.games){
       const item = document.createElement("div");
       item.className = "item";
@@ -1422,7 +1396,7 @@ function applyLatestStateFromStorage(){
   }
 
   // ==========================================================
-  // Page list (LEFT, both modes)
+  // Page list
   // ==========================================================
   function rebuildPageList(){
     const g = getCurrentGame();
@@ -1442,16 +1416,12 @@ function applyLatestStateFromStorage(){
       const name = document.createElement("div");
       name.className = "name";
       name.textContent = p.name || "Page";
-
-      /* ✅ meta(마커 n · URL✓/URL-) 제거 유지 */
       left.appendChild(name);
 
       const actions = document.createElement("div");
       actions.className = "pageActions";
 
       btn.addEventListener("click", () => setCurrentPage(p.id));
-
-      // ✅ 인덱스에서는 URL/이름/삭제 버튼이 state.ui.admin=false라 생성되지 않음
       btn.appendChild(left);
       btn.appendChild(actions);
       pageList.appendChild(btn);
@@ -1516,7 +1486,7 @@ function applyLatestStateFromStorage(){
   }
 
   // ==========================================================
-  // Palette (index에서는 숨김이지만 코드 유지)
+  // Palette (index에서는 숨김이지만 유지)
   // ==========================================================
   function rebuildPalette(){
     if(!paletteBar) return;
@@ -1650,7 +1620,7 @@ function applyLatestStateFromStorage(){
   });
 
   // ==========================================================
-  // Marker modal (index에서는 열리지 않지만 코드 유지)
+  // Marker modal / Category modal (index에서는 사용 안 하지만 유지)
   // ==========================================================
   function buildFontColorQuick(){
     modalFontColorQuick.innerHTML = "";
@@ -1686,36 +1656,17 @@ function applyLatestStateFromStorage(){
 
   modalFontColorResetBtn.addEventListener("click", () => { modalFontColor.value = DEFAULT_LABEL_COLOR; });
 
-  function setRadiusUI(radiusPx){
-    const r = clamp(radiusPx, Number(modalRadiusRange.min), Number(modalRadiusRange.max));
-    modalRadiusRange.value = String(r);
-    modalRadius.value = String(r);
-    const nextFont = clamp(calcLabelSizeFromRadius(r), Number(modalFontSizeRange.min), Number(modalFontSizeRange.max));
-    modalFontSizeRange.value = String(nextFont);
-    modalFontSize.value = String(nextFont);
-  }
-  modalRadiusRange.addEventListener("input", () => setRadiusUI(Number(modalRadiusRange.value)));
-  modalRadius.addEventListener("input", () => setRadiusUI(Number(modalRadius.value)));
-
-  function openMarkerModal(markerId){ /* index에서는 사용 안 함 */ }
   function closeMarkerModal(){
     markerModalBackdrop.style.display = "none";
     markerModalBackdrop.setAttribute("aria-hidden","true");
-    modalMarkerId = "";
   }
   closeMarkerModalBtn.addEventListener("click", closeMarkerModal);
-  markerModalBackdrop.addEventListener("click", (e) => { if(e.target === markerModalBackdrop) closeMarkerModal(); });
 
-  // ==========================================================
-  // Category Modal (index에서는 사용 안 하지만 코드 유지)
-  // ==========================================================
   editCategoriesBtn.addEventListener("click", () => { if(!state.ui.admin) return; });
-
   closeCatModalBtn.addEventListener("click", () => {});
-  catModalBackdrop.addEventListener("click", (e) => {});
 
   // ==========================================================
-  // Admin hints (index에서는 값만 갱신)
+  // Hints
   // ==========================================================
   function refreshHints(){
     if(createCategoryHint) createCategoryHint.textContent = state.ui.createCategory || "-";
@@ -1723,70 +1674,7 @@ function applyLatestStateFromStorage(){
   }
 
   // ==========================================================
-  // Create markers (admin) - index에서는 호출 안 됨
-  // ==========================================================
-  function getDefaultCreateColorOverride(){
-    const a = (state.ui.createColorOverride || "").trim();
-    if(a) return a;
-    const b = (state.ui.activePaintColor || "").trim();
-    if(b) return b;
-    return "";
-  }
-  function computeCreatedAtForInsertion(groupId, insertAfterMarkerId){
-    const afterId = (insertAfterMarkerId || "").trim();
-    if(!afterId) return nowISO();
-    const after = currentMarkers().find(x => x.id === afterId);
-    if(!after) return nowISO();
-    if(Number(after.groupId||0) !== Number(groupId||0)) return nowISO();
-
-    const list = currentMarkers()
-      .filter(x => Number(x.groupId||0) === Number(groupId||0))
-      .sort((a,b) => (a.createdAt||"").localeCompare(b.createdAt||""));
-
-    const idx = list.findIndex(x => x.id === afterId);
-    if(idx < 0) return nowISO();
-
-    const afterMs = msFromIso(after.createdAt || nowISO());
-    const next = list[idx+1] || null;
-    if(!next) return nowISO();
-
-    const nextMs = msFromIso(next.createdAt || nowISO());
-    if(nextMs - afterMs >= 2) return isoFromMs(afterMs + 1);
-
-    for(let k=idx+1; k<list.length; k++){
-      const mk = list[k];
-      const t = msFromIso(mk.createdAt || nowISO());
-      mk.createdAt = isoFromMs(t + 1);
-    }
-    return isoFromMs(afterMs + 1);
-  }
-  function getChainMasterForCreate(groupId){
-    const gid = Number(groupId||0);
-    const lastId = (state.ui.lastCreatedMarkerId || "").trim();
-    if(lastId){
-      const last = currentMarkers().find(x => x.id === lastId);
-      if(last && Number(last.groupId||0) === gid){
-        const ch = findChainByMarkerId(last.id);
-        if(ch){
-          const master = currentMarkers().find(x => x.id === ch.masterId);
-          if(master) return { chain: ch, master };
-        }
-      }
-    }
-    const chains = computeChainsForGroup(gid);
-    const first = chains[0] || null;
-    if(first){
-      const master = currentMarkers().find(x => x.id === first.masterId);
-      if(master) return { chain:first, master };
-    }
-    return { chain:null, master:null };
-  }
-  function createMarkerAtWorld(wx, wy){
-    if(!state.ui.admin) return;
-  }
-
-  // ==========================================================
-  // User: dim reset
+  // User dim reset
   // ==========================================================
   resetDimBtn.addEventListener("click", () => {
     state.ui.dimmedMarkerIds = [];
@@ -1864,16 +1752,13 @@ function applyLatestStateFromStorage(){
   let isPanning = false;
   let panStart = { x:0, y:0 };
   let viewStart = { ox:0, oy:0 };
-  let didDrag = false;
 
   canvas.addEventListener("mousedown", (evt) => {
     const { x:sx, y:sy } = getPointerPos(evt);
-    didDrag = false;
 
     if(evt.button === 2) return;
     if(evt.button !== 0) return;
 
-    // 유저모드: 텍스트 클릭 -> 오버레이 고정
     const labelHit = findMarkerLabelAtScreen(sx, sy);
     if(labelHit){
       state.ui.selectedMarkerId = labelHit.id;
@@ -1884,12 +1769,10 @@ function applyLatestStateFromStorage(){
       return;
     }
 
-    // 마커 아이콘 hit?
     const m = findMarkerAtScreen(sx, sy);
     if(m){
       state.ui.selectedMarkerId = m.id;
 
-      // 유저모드: 아이콘 클릭 시 "불투명 30%" 토글
       const set = new Set(state.ui.dimmedMarkerIds || []);
       if(set.has(m.id)) set.delete(m.id);
       else set.add(m.id);
@@ -1901,14 +1784,12 @@ function applyLatestStateFromStorage(){
       return;
     }
 
-    // 빈 곳 클릭하면 pin 해제
     if(overlayPinned){
       unpinOverlay();
       draw();
       return;
     }
 
-    // 패닝 시작
     isPanning = true;
     panStart = { x:sx, y:sy };
     viewStart = { ox:view.offsetX, oy:view.offsetY };
@@ -1926,7 +1807,6 @@ function applyLatestStateFromStorage(){
     if(isPanning){
       const dx = sx - panStart.x;
       const dy = sy - panStart.y;
-      if(Math.abs(dx) > 2 || Math.abs(dy) > 2) didDrag = true;
       view.offsetX = viewStart.ox + dx;
       view.offsetY = viewStart.oy + dy;
       draw();
@@ -1938,7 +1818,7 @@ function applyLatestStateFromStorage(){
   centerStage.addEventListener("mouseleave", () => { hideHoverOverlay(true); });
 
   // ==========================================================
-  // Draw
+  // Draw helpers
   // ==========================================================
   function drawBackgroundGrid(){
     const rect = canvas.getBoundingClientRect();
@@ -2173,7 +2053,7 @@ function applyLatestStateFromStorage(){
   }
 
   // ==========================================================
-  // Init sample markers (only once)
+  // Init sample markers (only once) - 유지
   // ==========================================================
   function ensureSampleMarkersOnce(){
     const p = getCurrentPage();
@@ -2191,31 +2071,7 @@ function applyLatestStateFromStorage(){
         groupId: 0,
         chainStart: true,
         memo: ""
-      },
-      {
-        id: uid(), x:0.58, y:0.55, category:"boss", title:"채집",
-        youtubeUrl:"", youtubeLabel:"",
-        createdAt: nowISO(), colorOverride:"",
-        radiusPx: DEFAULT_MARKER_RADIUS_PX,
-        labelSizePx: calcLabelSizeFromRadius(DEFAULT_MARKER_RADIUS_PX),
-        labelWeight: DEFAULT_LABEL_WEIGHT,
-        labelColor: DEFAULT_LABEL_COLOR,
-        groupId: 0,
-        chainStart: false,
-        memo: ""
-      },
-      {
-        id: uid(), x:0.22, y:0.63, category:"boss", title:"퀘스트",
-        youtubeUrl:"", youtubeLabel:"",
-        createdAt: nowISO(), colorOverride:"",
-        radiusPx: DEFAULT_MARKER_RADIUS_PX,
-        labelSizePx: calcLabelSizeFromRadius(DEFAULT_MARKER_RADIUS_PX),
-        labelWeight: DEFAULT_LABEL_WEIGHT,
-        labelColor: DEFAULT_LABEL_COLOR,
-        groupId: 0,
-        chainStart: false,
-        memo: ""
-      },
+      }
     ];
     normalizeAllChainsCurrentPage();
     rebuildLinks();
@@ -2223,9 +2079,12 @@ function applyLatestStateFromStorage(){
   }
 
   // ==========================================================
-  // Final init
+  // Final init (async로 변경: remote 먼저 한번 당겨옴)
   // ==========================================================
-  function init(){
+  async function init(){
+    // ✅ 1) remote state.json을 먼저 당겨서 적용(있으면)
+    await syncFromRemoteIfChanged().catch(()=>{});
+
     getCurrentGame();
     getCurrentPage();
 
@@ -2252,40 +2111,22 @@ function applyLatestStateFromStorage(){
     rebuildLinks();
     saveState();
 
-    // ✅ 인덱스는 항상 USER
     setAdminMode(false);
 
     refreshAll();
     resizeCanvas();
     resetView();
-    loadMapImageForCurrentPage();
+    await loadMapImageForCurrentPage();
     draw();
+
+    // ✅ 2) 주기적으로 remote state.json 변경 감지 → 자동 반영
+    setInterval(() => {
+      syncFromRemoteIfChanged().catch(()=>{});
+    }, REMOTE_POLL_MS);
   }
 
-  // ✅ 빈 곳 클릭하면 오버레이 pin 해제
-  canvas.addEventListener("mousedown", (evt) => {
-    if(evt.button !== 0) return;
-    const { x:sx, y:sy } = getPointerPos(evt);
-    const labelHit = findMarkerLabelAtScreen(sx, sy);
-    const iconHit = findMarkerAtScreen(sx, sy);
-    if(labelHit || iconHit) return;
-    if(overlayPinned) unpinOverlay();
-  });
-
-  init();
+  init().catch(err => console.warn(err));
 })();
-  // ✅ [SYNC] 인덱스 자동 동기화 (모바일 포함)
-let _lastSeenUpdatedAt = getSavedUpdatedAt();
-
-setInterval(() => {
-  const t = getSavedUpdatedAt();
-  if (t && t > _lastSeenUpdatedAt) {
-    _lastSeenUpdatedAt = t;
-    applyLatestStateFromStorage();
-  }
-}, 1500);
-
 </script>
 </body>
 </html>
-
