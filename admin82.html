@@ -491,6 +491,7 @@
 
   <!-- ✅ 상단 메뉴: 관리자 모드에서만 -->
   <button id="uploadBtn" class="adminOnly">지도 업로드</button>
+  <button id="exportStateBtn" class="adminOnly">state.json 내보내기</button>
   <button id="resetViewBtn" class="adminOnly">뷰 리셋</button>
   <button id="clearAllBtn" class="danger adminOnly">전체 초기화</button>
   <input id="fileInput" type="file" accept="image/*" style="display:none;" />
@@ -871,7 +872,13 @@ if (typeof structuredClone !== "function") {
     try { return JSON.parse(json); } catch { return fallback; }
   }
   function saveState(){
-    try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch(e){ console.warn(e); }
+  // ✅ [SYNC] 마지막 저장 시각 기록 (모바일이 “최신 여부” 판단에 사용)
+  state._updatedAt = Date.now();
+  state._updatedAtISO = new Date().toISOString();
+
+  try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch(e){ console.warn(e); }
+}
+
   }
   function escapeHtml(s){
     return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
