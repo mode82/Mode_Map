@@ -51,7 +51,6 @@
       border-bottom: 1px solid rgba(31,42,58,.9);
       backdrop-filter: blur(var(--blur));
       -webkit-backdrop-filter: blur(var(--blur));
-      flex-wrap: wrap;
     }
 
     button, input, select, textarea{
@@ -327,7 +326,6 @@
       justify-content:space-between;
       gap:10px;
       text-align:left;
-      min-height: 52px;
     }
     .pageBtn:hover{
       border-color: rgba(124,196,255,.75);
@@ -343,6 +341,12 @@
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
+    }
+    .pageBtn .meta{
+      font-size:12px;
+      color: var(--muted);
+      white-space:nowrap;
+      flex:0 0 auto;
     }
     .pageActions{
       display:flex; gap:6px; flex:0 0 auto;
@@ -407,63 +411,6 @@
       color: var(--muted);
       margin-top:4px;
     }
-
-    /* Admin Lock Overlay (only on admin82.html) */
-    #__adminLockOverlay{
-      position: fixed; inset: 0;
-      display: none;
-      align-items: center; justify-content: center;
-      background: rgba(0,0,0,.78);
-      backdrop-filter: blur(6px);
-      z-index: 2147483647;
-    }
-    #__adminLockCard{
-      width: min(420px, calc(100vw - 32px));
-      background: rgba(20, 24, 36, .92);
-      border: 1px solid rgba(255,255,255,.14);
-      border-radius: 16px;
-      padding: 18px 18px 16px;
-      box-shadow: 0 20px 60px rgba(0,0,0,.5);
-      color: #fff;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-    }
-    #__adminLockCard h2{ margin: 0 0 8px; font-size: 18px; }
-    #__adminLockCard p{ margin: 0 0 14px; opacity: .85; font-size: 13px; line-height: 1.4; }
-    #__adminPw{
-      width: 100%;
-      padding: 10px 12px;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,.16);
-      background: rgba(0,0,0,.25);
-      color: #fff;
-      outline: none;
-    }
-    #__adminLockRow{ display:flex; gap:10px; margin-top:12px; }
-    #__adminUnlockBtn{
-      flex: 1;
-      padding: 10px 12px;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,.16);
-      background: rgba(124,196,255,.18);
-      color: #fff;
-      cursor: pointer;
-      font-weight: 700;
-    }
-    #__adminUnlockBtn:active{ transform: translateY(1px); }
-    #__adminLockMsg{ margin-top: 10px; font-size: 12px; opacity: .9; min-height: 16px; }
-    #__adminLogoutBtn{
-      position: fixed;
-      right: 12px; bottom: 12px;
-      z-index: 2147483646;
-      padding: 8px 10px;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,.16);
-      background: rgba(255,80,80,.18);
-      color: #fff;
-      cursor: pointer;
-      font-size: 12px;
-      display: none;
-    }
   </style>
 </head>
 
@@ -478,7 +425,7 @@
     <div class="drop" id="gameDrop"></div>
   </div>
 
-  <!-- ✅ 관리자 모드 토글(유저 페이지에서는 숨김 처리됨) -->
+  <!-- ✅ 관리자 모드 토글(인덱스에서는 JS에서 숨김 처리됨) -->
   <span class="pill" id="adminToggleWrap">
     <span class="badge" id="modeBadge">USER</span>
     <label class="muted" style="margin:0;">관리자</label>
@@ -489,13 +436,7 @@
   <button id="uploadBtn" class="adminOnly">지도 업로드</button>
   <button id="resetViewBtn" class="adminOnly">뷰 리셋</button>
   <button id="clearAllBtn" class="danger adminOnly">전체 초기화</button>
-
-  <!-- ✅ 상태 공유(JSON) -->
-  <button id="exportJsonBtn" class="adminOnly">JSON 내보내기</button>
-  <button id="importJsonBtn" class="adminOnly">JSON 불러오기</button>
-
   <input id="fileInput" type="file" accept="image/*" style="display:none;" />
-  <input id="jsonInput" type="file" accept="application/json" style="display:none;" />
 </header>
 
 <div class="wrap">
@@ -512,9 +453,10 @@
         <span class="name">+ 페이지 추가</span>
       </button>
 
-      <div class="muted" style="margin:10px 0 8px; line-height:1.4;">
+      <!-- ✅ [PATCH] 안내 문구는 관리자에서만 보이게 -->
+      <div class="muted adminOnly" style="margin:10px 0 8px; line-height:1.4;">
         • 페이지 버튼 클릭 → 같은 게임 안에서 지도 페이지 이동<br/>
-        • <b>PC/폰 완전 동일 화면</b>을 원하면: 관리자에서 <b>JSON 내보내기</b> → 저장소에 <b>data/state.json</b>으로 업로드
+        • <b>폰/다른 기기</b>에서도 지도 보이게 하려면: 관리자에서 <b>URL</b> 버튼으로 지도 이미지 URL 설정
       </div>
 
       <div id="pageList" style="display:flex; flex-direction:column; gap:10px;"></div>
@@ -587,7 +529,7 @@
   </aside>
 </div>
 
-<!-- Marker Edit Modal -->
+<!-- Marker Edit Modal (인덱스에선 관리자모드가 없으니 사실상 사용되지 않지만, 코드 유지) -->
 <div class="modalBackdrop" id="markerModalBackdrop" aria-hidden="true">
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="markerModalTitle">
     <div class="modalHeader">
@@ -713,7 +655,7 @@
   </div>
 </div>
 
-<!-- Category Edit Modal -->
+<!-- Category Edit Modal (인덱스에선 관리자모드가 없으니 사실상 사용되지 않지만, 코드 유지) -->
 <div class="modalBackdrop" id="catModalBackdrop" aria-hidden="true">
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="catModalTitle">
     <div class="modalHeader">
@@ -745,20 +687,6 @@
   </div>
 </div>
 
-<!-- Admin Lock UI (only on admin82.html) -->
-<div id="__adminLockOverlay">
-  <div id="__adminLockCard">
-    <h2>관리자 인증</h2>
-    <p>비밀번호를 입력하면 이 브라우저에서 24시간 동안 인증이 유지됩니다.</p>
-    <input id="__adminPw" type="password" inputmode="numeric" autocomplete="current-password" placeholder="관리자 비밀번호" />
-    <div id="__adminLockRow">
-      <button id="__adminUnlockBtn" type="button">확인</button>
-    </div>
-    <div id="__adminLockMsg"></div>
-  </div>
-</div>
-<button id="__adminLogoutBtn" type="button">관리자 로그아웃</button>
-
 <!-- ✅ iOS 폴리필: structuredClone 없으면 흰 화면 방지 -->
 <script>
 if (typeof structuredClone !== "function") {
@@ -767,70 +695,12 @@ if (typeof structuredClone !== "function") {
 </script>
 
 <script>
-(async () => {
+(() => {
   // ==========================================================
-  // Page mode detect
+  // ✅ INDEX 전용: 무조건 유저 페이지로 동작 (어드민 로직/인증 제거)
   // ==========================================================
-  const IS_ADMIN_PAGE = /admin82\.html$/i.test(location.pathname);
+  const IS_ADMIN_PAGE = false;
   const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-  // ==========================================================
-  // Shared State JSON (GitHub Pages)
-  // ==========================================================
-  const REMOTE_STATE_URL = "./data/state.json"; // 저장소에 data/state.json 업로드
-
-  async function fetchRemoteState(){
-    try{
-      const url = REMOTE_STATE_URL + (REMOTE_STATE_URL.includes("?") ? "&" : "?") + "v=" + Date.now();
-      const res = await fetch(url, { cache: "no-store" });
-      if(!res.ok) return null;
-      const json = await res.json();
-      if(json && typeof json === "object" && Array.isArray(json.games)) return json;
-      return null;
-    }catch{
-      return null;
-    }
-  }
-
-  // ==========================================================
-  // Admin Auth (24h) - only admin page
-  // ==========================================================
-  const ADMIN_PASSWORD = "0000000001";
-  const AUTH_KEY = "mm_admin_auth_v1";
-  const SESSION_MS = 24 * 60 * 60 * 1000;
-
-  const $lock = document.getElementById("__adminLockOverlay");
-  const $pw = document.getElementById("__adminPw");
-  const $unlock = document.getElementById("__adminUnlockBtn");
-  const $msg = document.getElementById("__adminLockMsg");
-  const $logout = document.getElementById("__adminLogoutBtn");
-
-  function getAuth(){
-    try{
-      const raw = localStorage.getItem(AUTH_KEY);
-      if(!raw) return null;
-      const obj = JSON.parse(raw);
-      if(!obj || typeof obj.exp !== "number") return null;
-      return obj;
-    }catch{ return null; }
-  }
-  function isAuthed(){
-    const a = getAuth();
-    return !!(a && a.exp > Date.now());
-  }
-  function setAuthed(){
-    localStorage.setItem(AUTH_KEY, JSON.stringify({ exp: Date.now() + SESSION_MS }));
-  }
-  function clearAuthed(){
-    localStorage.removeItem(AUTH_KEY);
-  }
-
-  function showLock(show){
-    if(!IS_ADMIN_PAGE) return;
-    $lock.style.display = show ? "flex" : "none";
-    $logout.style.display = show ? "none" : "block";
-    if(show) setTimeout(()=> $pw.focus(), 50);
-  }
 
   // ==========================================================
   // Storage / DB
@@ -889,7 +759,9 @@ if (typeof structuredClone !== "function") {
   function safeParse(json, fallback){
     try { return JSON.parse(json); } catch { return fallback; }
   }
-
+  function saveState(){
+    try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch(e){ console.warn(e); }
+  }
   function escapeHtml(s){
     return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
@@ -973,60 +845,35 @@ if (typeof structuredClone !== "function") {
     ]
   };
 
-  let state = null;
+  // Load or init
+  const loaded = safeParse(localStorage.getItem(LS_KEY) || "", null);
+  const state = (loaded && loaded.games && Array.isArray(loaded.games)) ? loaded : structuredClone(defaultState);
 
-  function saveState(){
-    try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch(e){ console.warn(e); }
+  // Normalize
+  if(!state.ui) state.ui = structuredClone(defaultState.ui);
+  if(!Array.isArray(state.ui.dimmedMarkerIds)) state.ui.dimmedMarkerIds = [];
+  if(!Array.isArray(state.games) || state.games.length === 0){
+    state.games = structuredClone(defaultState.games);
   }
-
-  function normalizeState(){
-    if(!state || typeof state !== "object") state = structuredClone(defaultState);
-
-    if(!state.ui) state.ui = structuredClone(defaultState.ui);
-    if(!Array.isArray(state.ui.dimmedMarkerIds)) state.ui.dimmedMarkerIds = [];
-    if(!Array.isArray(state.games) || state.games.length === 0){
-      state.games = structuredClone(defaultState.games);
+  for(const g of state.games){
+    if(!g.id) g.id = uid();
+    if(typeof g.name !== "string") g.name = "Game";
+    if(!Array.isArray(g.categories) || g.categories.length === 0) g.categories = structuredClone(DEFAULT_CATEGORIES);
+    if(!Array.isArray(g.pages) || g.pages.length === 0){
+      g.pages = [{ id: uid(), name:"1번마을", map:{imageKey:"", imageUrl:"", width:2200, height:1400}, markers:[], links:[] }];
     }
-    for(const g of state.games){
-      if(!g.id) g.id = uid();
-      if(typeof g.name !== "string") g.name = "Game";
-      if(!Array.isArray(g.categories) || g.categories.length === 0) g.categories = structuredClone(DEFAULT_CATEGORIES);
-      if(!Array.isArray(g.pages) || g.pages.length === 0){
-        g.pages = [{ id: uid(), name:"1번마을", map:{imageKey:"", imageUrl:"", width:2200, height:1400}, markers:[], links:[] }];
-      }
-      for(const p of g.pages){
-        if(!p.id) p.id = uid();
-        if(typeof p.name !== "string") p.name = "Page";
-        if(!p.map) p.map = { imageKey:"", imageUrl:"", width:2200, height:1400 };
-        if(typeof p.map.imageKey !== "string") p.map.imageKey = "";
-        if(typeof p.map.imageUrl !== "string") p.map.imageUrl = "";
-        if(typeof p.map.width !== "number" || !isFinite(p.map.width)) p.map.width = 2200;
-        if(typeof p.map.height !== "number" || !isFinite(p.map.height)) p.map.height = 1400;
-        if(!Array.isArray(p.markers)) p.markers = [];
-        if(!Array.isArray(p.links)) p.links = [];
-      }
+    for(const p of g.pages){
+      if(!p.id) p.id = uid();
+      if(typeof p.name !== "string") p.name = "Page";
+      if(!p.map) p.map = { imageKey:"", imageUrl:"", width:2200, height:1400 };
+      if(typeof p.map.imageKey !== "string") p.map.imageKey = "";
+      if(typeof p.map.imageUrl !== "string") p.map.imageUrl = "";
+      if(typeof p.map.width !== "number" || !isFinite(p.map.width)) p.map.width = 2200;
+      if(typeof p.map.height !== "number" || !isFinite(p.map.height)) p.map.height = 1400;
+      if(!Array.isArray(p.markers)) p.markers = [];
+      if(!Array.isArray(p.links)) p.links = [];
     }
   }
-
-  async function loadInitialState(){
-    const loadedLocal = safeParse(localStorage.getItem(LS_KEY) || "", null);
-    let base = (loadedLocal && loadedLocal.games && Array.isArray(loadedLocal.games)) ? loadedLocal : structuredClone(defaultState);
-
-    // ✅ 유저 페이지: 무조건 원격 state.json 우선(있으면)
-    // ✅ 관리자 페이지: 로컬이 비어있으면 원격을 불러와서 시작 가능
-    const hasLocal = !!(loadedLocal && loadedLocal.games && Array.isArray(loadedLocal.games));
-    if(!IS_ADMIN_PAGE || !hasLocal){
-      const remote = await fetchRemoteState();
-      if(remote) base = remote;
-    }
-
-    state = base;
-    normalizeState();
-    // 유저 페이지는 원격을 읽었든 아니든, 현재 state를 로컬에도 반영
-    saveState();
-  }
-
-  await loadInitialState();
 
   function getGameById(id){ return state.games.find(g => g.id === id) || null; }
   function getCurrentGame(){
@@ -1237,10 +1084,6 @@ if (typeof structuredClone !== "function") {
   const clearAllBtn = document.getElementById("clearAllBtn");
   const fileInput = document.getElementById("fileInput");
 
-  const exportJsonBtn = document.getElementById("exportJsonBtn");
-  const importJsonBtn = document.getElementById("importJsonBtn");
-  const jsonInput = document.getElementById("jsonInput");
-
   const paletteBar = document.getElementById("paletteBar");
   const applyPaletteToSelectedBtn = document.getElementById("applyPaletteToSelectedBtn");
   const clearOverrideBtn = document.getElementById("clearOverrideBtn");
@@ -1310,17 +1153,6 @@ if (typeof structuredClone !== "function") {
   let activeCatRowEl = null;
   let modalMarkerId = "";
 
-  // ✅ 이름 입력 시, (유튜브표시명/메모) 자동 동일 등록(초기 동기화) + 이후 수정하면 이름은 고정
-  let modalAutoSync = {
-    titleAtOpen: "",
-    ytAtOpen: "",
-    memoAtOpen: "",
-    ytDirty: false,
-    memoDirty: false,
-    allowYt: true,
-    allowMemo: true,
-  };
-
   // ==========================================================
   // Admin-only visibility
   // ==========================================================
@@ -1329,66 +1161,6 @@ if (typeof structuredClone !== "function") {
       el.style.display = state.ui.admin ? "" : "none";
     });
   }
-
-  // ==========================================================
-  // JSON Export/Import (admin)
-  // ==========================================================
-  function downloadBlob(blob, filename){
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(()=> URL.revokeObjectURL(url), 500);
-  }
-
-  exportJsonBtn.addEventListener("click", () => {
-    if(!state.ui.admin) return;
-    // 저장 전에 최신 normalize
-    normalizeState();
-    saveState();
-    const json = JSON.stringify(state, null, 2);
-    const blob = new Blob([json], { type: "application/json" });
-    downloadBlob(blob, "state.json");
-    alert('내보내기 완료!\n이 파일을 GitHub 저장소에 "data/state.json" 으로 업로드(덮어쓰기)하면\nPC/모바일 모두 동일하게 보입니다.');
-  });
-
-  importJsonBtn.addEventListener("click", () => {
-    if(!state.ui.admin) return;
-    jsonInput.click();
-  });
-
-  jsonInput.addEventListener("change", async (e) => {
-    if(!state.ui.admin) return;
-    const f = e.target.files && e.target.files[0];
-    if(!f) return;
-    try{
-      const txt = await f.text();
-      const obj = safeParse(txt, null);
-      if(!obj || typeof obj !== "object" || !Array.isArray(obj.games)){
-        alert("JSON 형식이 올바르지 않습니다. (games 배열이 필요)");
-        return;
-      }
-      state = obj;
-      normalizeState();
-      // admin 로컬에 반영
-      saveState();
-      // UI 갱신 + 지도 로드
-      refreshAll();
-      resizeCanvas();
-      resetView();
-      await loadMapImageForCurrentPage();
-      draw();
-      alert("불러오기 완료!");
-    }catch(err){
-      console.warn(err);
-      alert("불러오기 실패: JSON을 확인하세요.");
-    }finally{
-      jsonInput.value = "";
-    }
-  });
 
   // ==========================================================
   // Map image load per page (IDB -> fallback URL)
@@ -1461,7 +1233,6 @@ if (typeof structuredClone !== "function") {
 
   function resizeCanvas(){
     const rect = canvas.getBoundingClientRect();
-    // iOS 메모리 폭발 방지: DPR 제한
     const dpr = isIOS ? 1 : (window.devicePixelRatio || 1);
     canvas.width = Math.floor(rect.width * dpr);
     canvas.height = Math.floor(rect.height * dpr);
@@ -1488,15 +1259,12 @@ if (typeof structuredClone !== "function") {
   }
 
   // ==========================================================
-  // Mode
+  // Mode (INDEX = USER 고정)
   // ==========================================================
-  let overlayPinned = false;
-  let pinnedMarkerId = "";
-
   function setAdminMode(on){
-    state.ui.admin = !!on;
-    modeBadge.textContent = state.ui.admin ? "ADMIN" : "USER";
-    modeBadge.className = "badge " + (state.ui.admin ? "ok" : "");
+    state.ui.admin = false; // ✅ 인덱스는 항상 USER
+    modeBadge.textContent = "USER";
+    modeBadge.className = "badge";
 
     overlayPinned = false;
     pinnedMarkerId = "";
@@ -1510,18 +1278,13 @@ if (typeof structuredClone !== "function") {
     refreshAll();
   }
 
-  // Admin toggle: user page에서는 숨김 + 강제 USER
-  if(!IS_ADMIN_PAGE){
-    adminToggleWrap.style.display = "none";
-    state.ui.admin = false;
-    adminToggle.checked = false;
-  }else{
-    adminToggleWrap.style.display = "";
-    adminToggle.addEventListener("change", () => setAdminMode(adminToggle.checked));
-  }
+  // ✅ 인덱스에서 관리자 토글 숨김 + 강제 USER
+  adminToggleWrap.style.display = "none";
+  state.ui.admin = false;
+  adminToggle.checked = false;
 
   // ==========================================================
-  // Header buttons (admin only visible)
+  // Header buttons (admin only visible) - 유지하지만 index에서는 숨김 처리됨
   // ==========================================================
   uploadBtn.addEventListener("click", () => fileInput.click());
   fileInput.addEventListener("change", async (e) => {
@@ -1593,34 +1356,7 @@ if (typeof structuredClone !== "function") {
     const gcur = getCurrentGame();
     gameDrop.innerHTML = "";
 
-    if(state.ui.admin){
-      const add = document.createElement("div");
-      add.className = "item";
-      add.innerHTML = `
-        <div class="left">
-          <div class="gname">+ 게임 추가</div>
-          <div class="gmeta">Map Demo 아래로 게임을 계속 추가</div>
-        </div>
-        <div style="display:flex; gap:8px;">
-          <button class="iconBtn ok" type="button">추가</button>
-        </div>
-      `;
-      add.querySelector("button").addEventListener("click", () => {
-        const name = prompt("새 게임 이름을 입력하세요 (예: 아이온2)", "아이온2");
-        if(!name) return;
-        const ng = {
-          id: uid(),
-          name: String(name).trim(),
-          categories: structuredClone(DEFAULT_CATEGORIES),
-          pages: [{ id: uid(), name:"1번마을", map:{ imageKey:"", imageUrl:"", width:2200, height:1400 }, markers:[], links:[] }]
-        };
-        state.games.push(ng);
-        setCurrentGame(ng.id);
-        closeGameDrop();
-      });
-      gameDrop.appendChild(add);
-    }
-
+    // ✅ 인덱스에서는 게임 추가/삭제/이름변경 UI 없음 (상태.ui.admin이 false라 자동으로 안 생성됨)
     for(const g of state.games){
       const item = document.createElement("div");
       item.className = "item";
@@ -1647,42 +1383,6 @@ if (typeof structuredClone !== "function") {
       goBtn.disabled = isActive;
       goBtn.addEventListener("click", () => { setCurrentGame(g.id); closeGameDrop(); });
       right.appendChild(goBtn);
-
-      if(state.ui.admin){
-        const renameBtn = document.createElement("button");
-        renameBtn.className = "iconBtn";
-        renameBtn.type = "button";
-        renameBtn.textContent = "이름";
-        renameBtn.addEventListener("click", () => {
-          const name = prompt("게임 이름 변경", g.name);
-          if(!name) return;
-          g.name = String(name).trim();
-          saveState();
-          refreshAll();
-          rebuildGameDrop();
-        });
-
-        const delBtn = document.createElement("button");
-        delBtn.className = "iconBtn danger";
-        delBtn.type = "button";
-        delBtn.textContent = "삭제";
-        delBtn.addEventListener("click", async () => {
-          if(!confirm(`게임 "${g.name}" 을 삭제할까요?\n(페이지/마커는 localStorage에서 제거됩니다. 이미지 blob은 DB에 남을 수 있습니다)`)) return;
-          state.games = state.games.filter(x => x.id !== g.id);
-          if(state.games.length === 0){
-            state.games = structuredClone(defaultState.games);
-          }
-          state.currentGameId = state.games[0].id;
-          state.currentPageId = state.games[0].pages[0].id;
-          saveState();
-          refreshAll();
-          loadMapImageForCurrentPage();
-          rebuildGameDrop();
-        });
-
-        right.appendChild(renameBtn);
-        right.appendChild(delBtn);
-      }
 
       item.appendChild(left);
       item.appendChild(right);
@@ -1711,6 +1411,8 @@ if (typeof structuredClone !== "function") {
       const name = document.createElement("div");
       name.className = "name";
       name.textContent = p.name || "Page";
+
+      /* ✅ meta(마커 n · URL✓/URL-) 제거 유지 */
       left.appendChild(name);
 
       const actions = document.createElement("div");
@@ -1718,73 +1420,7 @@ if (typeof structuredClone !== "function") {
 
       btn.addEventListener("click", () => setCurrentPage(p.id));
 
-      if(state.ui.admin){
-        const urlBtn = document.createElement("button");
-        urlBtn.className = "iconBtn";
-        urlBtn.type = "button";
-        urlBtn.textContent = "URL";
-        urlBtn.title = "지도 이미지 URL 설정(PC/폰 공유용)";
-        urlBtn.addEventListener("click", (e) => {
-          e.stopPropagation();
-          const cur = (p.map?.imageUrl || "").trim();
-          const v = prompt(
-            "지도 이미지 URL을 입력하세요.\n예) ./assets/maps/aion2map.jpg\n(이 URL이 state.json에 저장되면 모든 기기 동일)",
-            cur || "./assets/maps/aion2map.jpg"
-          );
-          if(v == null) return;
-          if(!p.map) p.map = { imageKey:"", imageUrl:"", width:2200, height:1400 };
-          p.map.imageUrl = String(v).trim();
-          saveState();
-          if(p.id === getCurrentPage().id) loadMapImageForCurrentPage();
-          rebuildPageList();
-        });
-
-        const rename = document.createElement("button");
-        rename.className = "iconBtn";
-        rename.type = "button";
-        rename.textContent = "✎";
-        rename.title = "페이지 이름 편집";
-        rename.addEventListener("click", (e) => {
-          e.stopPropagation();
-          const v = prompt("페이지 이름 변경", p.name || "페이지");
-          if(!v) return;
-          p.name = String(v).trim();
-          saveState();
-          rebuildPageList();
-          refreshHeaderTitle();
-        });
-
-        const del = document.createElement("button");
-        del.className = "iconBtn danger";
-        del.type = "button";
-        del.textContent = "🗑";
-        del.title = "페이지 삭제";
-        del.addEventListener("click", async (e) => {
-          e.stopPropagation();
-          if(!confirm(`페이지 "${p.name}" 을 삭제할까요?\n(이미지 blob은 DB에 남을 수 있습니다)`)) return;
-
-          try{
-            const key = `mapimg_${g.id}_${p.id}`;
-            await idbDel(key);
-          }catch(e2){}
-
-          g.pages = g.pages.filter(x => x.id !== p.id);
-          if(g.pages.length === 0){
-            g.pages.push({ id: uid(), name:"1번마을", map:{ imageKey:"", imageUrl:"", width:2200, height:1400 }, markers:[], links:[] });
-          }
-          if(state.currentPageId === p.id){
-            state.currentPageId = g.pages[0].id;
-          }
-          saveState();
-          refreshAll();
-          loadMapImageForCurrentPage();
-        });
-
-        actions.appendChild(urlBtn);
-        actions.appendChild(rename);
-        actions.appendChild(del);
-      }
-
+      // ✅ 인덱스에서는 URL/이름/삭제 버튼이 state.ui.admin=false라 생성되지 않음
       btn.appendChild(left);
       btn.appendChild(actions);
       pageList.appendChild(btn);
@@ -1849,9 +1485,10 @@ if (typeof structuredClone !== "function") {
   }
 
   // ==========================================================
-  // Palette
+  // Palette (index에서는 숨김이지만 코드 유지)
   // ==========================================================
   function rebuildPalette(){
+    if(!paletteBar) return;
     paletteBar.innerHTML = "";
     for(const p of PALETTE){
       const wrap = document.createElement("div");
@@ -1881,51 +1518,8 @@ if (typeof structuredClone !== "function") {
     clearOverrideBtn.disabled = !state.ui.admin || !state.ui.selectedMarkerId;
   }
 
-  applyPaletteToSelectedBtn.addEventListener("click", () => {
-    if(!state.ui.admin) return;
-    if(!state.ui.selectedMarkerId) return;
-    if(!state.ui.activePaintColor) return;
-
-    const m = currentMarkers().find(x => x.id === state.ui.selectedMarkerId);
-    if(!m) return;
-
-    const chain = findChainByMarkerId(m.id);
-    if(chain){
-      const master = currentMarkers().find(x => x.id === chain.masterId);
-      if(master){
-        master.colorOverride = state.ui.activePaintColor;
-        applyChainMasterStyleByChain(chain);
-      }
-    }else{
-      m.colorOverride = state.ui.activePaintColor;
-    }
-
-    saveState();
-    draw();
-    renderSelectedPanel();
-    rebuildPalette();
-  });
-
-  clearOverrideBtn.addEventListener("click", () => {
-    if(!state.ui.admin) return;
-    if(!state.ui.selectedMarkerId) return;
-
-    const m = currentMarkers().find(x => x.id === state.ui.selectedMarkerId);
-    if(!m) return;
-
-    const chain = findChainByMarkerId(m.id);
-    if(chain){
-      const master = currentMarkers().find(x => x.id === chain.masterId);
-      if(master) master.colorOverride = "";
-      applyChainMasterStyleByChain(chain);
-    }else{
-      m.colorOverride = "";
-    }
-    saveState();
-    draw();
-    renderSelectedPanel();
-    rebuildPalette();
-  });
+  applyPaletteToSelectedBtn.addEventListener("click", () => {});
+  clearOverrideBtn.addEventListener("click", () => {});
 
   // ==========================================================
   // Selected panel
@@ -1954,6 +1548,9 @@ if (typeof structuredClone !== "function") {
   // ==========================================================
   // Hover overlay
   // ==========================================================
+  let overlayPinned = false;
+  let pinnedMarkerId = "";
+
   function hideHoverOverlay(force=false){
     if(force){
       hoverOverlay.style.display = "none";
@@ -2022,7 +1619,7 @@ if (typeof structuredClone !== "function") {
   });
 
   // ==========================================================
-  // Marker modal
+  // Marker modal (index에서는 열리지 않지만 코드 유지)
   // ==========================================================
   function buildFontColorQuick(){
     modalFontColorQuick.innerHTML = "";
@@ -2069,426 +1666,33 @@ if (typeof structuredClone !== "function") {
   modalRadiusRange.addEventListener("input", () => setRadiusUI(Number(modalRadiusRange.value)));
   modalRadius.addEventListener("input", () => setRadiusUI(Number(modalRadius.value)));
 
-  function openMarkerModal(markerId){
-    const m = currentMarkers().find(x => x.id === markerId);
-    if(!m) return;
-
-    modalMarkerId = markerId;
-
-    modalCategory.innerHTML = "";
-    for(const c of currentCategories()){
-      const opt = document.createElement("option");
-      opt.value = c.name;
-      opt.textContent = c.name;
-      modalCategory.appendChild(opt);
-    }
-
-    modalCategory.value = m.category || (currentCategories()[0]?.name || "");
-    modalTitle.value = m.title || "";
-    modalYoutubeUrl.value = m.youtubeUrl || "";
-    modalYoutubeLabel.value = m.youtubeLabel || "";
-    modalMemo.value = m.memo || "";
-
-    // ✅ 자동동기화 상태 초기화
-    modalAutoSync.titleAtOpen = (m.title || "").trim();
-    modalAutoSync.ytAtOpen = (m.youtubeLabel || "").trim();
-    modalAutoSync.memoAtOpen = (m.memo || "").trim();
-    modalAutoSync.ytDirty = false;
-    modalAutoSync.memoDirty = false;
-    modalAutoSync.allowYt = (modalAutoSync.ytAtOpen === "" || modalAutoSync.ytAtOpen === modalAutoSync.titleAtOpen);
-    modalAutoSync.allowMemo = (modalAutoSync.memoAtOpen === "" || modalAutoSync.memoAtOpen === modalAutoSync.titleAtOpen);
-
-    const ov = (m.colorOverride || "").trim();
-    modalUseCategoryColor.checked = !ov;
-    const base = getCategoryColor(modalCategory.value);
-    modalColor.value = (ov && /^#([0-9a-fA-F]{6})$/.test(ov)) ? ov : (base || "#e6edf3");
-    modalColor.disabled = modalUseCategoryColor.checked;
-
-    setRadiusUI(m.radiusPx ?? DEFAULT_MARKER_RADIUS_PX);
-
-    const w = Number(m.labelWeight ?? DEFAULT_LABEL_WEIGHT);
-    modalFontWeight.value = String([400,600,800,900].includes(w) ? w : DEFAULT_LABEL_WEIGHT);
-
-    const lc = (m.labelColor || "").trim();
-    modalFontColor.value = (lc && /^#([0-9a-fA-F]{6})$/.test(lc)) ? lc : DEFAULT_LABEL_COLOR;
-
-    modalCoord.textContent = `${m.x.toFixed(6)}, ${m.y.toFixed(6)}`;
-
-    markerModalBackdrop.style.display = "flex";
-    markerModalBackdrop.setAttribute("aria-hidden","false");
-    modalTitle.focus();
-  }
-
-  // ✅ 이름 입력 시 유튜브표시명/메모 자동 동일 입력(초기만). 이후 수정하면 더 이상 자동 덮어쓰기 없음.
-  modalTitle.addEventListener("input", () => {
-    if(!state.ui.admin) return;
-    const t = (modalTitle.value || "").trim();
-    if(!t) return;
-
-    if(modalAutoSync.allowYt && !modalAutoSync.ytDirty){
-      modalYoutubeLabel.value = t;
-    }
-    if(modalAutoSync.allowMemo && !modalAutoSync.memoDirty){
-      // 메모는 원문 그대로(공백 포함)도 가능하지만 요구사항상 "같은 내용"이면 trim으로 충분
-      modalMemo.value = t;
-    }
-  });
-  modalYoutubeLabel.addEventListener("input", () => { modalAutoSync.ytDirty = true; modalAutoSync.allowYt = false; });
-  modalMemo.addEventListener("input", () => { modalAutoSync.memoDirty = true; modalAutoSync.allowMemo = false; });
-
+  function openMarkerModal(markerId){ /* index에서는 사용 안 함 */ }
   function closeMarkerModal(){
     markerModalBackdrop.style.display = "none";
     markerModalBackdrop.setAttribute("aria-hidden","true");
     modalMarkerId = "";
   }
-
   closeMarkerModalBtn.addEventListener("click", closeMarkerModal);
   markerModalBackdrop.addEventListener("click", (e) => { if(e.target === markerModalBackdrop) closeMarkerModal(); });
 
-  function shouldSaveOnEnter(e){
-    if(!state.ui.admin) return false;
-    if(e.key !== "Enter") return false;
-    const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
-    if(tag === "textarea") return false;
-    return true;
-  }
-  markerModalBackdrop.addEventListener("keydown", (e) => {
-    if(shouldSaveOnEnter(e)){
-      e.preventDefault();
-      saveMarkerBtn.click();
-    }
-  });
+  // ==========================================================
+  // Category Modal (index에서는 사용 안 하지만 코드 유지)
+  // ==========================================================
+  editCategoriesBtn.addEventListener("click", () => { if(!state.ui.admin) return; });
 
-  modalUseCategoryColor.addEventListener("change", () => {
-    modalColor.disabled = modalUseCategoryColor.checked;
-    if(modalUseCategoryColor.checked){
-      const base = getCategoryColor(modalCategory.value);
-      modalColor.value = (base && /^#([0-9a-fA-F]{6})$/.test(base)) ? base : "#e6edf3";
-    }
-  });
-  modalCategory.addEventListener("change", () => {
-    if(modalUseCategoryColor.checked){
-      const base = getCategoryColor(modalCategory.value);
-      modalColor.value = (base && /^#([0-9a-fA-F]{6})$/.test(base)) ? base : "#e6edf3";
-    }
-  });
-
-  startNewGroupFromHereBtn.addEventListener("click", () => {
-    if(!state.ui.admin) return;
-    const m = currentMarkers().find(x => x.id === modalMarkerId);
-    if(!m) return;
-
-    if(!confirm("이 마커부터 '새로운 번호(1번)'로 시작할까요?\n(현재 페이지 내에서 새 체인으로 분리됩니다)")) return;
-
-    const oldGroup = Number(m.groupId || 0);
-    const pivotTime = (m.createdAt || "");
-    const newGroupId = Date.now();
-
-    for(const x of currentMarkers()){
-      if(Number(x.groupId || 0) !== oldGroup) continue;
-      const t = (x.createdAt || "");
-      if(t.localeCompare(pivotTime) >= 0){
-        x.groupId = newGroupId;
-      }
-    }
-
-    m.chainStart = true;
-
-    state.ui.createGroupId = newGroupId;
-    state.ui.createCategory = m.category || (currentCategories()[0]?.name || "default");
-    state.ui.createColorOverride = (m.colorOverride || "").trim();
-    if(state.ui.createColorOverride) state.ui.activePaintColor = state.ui.createColorOverride;
-
-    state.ui.insertAfterMarkerId = "";
-    refreshHints();
-
-    applyAllChainsInGroup(newGroupId);
-    rebuildLinks();
-    saveState();
-    draw();
-
-    alert("현재 페이지에서 새 체인(새 1번)으로 분리되었습니다.");
-  });
-
-  continueNumberingFromHereBtn.addEventListener("click", () => {
-    if(!state.ui.admin) return;
-    const m = currentMarkers().find(x => x.id === modalMarkerId);
-    if(!m) return;
-
-    state.ui.createGroupId = Number(m.groupId || 0);
-    state.ui.createCategory = (m.category || "").trim() || (currentCategories()[0]?.name || "default");
-    state.ui.createColorOverride = (m.colorOverride || "").trim();
-    if(state.ui.createColorOverride) state.ui.activePaintColor = state.ui.createColorOverride;
-
-    state.ui.insertAfterMarkerId = m.id;
-    refreshHints();
-
-    saveState();
-    draw();
-
-    alert("설정 완료: 이제 우클릭으로 마커를 추가하면 선택한 마커 '뒤'에 번호가 이어지도록 삽입됩니다.");
-  });
-
-  saveMarkerBtn.addEventListener("click", () => {
-    if(!state.ui.admin) return;
-    const m = currentMarkers().find(x => x.id === modalMarkerId);
-    if(!m) return;
-
-    // 텍스트/링크/메모는 개별 마커에만
-    const nextTitle = (modalTitle.value || "").trim();
-
-    m.title = nextTitle;
-    m.youtubeUrl = (modalYoutubeUrl.value || "").trim();
-
-    // ✅ 이름 입력 시 유튜브 표시명/메모 자동 동일 등록(초기 동기화)
-    let nextYtLabel = (modalYoutubeLabel.value || "").trim();
-    let nextMemo = (modalMemo.value || "");
-
-    if(nextTitle){
-      if(!nextYtLabel && !modalAutoSync.ytDirty) nextYtLabel = nextTitle;
-      if(!String(nextMemo).trim() && !modalAutoSync.memoDirty) nextMemo = nextTitle;
-    }
-
-    m.youtubeLabel = nextYtLabel;
-    m.memo = nextMemo;
-
-    // ✅ 스타일/카테고리/색상은 "체인 마스터"에 적용해서 전체가 일치하도록
-    const chain = findChainByMarkerId(m.id);
-    const target = chain ? (currentMarkers().find(x => x.id === chain.masterId) || m) : m;
-
-    target.category = (modalCategory.value || "").trim() || (currentCategories()[0]?.name || "default");
-
-    if(modalUseCategoryColor.checked){
-      target.colorOverride = ""; // 카테고리 색상과 일치
-    }else{
-      const c = (modalColor.value || "").trim();
-      target.colorOverride = (c && /^#([0-9a-fA-F]{6})$/.test(c)) ? c : "";
-    }
-
-    const radiusPx = clamp(Number(modalRadius.value || DEFAULT_MARKER_RADIUS_PX), 6, 30);
-    target.radiusPx = radiusPx;
-    target.labelSizePx = clamp(calcLabelSizeFromRadius(radiusPx), 10, 48);
-    target.labelWeight = Number(modalFontWeight.value || DEFAULT_LABEL_WEIGHT);
-
-    const lc = (modalFontColor.value || "").trim();
-    target.labelColor = (lc && /^#([0-9a-fA-F]{6})$/.test(lc)) ? lc : DEFAULT_LABEL_COLOR;
-
-    if(chain) applyChainMasterStyleByChain(chain);
-    else applyAllChainsInGroup(Number(m.groupId||0));
-
-    saveState();
-    renderSelectedPanel();
-    rebuildPageList();
-    draw();
-    closeMarkerModal();
-  });
-
-  deleteMarkerBtn.addEventListener("click", () => {
-    if(!state.ui.admin) return;
-    const id = modalMarkerId;
-    const m = currentMarkers().find(x => x.id === id);
-    if(!m) return;
-
-    if(!confirm("이 마커를 삭제할까요?")) return;
-
-    const gid = Number(m.groupId||0);
-
-    const page = getCurrentPage();
-    page.markers = page.markers.filter(x => x.id !== id);
-    page.links = page.links.filter(l => l.fromId !== id && l.toId !== id);
-
-    state.ui.dimmedMarkerIds = (state.ui.dimmedMarkerIds || []).filter(x => x !== id);
-    if(state.ui.lastCreatedMarkerId === id) state.ui.lastCreatedMarkerId = "";
-    if(state.ui.selectedMarkerId === id) state.ui.selectedMarkerId = "";
-    if(state.ui.insertAfterMarkerId === id) state.ui.insertAfterMarkerId = "";
-
-    applyAllChainsInGroup(gid);
-    rebuildLinks();
-
-    saveState();
-    renderSelectedPanel();
-    rebuildPageList();
-    draw();
-    closeMarkerModal();
-  });
+  closeCatModalBtn.addEventListener("click", () => {});
+  catModalBackdrop.addEventListener("click", (e) => {});
 
   // ==========================================================
-  // Category Modal (game-local)
-  // ==========================================================
-  editCategoriesBtn.addEventListener("click", () => openCatModal());
-
-  function openCatModal(){
-    buildCatEditorRows(structuredClone(currentCategories()));
-    buildCatPalette();
-    activeCatRowEl = null;
-    catPaletteHint.textContent = "카테고리 행을 먼저 클릭해서 선택하세요.";
-    catModalBackdrop.style.display = "flex";
-    catModalBackdrop.setAttribute("aria-hidden","false");
-  }
-  function closeCatModal(){
-    catModalBackdrop.style.display = "none";
-    catModalBackdrop.setAttribute("aria-hidden","true");
-  }
-  closeCatModalBtn.addEventListener("click", closeCatModal);
-  catModalBackdrop.addEventListener("click", (e) => { if(e.target === catModalBackdrop) closeCatModal(); });
-
-  function buildCatPalette(){
-    catPaletteBar.innerHTML = "";
-    for(const p of PALETTE){
-      const wrap = document.createElement("div");
-      wrap.className = "swatch";
-      const btn = document.createElement("button");
-      btn.title = `${p.label} (${p.color})`;
-      btn.style.background = p.color;
-      btn.addEventListener("click", () => {
-        if(!activeCatRowEl){
-          catPaletteHint.textContent = "먼저 카테고리 행을 클릭해서 선택하세요.";
-          return;
-        }
-        const colorInput = activeCatRowEl.querySelector('input[type="color"]');
-        if(colorInput){
-          colorInput.value = p.color;
-          catPaletteHint.textContent = `선택된 카테고리 색상이 ${p.color} 로 변경됨`;
-        }
-      });
-      wrap.appendChild(btn);
-
-      const lab = document.createElement("div");
-      lab.className = "swatchLabel";
-      lab.textContent = p.label;
-
-      const container = document.createElement("div");
-      container.className = "swatchWrap";
-      container.appendChild(wrap);
-      container.appendChild(lab);
-
-      catPaletteBar.appendChild(container);
-    }
-  }
-  function buildCatEditorRows(list){
-    catEditorList.innerHTML = "";
-    for(const item of list){
-      catEditorList.appendChild(makeCatRow(item.name, item.color));
-    }
-    if(!list.length){
-      catEditorList.appendChild(makeCatRow("", "#e6edf3"));
-    }
-  }
-  function makeCatRow(name, color){
-    const row = document.createElement("div");
-    row.className = "catRow";
-    row.style.display = "grid";
-    row.style.gridTemplateColumns = "1fr 60px 110px";
-    row.style.gap = "8px";
-    row.style.alignItems = "center";
-    row.style.border = "1px solid rgba(39,52,74,.95)";
-    row.style.borderRadius = "18px";
-    row.style.padding = "10px";
-    row.style.background = "rgba(8,12,20,.55)";
-    row.style.boxShadow = "0 10px 22px rgba(0,0,0,.18)";
-
-    const nameInput = document.createElement("input");
-    nameInput.type = "text";
-    nameInput.placeholder = "카테고리명 (예: boss)";
-    nameInput.value = name || "";
-
-    const colorInput = document.createElement("input");
-    colorInput.type = "color";
-    colorInput.value = (color && /^#([0-9a-fA-F]{6})$/.test(color)) ? color : "#e6edf3";
-
-    const delBtn = document.createElement("button");
-    delBtn.className = "smallBtn danger";
-    delBtn.textContent = "삭제";
-    delBtn.addEventListener("click", () => {
-      if(activeCatRowEl === row){
-        activeCatRowEl = null;
-        catPaletteHint.textContent = "카테고리 행을 먼저 클릭해서 선택하세요.";
-      }
-      row.remove();
-    });
-
-    row.appendChild(nameInput);
-    row.appendChild(colorInput);
-    row.appendChild(delBtn);
-
-    row.addEventListener("click", () => {
-      [...catEditorList.querySelectorAll(".catRow")].forEach(r => r.style.outline = "none");
-      row.style.outline = "2px solid rgba(124,196,255,.85)";
-      row.style.outlineOffset = "2px";
-      activeCatRowEl = row;
-      catPaletteHint.textContent = "이제 위 빠른 색상을 눌러 선택된 행의 색을 바꿀 수 있어요.";
-    });
-
-    return row;
-  }
-
-  addCategoryRowBtn.addEventListener("click", () => { catEditorList.appendChild(makeCatRow("", "#e6edf3")); });
-
-  resetCategoriesBtn.addEventListener("click", () => {
-    if(!confirm("기본 카테고리/색상으로 되돌릴까요?")) return;
-    buildCatEditorRows(structuredClone(DEFAULT_CATEGORIES));
-    activeCatRowEl = null;
-    catPaletteHint.textContent = "카테고리 행을 먼저 클릭해서 선택하세요.";
-  });
-
-  saveCatListBtn.addEventListener("click", () => {
-    if(!state.ui.admin) return;
-
-    const rows = [...catEditorList.querySelectorAll(".catRow")];
-    const next = [];
-    for(const r of rows){
-      const name = (r.querySelector('input[type="text"]').value || "").trim();
-      const color = (r.querySelector('input[type="color"]').value || "").trim();
-      next.push({ name, color });
-    }
-    const cleaned = uniqByName(next);
-    if(cleaned.length === 0) return;
-
-    const g = getCurrentGame();
-    g.categories = cleaned;
-
-    if(state.ui.selectedCategory && !g.categories.some(c => c.name === state.ui.selectedCategory)){
-      state.ui.selectedCategory = "";
-    }
-
-    const validSet = new Set(g.categories.map(c => c.name));
-    const fallbackCat = g.categories[0]?.name || "default";
-    for(const m of currentMarkers()){
-      if(!validSet.has(m.category)) m.category = fallbackCat;
-    }
-    normalizeAllChainsCurrentPage();
-
-    saveState();
-    rebuildCategoryBar();
-    renderSelectedPanel();
-    draw();
-    closeCatModal();
-  });
-
-  // ==========================================================
-  // Admin hints
+  // Admin hints (index에서는 값만 갱신)
   // ==========================================================
   function refreshHints(){
-    createCategoryHint.textContent = state.ui.createCategory || "-";
-    const id = (state.ui.insertAfterMarkerId || "").trim();
-    if(!id){
-      insertAfterHint.textContent = "없음";
-      return;
-    }
-    const m = currentMarkers().find(x => x.id === id);
-    if(!m){
-      state.ui.insertAfterMarkerId = "";
-      insertAfterHint.textContent = "없음";
-      saveState();
-      return;
-    }
-    const chain = findChainByMarkerId(m.id);
-    const chainNo = chain ? (chain.chainIndex + 1) : 1;
-    insertAfterHint.textContent = `${(m.title||"").trim() || "(이름 없음)"} / chain ${chainNo}`;
+    if(createCategoryHint) createCategoryHint.textContent = state.ui.createCategory || "-";
+    if(insertAfterHint) insertAfterHint.textContent = "없음";
   }
 
   // ==========================================================
-  // Create markers (admin, page-local)
+  // Create markers (admin) - index에서는 호출 안 됨
   // ==========================================================
   function getDefaultCreateColorOverride(){
     const a = (state.ui.createColorOverride || "").trim();
@@ -2497,7 +1701,6 @@ if (typeof structuredClone !== "function") {
     if(b) return b;
     return "";
   }
-
   function computeCreatedAtForInsertion(groupId, insertAfterMarkerId){
     const afterId = (insertAfterMarkerId || "").trim();
     if(!afterId) return nowISO();
@@ -2526,19 +1729,8 @@ if (typeof structuredClone !== "function") {
     }
     return isoFromMs(afterMs + 1);
   }
-
   function getChainMasterForCreate(groupId){
     const gid = Number(groupId||0);
-
-    const afterId = (state.ui.insertAfterMarkerId || "").trim();
-    if(afterId){
-      const ch = findChainByMarkerId(afterId);
-      if(ch){
-        const master = currentMarkers().find(x => x.id === ch.masterId);
-        if(master) return { chain: ch, master };
-      }
-    }
-
     const lastId = (state.ui.lastCreatedMarkerId || "").trim();
     if(lastId){
       const last = currentMarkers().find(x => x.id === lastId);
@@ -2550,7 +1742,6 @@ if (typeof structuredClone !== "function") {
         }
       }
     }
-
     const chains = computeChainsForGroup(gid);
     const first = chains[0] || null;
     if(first){
@@ -2559,68 +1750,14 @@ if (typeof structuredClone !== "function") {
     }
     return { chain:null, master:null };
   }
-
   function createMarkerAtWorld(wx, wy){
     if(!state.ui.admin) return;
-
-    const mp = currentMap();
-    const xr = clamp01(wx / mp.width);
-    const yr = clamp01(wy / mp.height);
-
-    ensureCreateDefaults();
-
-    const groupId = Number(state.ui.createGroupId || 0);
-    const createdAt = computeCreatedAtForInsertion(groupId, state.ui.insertAfterMarkerId);
-    const { chain, master } = getChainMasterForCreate(groupId);
-
-    const baseCat = (master?.category || "").trim() || (state.ui.createCategory || "").trim() || (currentCategories()[0]?.name || "default");
-    const baseRadius = (typeof master?.radiusPx === "number" ? master.radiusPx : DEFAULT_MARKER_RADIUS_PX);
-    const baseColorOverride = (master?.colorOverride || getDefaultCreateColorOverride()).trim();
-    const baseWeight = (typeof master?.labelWeight === "number" ? master.labelWeight : DEFAULT_LABEL_WEIGHT);
-    const baseLabelColor = (typeof master?.labelColor === "string" ? master.labelColor : DEFAULT_LABEL_COLOR);
-
-    const m = {
-      id: uid(),
-      x: xr, y: yr,
-      category: baseCat,
-      title: "",
-      youtubeUrl: "",
-      youtubeLabel: "",
-      createdAt,
-      colorOverride: baseColorOverride,
-      radiusPx: baseRadius,
-      labelSizePx: calcLabelSizeFromRadius(baseRadius),
-      labelWeight: baseWeight,
-      labelColor: baseLabelColor,
-      groupId,
-      chainStart: false,
-      memo: ""
-    };
-
-    currentMarkers().push(m);
-
-    if((state.ui.insertAfterMarkerId || "").trim()){
-      state.ui.insertAfterMarkerId = m.id;
-      refreshHints();
-    }
-
-    state.ui.lastCreatedMarkerId = m.id;
-    state.ui.selectedMarkerId = m.id;
-
-    applyAllChainsInGroup(groupId);
-    rebuildLinks();
-
-    saveState();
-    renderSelectedPanel();
-    rebuildPageList();
-    draw();
   }
 
   // ==========================================================
   // User: dim reset
   // ==========================================================
   resetDimBtn.addEventListener("click", () => {
-    if(state.ui.admin) return;
     state.ui.dimmedMarkerIds = [];
     saveState();
     draw();
@@ -2696,35 +1833,24 @@ if (typeof structuredClone !== "function") {
   let isPanning = false;
   let panStart = { x:0, y:0 };
   let viewStart = { ox:0, oy:0 };
-  let draggingMarkerId = "";
-  let dragOffsetWorld = { x:0, y:0 };
   let didDrag = false;
 
   canvas.addEventListener("mousedown", (evt) => {
     const { x:sx, y:sy } = getPointerPos(evt);
     didDrag = false;
 
-    // 우클릭: 관리자 마커 추가
-    if(evt.button === 2){
-      if(state.ui.admin){
-        const w = screenToWorld(sx, sy);
-        createMarkerAtWorld(w.x, w.y);
-      }
-      return;
-    }
+    if(evt.button === 2) return;
     if(evt.button !== 0) return;
 
     // 유저모드: 텍스트 클릭 -> 오버레이 고정
-    if(!state.ui.admin){
-      const labelHit = findMarkerLabelAtScreen(sx, sy);
-      if(labelHit){
-        state.ui.selectedMarkerId = labelHit.id;
-        saveState();
-        renderSelectedPanel();
-        showPinnedOverlayForMarker(labelHit, evt.clientX, evt.clientY);
-        draw();
-        return;
-      }
+    const labelHit = findMarkerLabelAtScreen(sx, sy);
+    if(labelHit){
+      state.ui.selectedMarkerId = labelHit.id;
+      saveState();
+      renderSelectedPanel();
+      showPinnedOverlayForMarker(labelHit, evt.clientX, evt.clientY);
+      draw();
+      return;
     }
 
     // 마커 아이콘 hit?
@@ -2732,35 +1858,20 @@ if (typeof structuredClone !== "function") {
     if(m){
       state.ui.selectedMarkerId = m.id;
 
-      // ✅ 유저모드: 아이콘 클릭 시 "불투명 30%" 토글
-      if(!state.ui.admin){
-        const set = new Set(state.ui.dimmedMarkerIds || []);
-        if(set.has(m.id)) set.delete(m.id);
-        else set.add(m.id);
-        state.ui.dimmedMarkerIds = [...set];
+      // 유저모드: 아이콘 클릭 시 "불투명 30%" 토글
+      const set = new Set(state.ui.dimmedMarkerIds || []);
+      if(set.has(m.id)) set.delete(m.id);
+      else set.add(m.id);
+      state.ui.dimmedMarkerIds = [...set];
 
-        saveState();
-        renderSelectedPanel();
-        draw();
-        return;
-      }
-
-      // 관리자모드: 드래그 이동
       saveState();
       renderSelectedPanel();
-      draggingMarkerId = m.id;
-
-      const w = screenToWorld(sx, sy);
-      const mp = currentMap();
-      const mwx = m.x * mp.width;
-      const mwy = m.y * mp.height;
-      dragOffsetWorld = { x: mwx - w.x, y: mwy - w.y };
       draw();
       return;
     }
 
-    // 유저모드: 빈 곳 클릭하면 pin 해제
-    if(!state.ui.admin && overlayPinned){
+    // 빈 곳 클릭하면 pin 해제
+    if(overlayPinned){
       unpinOverlay();
       draw();
       return;
@@ -2775,31 +1886,10 @@ if (typeof structuredClone !== "function") {
   canvas.addEventListener("mousemove", (evt) => {
     const { x:sx, y:sy } = getPointerPos(evt);
 
-    // 유저모드: 텍스트 hover일 때만 오버레이
-    if(!state.ui.admin){
-      if(!overlayPinned){
-        const labelHit = findMarkerLabelAtScreen(sx, sy);
-        if(labelHit) showHoverOverlayForMarker(labelHit, evt.clientX, evt.clientY);
-        else hideHoverOverlay(false);
-      }
-    }
-
-    if(draggingMarkerId && state.ui.admin){
-      const m = currentMarkers().find(x => x.id === draggingMarkerId);
-      if(!m) return;
-      const w = screenToWorld(sx, sy);
-      const mp = currentMap();
-      const mwx = w.x + dragOffsetWorld.x;
-      const mwy = w.y + dragOffsetWorld.y;
-      const nx = clamp01(mwx / mp.width);
-      const ny = clamp01(mwy / mp.height);
-
-      if(Math.abs(nx - m.x) > 0.0001 || Math.abs(ny - m.y) > 0.0001) didDrag = true;
-
-      m.x = nx;
-      m.y = ny;
-      draw();
-      return;
+    if(!overlayPinned){
+      const labelHit = findMarkerLabelAtScreen(sx, sy);
+      if(labelHit) showHoverOverlayForMarker(labelHit, evt.clientX, evt.clientY);
+      else hideHoverOverlay(false);
     }
 
     if(isPanning){
@@ -2812,28 +1902,9 @@ if (typeof structuredClone !== "function") {
     }
   });
 
-  window.addEventListener("mouseup", () => {
-    if(draggingMarkerId){
-      saveState();
-      draggingMarkerId = "";
-      renderSelectedPanel();
-      rebuildPageList();
-      draw();
-    }
-    isPanning = false;
-  });
+  window.addEventListener("mouseup", () => { isPanning = false; });
 
-  canvas.addEventListener("dblclick", (evt) => {
-    if(!state.ui.admin) return;
-    if(didDrag) return;
-    const { x:sx, y:sy } = getPointerPos(evt);
-    const m = findMarkerAtScreen(sx, sy);
-    if(m) openMarkerModal(m.id);
-  });
-
-  centerStage.addEventListener("mouseleave", () => {
-    if(!state.ui.admin) hideHoverOverlay(true);
-  });
+  centerStage.addEventListener("mouseleave", () => { hideHoverOverlay(true); });
 
   // ==========================================================
   // Draw
@@ -2857,42 +1928,54 @@ if (typeof structuredClone !== "function") {
     ctx.restore();
   }
 
-  // ✅ 화살표-마커 간격 더 가깝게: r 12 -> 8
   function drawArrow(ax, ay, bx, by){
     const dx = bx - ax;
     const dy = by - ay;
     const len = Math.hypot(dx, dy);
     if(len < 1e-6) return;
 
-    const r = 8; // <-- closer
+    ctx.beginPath();
+    ctx.moveTo(ax, ay);
+    ctx.lineTo(bx, by);
+    ctx.stroke();
+
     const ux = dx / len;
     const uy = dy / len;
-    const endX = bx - ux * r;
-    const endY = by - uy * r;
-    const startX = ax + ux * r;
-    const startY = ay + uy * r;
-
-    ctx.beginPath();
-    ctx.moveTo(startX, startY);
-    ctx.lineTo(endX, endY);
-    ctx.stroke();
 
     const head = 10 / view.scale;
     const angle = Math.atan2(uy, ux);
     const a1 = angle + Math.PI * 0.85;
     const a2 = angle - Math.PI * 0.85;
 
-    const hx1 = endX + Math.cos(a1) * head;
-    const hy1 = endY + Math.sin(a1) * head;
-    const hx2 = endX + Math.cos(a2) * head;
-    const hy2 = endY + Math.sin(a2) * head;
+    const hx1 = bx + Math.cos(a1) * head;
+    const hy1 = by + Math.sin(a1) * head;
+    const hx2 = bx + Math.cos(a2) * head;
+    const hy2 = by + Math.sin(a2) * head;
 
     ctx.beginPath();
-    ctx.moveTo(endX, endY);
+    ctx.moveTo(bx, by);
     ctx.lineTo(hx1, hy1);
     ctx.lineTo(hx2, hy2);
     ctx.closePath();
     ctx.fill();
+  }
+
+  function shrinkSegmentToCircles(ax, ay, arWorld, bx, by, brWorld){
+    const dx = bx - ax;
+    const dy = by - ay;
+    const len = Math.hypot(dx, dy) || 1;
+    const ux = dx / len;
+    const uy = dy / len;
+
+    const aShrink = Math.min(arWorld, len * 0.49);
+    const bShrink = Math.min(brWorld, len * 0.49);
+
+    const sx = ax + ux * aShrink;
+    const sy = ay + uy * aShrink;
+    const ex = bx - ux * bShrink;
+    const ey = by - uy * bShrink;
+
+    return { sx, sy, ex, ey };
   }
 
   function buildNumberMap(){
@@ -2939,9 +2022,8 @@ if (typeof structuredClone !== "function") {
       const g = getCurrentGame();
       const p = getCurrentPage();
 
-      const msg = IS_ADMIN_PAGE
-        ? `"${g.name} / ${p.name}" 지도 이미지를 업로드하거나, URL을 설정하세요 (관리자 모드)`
-        : `"${g.name} / ${p.name}" 지도 이미지가 설정되지 않았습니다.\n관리자에서 URL 설정 후 JSON 내보내기 → data/state.json 업로드하면\nPC/폰 동일하게 보입니다.`;
+      const msg =
+        `"${g.name} / ${p.name}" 지도 이미지가 설정되지 않았습니다.\n관리자에서 URL을 설정하면 폰에서도 동일하게 보입니다.`;
 
       const lines = String(msg).split("\n");
       let y = 70/view.scale;
@@ -2960,14 +2042,24 @@ if (typeof structuredClone !== "function") {
     ctx.fillStyle = "#ffffff";
     ctx.globalAlpha = 0.85;
     ctx.lineWidth = 2 / view.scale;
+
     for(const l of currentLinks()){
       if(!visibleSet.has(l.fromId) || !visibleSet.has(l.toId)) continue;
       const a = currentMarkers().find(m => m.id === l.fromId);
       const b = currentMarkers().find(m => m.id === l.toId);
       if(!a || !b) continue;
+
       const ax = a.x * mp.width, ay = a.y * mp.height;
       const bx = b.x * mp.width, by = b.y * mp.height;
-      drawArrow(ax, ay, bx, by);
+
+      const arPx = (typeof a.radiusPx === "number" ? a.radiusPx : DEFAULT_MARKER_RADIUS_PX);
+      const brPx = (typeof b.radiusPx === "number" ? b.radiusPx : DEFAULT_MARKER_RADIUS_PX);
+
+      const arWorld = arPx / view.scale;
+      const brWorld = brPx / view.scale;
+
+      const seg = shrinkSegmentToCircles(ax, ay, arWorld, bx, by, brWorld);
+      drawArrow(seg.sx, seg.sy, seg.ex, seg.ey);
     }
     ctx.restore();
 
@@ -2986,7 +2078,7 @@ if (typeof structuredClone !== "function") {
       ctx.save();
       ctx.translate(wx, wy);
 
-      const dimIcon = (!state.ui.admin && dimSet.has(m.id));
+      const dimIcon = (dimSet.has(m.id));
       const iconAlpha = dimIcon ? 0.30 : 1.0;
 
       ctx.save();
@@ -3129,6 +2221,9 @@ if (typeof structuredClone !== "function") {
     rebuildLinks();
     saveState();
 
+    // ✅ 인덱스는 항상 USER
+    setAdminMode(false);
+
     refreshAll();
     resizeCanvas();
     resetView();
@@ -3136,11 +2231,8 @@ if (typeof structuredClone !== "function") {
     draw();
   }
 
-  // ==========================================================
-  // Extra: click blank area to unpin overlay (user)
-  // ==========================================================
+  // ✅ 빈 곳 클릭하면 오버레이 pin 해제
   canvas.addEventListener("mousedown", (evt) => {
-    if(state.ui.admin) return;
     if(evt.button !== 0) return;
     const { x:sx, y:sy } = getPointerPos(evt);
     const labelHit = findMarkerLabelAtScreen(sx, sy);
@@ -3149,74 +2241,8 @@ if (typeof structuredClone !== "function") {
     if(overlayPinned) unpinOverlay();
   });
 
-  // ==========================================================
-  // Admin auth wiring
-  // ==========================================================
-  function unlockAdmin(){
-    setAuthed();
-    showLock(false);
-    adminToggleWrap.style.display = "";
-    adminToggle.checked = true;
-    setAdminMode(true);
-  }
-
-  function lockAdmin(){
-    showLock(true);
-    adminToggle.checked = false;
-    setAdminMode(false);
-  }
-
-  if(IS_ADMIN_PAGE){
-    if(!isAuthed()){
-      lockAdmin();
-    }else{
-      showLock(false);
-      adminToggle.checked = true;
-      setAdminMode(true);
-    }
-
-    $unlock.addEventListener("click", () => {
-      if(($pw.value || "") === ADMIN_PASSWORD) unlockAdmin();
-      else { $msg.textContent = "비밀번호가 올바르지 않습니다."; $pw.select(); }
-    });
-    $pw.addEventListener("keydown", (e) => { if(e.key === "Enter") $unlock.click(); });
-
-    $logout.addEventListener("click", () => {
-      clearAuthed();
-      location.reload();
-    });
-  }else{
-    setAdminMode(false);
-  }
-
   init();
 })();
 </script>
-  <script>
-(async function(){
-  const KEY = "imgmap_multi_v700";
-  const url = "./data/state.json?v=" + Date.now(); // 캐시 방지
-
-  // 이미 로컬에 데이터 있으면 그대로 사용(관리자 PC용)
-  // 모바일(처음 접속)은 없으니 아래에서 내려받아 채움
-  if (!localStorage.getItem(KEY)) {
-    try{
-      const res = await fetch(url, {cache:"no-store"});
-      if(!res.ok) throw new Error("state.json fetch failed: " + res.status);
-      const txt = await res.text();
-
-      // JSON 문자열을 그대로 저장 (기존 로직이 localStorage에서 읽게)
-      localStorage.setItem(KEY, txt);
-
-      // 저장 후 새로고침 (기존 초기화/로드 흐름 그대로 타게)
-      location.reload();
-    }catch(e){
-      console.warn(e);
-    }
-  }
-})();
-</script>
-
 </body>
 </html>
-
