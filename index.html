@@ -680,10 +680,10 @@ if (typeof structuredClone !== "function") {
   const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
   // ==========================================================
-  // ✅ Remote state.json (GitHub Pages 동기화)
+  // ✅ (수정) Remote state.json 관련 상수/폴링 제거
+  // - state는 ./data/state.json을 "항상" 불러오고
+  // - 개인 dim(불투명)만 localStorage로 유지
   // ==========================================================
-  const REMOTE_STATE_FILE = "state.json"; // 저장소 루트에 state.json 올려두면 OK
-  const REMOTE_POLL_MS = 3000;
 
   // ==========================================================
   // Storage / DB
@@ -748,6 +748,12 @@ if (typeof structuredClone !== "function") {
       state._updatedAt = Date.now();
       state._updatedAtISO = new Date().toISOString();
       localStorage.setItem(LS_KEY, JSON.stringify(state));
+
+      // ✅ (수정) 개인 불투명(딤) 상태는 별도 키로도 저장해서
+      // 서버 state로 덮어써져도 개인 상태가 유지되게 함
+      try{
+        localStorage.setItem("dimmedMarkerIds_v1", JSON.stringify(state?.ui?.dimmedMarkerIds || []));
+      }catch(e){}
     } catch(e){
       console.warn(e);
     }
@@ -825,64 +831,37 @@ if (typeof structuredClone !== "function") {
     ]
   };
 
-  // Load or init (local first)
-  const loaded = safeParse(localStorage.getItem(LS_KEY) || "", null);
-  let state = (loaded && loaded.games && Array.isArray(loaded.games)) ? loaded : structuredClone(defaultState);
-
   // ==========================================================
-  // ✅ Remote sync helpers (state.json)
+  // (수정) state는 서버에서 로드하기 전까지 기본값으로 시작
+  // - 기존 코드가 state=null인 상태에서 normalize를 실행해 크래시 나는 케이스 방지
   // ==========================================================
-  function isValidStateShape(s){
-    return !!(s && s.games && Array.isArray(s.games));
-  }
+  let state = structuredClone(defaultState);
 
-  async function fetchRemoteState(){
-    const url = new URL(REMOTE_STATE_FILE, location.href).toString() + "?v=" + Date.now();
-    const res = await fetch(url, { cache: "no-store" });
-    if(!res.ok) return null;
-    const txt = await res.text();
-    const json = safeParse(txt, null);
-    if(!isValidStateShape(json)) return null;
-    return json;
-  }
+  // ✅ state는 항상 GitHub ./data/state.json 기준으로 로드
+  async function loadStateAlwaysFromServer(){
+    const res = await fetch("./data/state.json?v=" + Date.now(), {
+      cache: "no-store"
+    });
+    if(!res.ok) throw new Error("state.json load failed");
 
-  // remote 적용: UI 일부는 유저 기기 상태를 유지
-  function applyRemoteState(remote){
-    const prevUI = state?.ui ? structuredClone(state.ui) : structuredClone(defaultState.ui);
+    const serverState = await res.json();
 
-    state = remote;
+    // ✅ 개인 설정(불투명 마커)만 localStorage에서 복원
+    try{
+      const dim = localStorage.getItem("dimmedMarkerIds_v1");
+      if(dim){
+        const arr = JSON.parse(dim);
+        if(serverState.ui && Array.isArray(arr)){
+          serverState.ui.dimmedMarkerIds = arr;
+        }
+      }
+    }catch(e){}
 
-    if(!state.ui) state.ui = structuredClone(defaultState.ui);
+    // ✅ INDEX는 USER 고정
+    if(!serverState.ui) serverState.ui = structuredClone(defaultState.ui);
+    serverState.ui.admin = false;
 
-    // ✅ index는 USER 고정 + 유저별 UI는 유지
-    state.ui.admin = false;
-    state.ui.dimmedMarkerIds = Array.isArray(prevUI.dimmedMarkerIds) ? prevUI.dimmedMarkerIds : [];
-    state.ui.selectedMarkerId = "";
-    state.ui.selectedCategory = prevUI.selectedCategory || "";
-
-    saveState();
-  }
-
-  let _lastRemoteSig = ""; // JSON 문자열 서명(업데이트 판단)
-
-  async function syncFromRemoteIfChanged(){
-    const remote = await fetchRemoteState();
-    if(!remote) return false;
-
-    const sig = String(remote._updatedAt || "") + "|" + JSON.stringify(remote.games)?.length;
-    // _updatedAt이 없을 수도 있으니 length도 섞음(간단 변경 감지)
-    if(sig && sig === _lastRemoteSig) return false;
-
-    _lastRemoteSig = sig;
-    applyRemoteState(remote);
-
-    // 화면 갱신
-    refreshAll();
-    resizeCanvas();
-    resetView();
-    await loadMapImageForCurrentPage();
-    draw();
-    return true;
+    state = serverState;
   }
 
   // ==========================================================
@@ -1186,80 +1165,77 @@ if (typeof structuredClone !== "function") {
     return `mapimg_${g.id}_${p.id}`;
   }
 
-async function loadMapImageForCurrentPage(){
-  mapImgReady = false;
+  async function loadMapImageForCurrentPage(){
+    mapImgReady = false;
 
-  if(mapObjectUrl){
-    URL.revokeObjectURL(mapObjectUrl);
-    mapObjectUrl = null;
+    if(mapObjectUrl){
+      URL.revokeObjectURL(mapObjectUrl);
+      mapObjectUrl = null;
+    }
+
+    const mp = currentMap();
+
+    // 1️⃣ URL 우선 (모바일/공유용)
+    const url = (mp.imageUrl || "").trim();
+    if(url && isValidUrl(url)){
+      const abs = new URL(url, location.href).toString();
+
+      mapImg.onload = () => {
+        mapImgReady = true;
+        mp.width = mapImg.naturalWidth || mapImg.width;
+        mp.height = mapImg.naturalHeight || mapImg.height;
+        saveState();
+        resetView();
+        draw();
+      };
+
+      mapImg.onerror = async () => {
+        // 2️⃣ URL 실패 시 IDB fallback
+        const key = currentMapImageKey();
+        const blob = await idbGet(key).catch(()=>null);
+        if(blob){
+          mapObjectUrl = URL.createObjectURL(blob);
+          mapImg.onload = () => {
+            mapImgReady = true;
+            mp.width = mapImg.naturalWidth || mapImg.width;
+            mp.height = mapImg.naturalHeight || mapImg.height;
+            saveState();
+            resetView();
+            draw();
+          };
+          mapImg.onerror = () => { mapImgReady = false; draw(); };
+          mapImg.src = mapObjectUrl;
+          return;
+        }
+        mapImgReady = false;
+        draw();
+      };
+
+      mapImg.src = abs + (abs.includes("?") ? "&" : "?") + "v=" + Date.now();
+      return;
+    }
+
+    // 3️⃣ URL이 없으면 IDB만 사용
+    const key = currentMapImageKey();
+    const blob = await idbGet(key).catch(()=>null);
+    if(blob){
+      mapObjectUrl = URL.createObjectURL(blob);
+      mapImg.onload = () => {
+        mapImgReady = true;
+        mp.width = mapImg.naturalWidth || mapImg.width;
+        mp.height = mapImg.naturalHeight || mapImg.height;
+        saveState();
+        resetView();
+        draw();
+      };
+      mapImg.onerror = () => { mapImgReady = false; draw(); };
+      mapImg.src = mapObjectUrl;
+      return;
+    }
+
+    mapImgReady = false;
+    draw();
   }
-
-  const mp = currentMap();
-
-  // 1️⃣ URL 우선 (모바일/공유용)
-  const url = (mp.imageUrl || "").trim();
-  if(url && isValidUrl(url)){
-    const abs = new URL(url, location.href).toString();
-
-    mapImg.onload = () => {
-      mapImgReady = true;
-      mp.width = mapImg.naturalWidth || mapImg.width;
-      mp.height = mapImg.naturalHeight || mapImg.height;
-      saveState();
-      resetView();
-      draw();
-    };
-
-    mapImg.onerror = async () => {
-      // 2️⃣ URL 실패 시 IDB fallback
-      const key = currentMapImageKey();
-      const blob = await idbGet(key).catch(()=>null);
-      if(blob){
-        mapObjectUrl = URL.createObjectURL(blob);
-        mapImg.onload = () => {
-          mapImgReady = true;
-          mp.width = mapImg.naturalWidth || mapImg.width;
-          mp.height = mapImg.naturalHeight || mapImg.height;
-          saveState();
-          resetView();
-          draw();
-        };
-        mapImg.onerror = () => { mapImgReady = false; draw(); };
-        mapImg.src = mapObjectUrl;
-        return;
-      }
-      mapImgReady = false;
-      draw();
-    };
-
-    mapImg.src = abs + (abs.includes("?") ? "&" : "?") + "v=" + Date.now();
-    return;
-  }
-
-  // 3️⃣ URL이 없으면 IDB만 사용
-  const key = currentMapImageKey();
-  const blob = await idbGet(key).catch(()=>null);
-  if(blob){
-    mapObjectUrl = URL.createObjectURL(blob);
-    mapImg.onload = () => {
-      mapImgReady = true;
-      mp.width = mapImg.naturalWidth || mapImg.width;
-      mp.height = mapImg.naturalHeight || mapImg.height;
-      saveState();
-      resetView();
-      draw();
-    };
-    mapImg.onerror = () => { mapImgReady = false; draw(); };
-    mapImg.src = mapObjectUrl;
-    return;
-  }
-
-  mapImgReady = false;
-  draw();
-}
-
-
-  
 
   const view = { scale:1, minScale:0.05, maxScale:10, offsetX:0, offsetY:0 };
 
@@ -2104,11 +2080,21 @@ async function loadMapImageForCurrentPage(){
   }
 
   // ==========================================================
-  // Final init (async로 변경: remote 먼저 한번 당겨옴)
+  // Final init (async)
   // ==========================================================
   async function init(){
-    // ✅ 1) remote state.json을 먼저 당겨서 적용(있으면)
-    await syncFromRemoteIfChanged().catch(()=>{});
+    // ✅ (수정) 항상 서버 state.json을 먼저 로드
+    try{
+      await loadStateAlwaysFromServer();
+    }catch(err){
+      console.warn(err);
+      // 서버 로드 실패 시: 기존 defaultState(이미 들어있음)로 계속 진행
+    }
+
+    // ✅ 개인 dimmed는 loadStateAlwaysFromServer에서 복원됨
+    // ✅ index는 USER 고정
+    if(!state.ui) state.ui = structuredClone(defaultState.ui);
+    state.ui.admin = false;
 
     getCurrentGame();
     getCurrentPage();
@@ -2144,10 +2130,7 @@ async function loadMapImageForCurrentPage(){
     await loadMapImageForCurrentPage();
     draw();
 
-    // ✅ 2) 주기적으로 remote state.json 변경 감지 → 자동 반영
-    setInterval(() => {
-      syncFromRemoteIfChanged().catch(()=>{});
-    }, REMOTE_POLL_MS);
+    // ✅ (수정) 폴링/remote sync 제거 (서버 state.json은 "새로고침/재접속" 기준으로 반영)
   }
 
   init().catch(err => console.warn(err));
@@ -2155,5 +2138,3 @@ async function loadMapImageForCurrentPage(){
 </script>
 </body>
 </html>
-
-
