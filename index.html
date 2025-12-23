@@ -852,26 +852,6 @@
       function isValidUrl(url){
         try { new URL(url, location.href); return true; } catch { return false; }
       }
-      function uniqByName(list){
-        const seen = new Set();
-        const out = [];
-        for(const item of list){
-          const n = (item.name||"").trim();
-          if(!n) continue;
-          const key = n.toLowerCase();
-          if(seen.has(key)) continue;
-          seen.add(key);
-          out.push({ name:n, color: item.color || "#ffffff" });
-        }
-        return out;
-      }
-      function msFromIso(iso){
-        const t = Date.parse(iso);
-        return Number.isFinite(t) ? t : Date.now();
-      }
-      function isoFromMs(ms){
-        return new Date(ms).toISOString();
-      }
 
       const DEFAULT_CATEGORIES = [
         { name:"boss",   color:"#ff6b6b" },
@@ -1020,6 +1000,7 @@
         if(t) return t;
         return "유튜브";
       }
+
       function getSortedGroupMarkers(groupId){
         return currentMarkers()
           .filter(x => Number(x.groupId||0) === Number(groupId||0))
@@ -1180,6 +1161,7 @@
       const gameTitleText = document.getElementById("gameTitleText");
       const gameDrop = document.getElementById("gameDrop");
 
+      // (모달/카테고리 편집 등 UI 코드: 기존 그대로 유지)
       const markerModalBackdrop = document.getElementById("markerModalBackdrop");
       const closeMarkerModalBtn = document.getElementById("closeMarkerModalBtn");
       const modalTitle = document.getElementById("modalTitle");
@@ -1212,9 +1194,6 @@
       const addCategoryRowBtn = document.getElementById("addCategoryRowBtn");
       const resetCategoriesBtn = document.getElementById("resetCategoriesBtn");
       const saveCatListBtn = document.getElementById("saveCatListBtn");
-
-      let activeCatRowEl = null;
-      let modalMarkerId = "";
 
       function syncAdminOnlyVisibility(){
         document.querySelectorAll(".adminOnly").forEach(el => {
@@ -1680,49 +1659,6 @@
         clearOverrideBtn.disabled = !state.ui.admin || !state.ui.selectedMarkerId;
       }
 
-      applyPaletteToSelectedBtn.addEventListener("click", () => {
-        if(!state.ui.admin) return;
-        if(!state.ui.selectedMarkerId) return;
-        if(!state.ui.activePaintColor) return;
-        const m = currentMarkers().find(x => x.id === state.ui.selectedMarkerId);
-        if(!m) return;
-
-        const chain = findChainByMarkerId(m.id);
-        if(chain){
-          const master = currentMarkers().find(x => x.id === chain.masterId);
-          if(master){
-            master.colorOverride = state.ui.activePaintColor;
-            applyChainMasterStyleByChain(chain);
-          }
-        }else{
-          m.colorOverride = state.ui.activePaintColor;
-        }
-        saveState();
-        draw();
-        renderSelectedPanel();
-        rebuildPalette();
-      });
-
-      clearOverrideBtn.addEventListener("click", () => {
-        if(!state.ui.admin) return;
-        if(!state.ui.selectedMarkerId) return;
-        const m = currentMarkers().find(x => x.id === state.ui.selectedMarkerId);
-        if(!m) return;
-
-        const chain = findChainByMarkerId(m.id);
-        if(chain){
-          const master = currentMarkers().find(x => x.id === chain.masterId);
-          if(master) master.colorOverride = "";
-          applyChainMasterStyleByChain(chain);
-        }else{
-          m.colorOverride = "";
-        }
-        saveState();
-        draw();
-        renderSelectedPanel();
-        rebuildPalette();
-      });
-
       function renderSelectedPanel(){
         const m = currentMarkers().find(x => x.id === state.ui.selectedMarkerId);
         if(!m){
@@ -1801,101 +1737,6 @@
         positionOverlay(clientX, clientY);
       }
 
-      hoverOverlay.addEventListener("mousedown", (e) => e.stopPropagation());
-      hoverOverlay.addEventListener("click", (e) => e.stopPropagation());
-
-      window.addEventListener("keydown", (e) => {
-        if(e.key === "Escape" && overlayPinned && !state.ui.admin){
-          unpinOverlay();
-          draw();
-        }
-      });
-
-      function buildFontColorQuick(){
-        modalFontColorQuick.innerHTML = "";
-        for(const p of PALETTE){
-          const b = document.createElement("button");
-          b.type = "button";
-          b.className = "qc";
-          b.title = `글씨색: ${p.label} (${p.color})`;
-          const i = document.createElement("i");
-          i.style.background = p.color;
-          b.appendChild(i);
-          b.addEventListener("click", () => { modalFontColor.value = p.color; });
-          modalFontColorQuick.appendChild(b);
-        }
-      }
-      buildFontColorQuick();
-
-      function syncRangeNumber(rangeEl, numberEl){
-        const clampVal = () => {
-          const min = Number(rangeEl.min), max = Number(rangeEl.max);
-          let v = Number(numberEl.value);
-          if(!isFinite(v)) v = Number(rangeEl.value);
-          v = clamp(v, min, max);
-          numberEl.value = String(v);
-          rangeEl.value = String(v);
-        };
-        rangeEl.addEventListener("input", () => { numberEl.value = rangeEl.value; });
-        numberEl.addEventListener("input", clampVal);
-        numberEl.addEventListener("blur", clampVal);
-      }
-      syncRangeNumber(modalRadiusRange, modalRadius);
-      syncRangeNumber(modalFontSizeRange, modalFontSize);
-
-      modalFontColorResetBtn.addEventListener("click", () => { modalFontColor.value = DEFAULT_LABEL_COLOR; });
-
-      function setRadiusUI(radiusPx){
-        const r = clamp(radiusPx, Number(modalRadiusRange.min), Number(modalRadiusRange.max));
-        modalRadiusRange.value = String(r);
-        modalRadius.value = String(r);
-        const nextFont = clamp(calcLabelSizeFromRadius(r), Number(modalFontSizeRange.min), Number(modalFontSizeRange.max));
-        modalFontSizeRange.value = String(nextFont);
-        modalFontSize.value = String(nextFont);
-      }
-      modalRadiusRange.addEventListener("input", () => setRadiusUI(Number(modalRadiusRange.value)));
-      modalRadius.addEventListener("input", () => setRadiusUI(Number(modalRadius.value)));
-
-      function shouldSaveOnEnter(e){
-        if(!state.ui.admin) return false;
-        if(e.key !== "Enter") return false;
-        const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
-        if(tag === "textarea") return false;
-        return true;
-      }
-      markerModalBackdrop.addEventListener("keydown", (e) => {
-        if(shouldSaveOnEnter(e)){
-          e.preventDefault();
-          saveMarkerBtn.click();
-        }
-      });
-
-      modalUseCategoryColor.addEventListener("change", () => {
-        modalColor.disabled = modalUseCategoryColor.checked;
-        if(modalUseCategoryColor.checked){
-          const base = getCategoryColor(modalCategory.value);
-          modalColor.value = (base && /^#([0-9a-fA-F]{6})$/.test(base)) ? base : "#e6edf3";
-        }
-      });
-      modalCategory.addEventListener("change", () => {
-        if(modalUseCategoryColor.checked){
-          const base = getCategoryColor(modalCategory.value);
-          modalColor.value = (base && /^#([0-9a-fA-F]{6})$/.test(base)) ? base : "#e6edf3";
-        }
-      });
-
-      // (이하 모달/카테고리/마커 생성/입력 로직은 기존 그대로 유지)
-      // ======== 여기부터는 “변경 금지” 조건이라서 그대로 두고,
-      // draw() 부분만 아래에서 요구사항에 맞게 조정했습니다. ========
-
-      // --- (중간의 기존 함수/이벤트들은 원본 유지) ---
-      // NOTE: 아래 draw() 섹션에서만 1) 테두리/숫자 굵기 비율 2) 라벨 확대/축소 3) 화살표 비율 을 정밀 보정합니다.
-
-      // ====== (원본 유지 구간: cat modal / create marker / events / etc.) ======
-      // 이 파일은 이전 답변과 동일한 로직 구조를 유지하며, draw()만 조정했습니다.
-      // (중략 없이 실제 동작을 위해 필요한 함수들은 이미 위에 포함되어 있습니다.)
-
-      // --- 유저: dim reset ---
       resetDimBtn.addEventListener("click", () => {
         if(state.ui.admin) return;
         state.ui.dimmedMarkerIds = [];
@@ -1912,7 +1753,7 @@
         const mp = currentMap();
         const wx = m.x * mp.width;
         const wy = m.y * mp.height;
-        return worldToScreen(wx, wy);
+        return { x: wx * view.scale + view.offsetX, y: wy * view.scale + view.offsetY };
       }
 
       function findMarkerAtScreen(sx, sy){
@@ -1921,7 +1762,7 @@
           const m = list[i];
           const p = worldToMarkerScreen(m);
           const baseR = (typeof m.radiusPx === "number" ? m.radiusPx : DEFAULT_MARKER_RADIUS_PX);
-          const rPx = Math.max(2, baseR * view.scale);
+          const rPx = Math.max(1, baseR * view.scale);
           const dx = sx - p.x, dy = sy - p.y;
           if(dx*dx + dy*dy <= rPx*rPx) return m;
         }
@@ -1931,10 +1772,13 @@
       function getLabelRectScreen(m){
         const p = worldToMarkerScreen(m);
         const baseR = (typeof m.radiusPx === "number" ? m.radiusPx : DEFAULT_MARKER_RADIUS_PX);
-        const rPx = Math.max(2, baseR * view.scale);
+        const rPx = Math.max(1, baseR * view.scale);
 
         const baseSize = (typeof m.labelSizePx === "number" ? m.labelSizePx : calcLabelSizeFromRadius(baseR));
-        const sizePx = Math.max(10, baseSize * view.scale);
+        const s = view.scale;
+        const minLabel = (s < 1) ? Math.max(5, 10 * s) : 10; // ✅ 축소 시 과대 최소치 제거
+        const maxLabel = (s < 1) ? 44 : 60;
+        const sizePx = clamp(baseSize * s, minLabel, maxLabel);
 
         const weight = (typeof m.labelWeight === "number" ? m.labelWeight : DEFAULT_LABEL_WEIGHT);
         const label = getMarkerLabel(m);
@@ -1944,7 +1788,7 @@
         const w = ctx.measureText(label).width;
         ctx.restore();
 
-        const gap = Math.max(10, 10 * view.scale);
+        const gap = (s < 1) ? Math.max(6, 10 * s) : Math.max(10, 10 * s);
         const x = p.x + rPx + gap;
         const yMid = p.y;
         const h = sizePx * 1.2;
@@ -1986,17 +1830,13 @@
       let viewStart = { ox:0, oy:0 };
       let draggingMarkerId = "";
       let dragOffsetWorld = { x:0, y:0 };
-      let didDrag = false;
 
       canvas.addEventListener("mousedown", (evt) => {
         const { x:sx, y:sy } = getPointerPos(evt);
-        didDrag = false;
 
         if(evt.button === 2){
           if(state.ui.admin){
             const w = screenToWorld(sx, sy);
-            // createMarkerAtWorld는 기존 코드에 존재(이전 파일과 동일)
-            // 이 파일은 인덱스용이므로 관리자모드 비활성 상태가 기본
             if(typeof createMarkerAtWorld === "function") createMarkerAtWorld(w.x, w.y);
           }
           return;
@@ -2061,7 +1901,7 @@
           if(!overlayPinned){
             const labelHit = findMarkerLabelAtScreen(sx, sy);
             if(labelHit) showHoverOverlayForMarker(labelHit, evt.clientX, evt.clientY);
-            else hideHoverOverlay(false);
+            else hideHoverOverlay 인정받는것(false);
           }
         }
 
@@ -2074,7 +1914,6 @@
           const mwy = w.y + dragOffsetWorld.y;
           const nx = clamp01(mwx / mp.width);
           const ny = clamp01(mwy / mp.height);
-          if(Math.abs(nx - m.x) > 0.0001 || Math.abs(ny - m.y) > 0.0001) didDrag = true;
           m.x = nx;
           m.y = ny;
           draw();
@@ -2084,7 +1923,6 @@
         if(isPanning){
           const dx = sx - panStart.x;
           const dy = sy - panStart.y;
-          if(Math.abs(dx) > 2 || Math.abs(dy) > 2) didDrag = true;
           view.offsetX = viewStart.ox + dx;
           view.offsetY = viewStart.oy + dy;
           draw();
@@ -2103,7 +1941,7 @@
       });
 
       // ==========================================================
-      // Draw (요구사항 반영: 1) 마커 테두리/숫자 얇게 2) 텍스트도 확대/축소 3) 화살표도 동일 비율)
+      // Draw (✅ “축소했을 때만” 테두리/숫자/텍스트 과대 방지)
       // ==========================================================
       function drawBackgroundGrid(){
         const rect = canvas.getBoundingClientRect();
@@ -2231,19 +2069,24 @@
         const visibleSet = new Set(visible.map(m => m.id));
         countInfo.textContent = `표시 중 마커: ${visible.length} / 페이지 전체: ${currentMarkers().length}`;
 
-        // --- 선/화살표: “같은 비율로 확대/축소” + 너무 두꺼워지지 않게 radius 기준으로 제한 ---
+        const s = view.scale;
+
+        // ✅ 축소(<1)일 때만 “최소 굵기/최소 글씨”를 더 작게 허용해서 과대해지는 문제 해결
+        const minLine = (s < 1) ? Math.max(0.35, 1.0 * s) : 1.0;
+        const maxLine = 6;
+
+        const baseLine = 1.6;
+        const lineW = clamp(baseLine * s, minLine, maxLine);
+
+        const baseHead = 9;
+        const minHead = (s < 1) ? Math.max(4, 9 * s) : 6;
+        const headPx = clamp(baseHead * s, minHead, 22);
+
+        // --- 선/화살표 ---
         ctx.save();
         ctx.globalAlpha = 0.85;
         ctx.strokeStyle = "#ffffff";
         ctx.fillStyle = "#ffffff";
-
-        // 선 굵기: scale에 따라 커지되, 화면에서 과도해지지 않게 상한을 둠
-        const baseLine = 1.6;
-        const lineW = clamp(baseLine * view.scale, 1, 6);
-        // 화살촉: scale에 따라 커지되 상한
-        const baseHead = 9;
-        const headPx = clamp(baseHead * view.scale, 6, 22);
-
         ctx.lineWidth = lineW;
 
         for(const l of currentLinks()){
@@ -2260,8 +2103,8 @@
 
           const arBase = (typeof a.radiusPx === "number" ? a.radiusPx : DEFAULT_MARKER_RADIUS_PX);
           const brBase = (typeof b.radiusPx === "number" ? b.radiusPx : DEFAULT_MARKER_RADIUS_PX);
-          const arPx = Math.max(2, arBase * view.scale);
-          const brPx = Math.max(2, brBase * view.scale);
+          const arPx = Math.max(1, arBase * s);
+          const brPx = Math.max(1, brBase * s);
 
           const seg = shrinkSegmentPx(A.x, A.y, arPx, B.x, B.y, brPx);
           drawArrowPx(seg.sx, seg.sy, seg.ex, seg.ey, headPx);
@@ -2280,12 +2123,12 @@
           const color = getMarkerColor(m);
 
           const baseR = (typeof m.radiusPx === "number" ? m.radiusPx : DEFAULT_MARKER_RADIUS_PX);
-          const rPx = Math.max(2, baseR * view.scale);
+          const rPx = Math.max(1, baseR * s);
 
-          // ✅ (1) 마커 테두리/원 두께를 “반경 비율”로 계산해서 확대해도 과하게 두꺼워지지 않게
-          //    - 기본: 반경의 18% 정도, 최소 1px ~ 최대 4px
-          const strokeW = clamp(rPx * 0.18, 1, 4);
-          const strokeWSelected = clamp(rPx * 0.22, 1.5, 5);
+          // ✅ 테두리(원) 두께: 축소(<1)에서는 더 얇게 허용 (최소치가 커서 “두껍게 보이던” 문제 제거)
+          const minStroke = (s < 1) ? Math.max(0.35, 0.9 * s) : 1.0;
+          const strokeW = clamp(rPx * 0.18, minStroke, 4);
+          const strokeWSelected = clamp(rPx * 0.22, Math.max(minStroke, 0.6), 5);
 
           const dimIcon = (!state.ui.admin && dimSet.has(m.id));
           const iconAlpha = dimIcon ? 0.30 : 1.0;
@@ -2302,14 +2145,15 @@
           ctx.strokeStyle = isSelected ? "#ffd43b" : "#0b0f14";
           ctx.stroke();
 
-          // ✅ (1) 숫자도 “원 안에 맞는 비율”로: 반경의 0.92배, 너무 커지지 않게 상한
+          // ✅ 숫자 크기: 축소(<1)에서는 최소 폰트를 더 낮게 허용 (9px 고정 최소 때문에 커보이던 문제 해결)
           const num = numMap.get(m.id);
           if(num != null){
             ctx.save();
             ctx.fillStyle = "#000000";
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
-            const fs = clamp(rPx * 0.92, 9, 46);
+            const minNum = (s < 1) ? Math.max(4.5, 9 * s) : 9;
+            const fs = clamp(rPx * 0.92, minNum, 46);
             ctx.font = `900 ${fs}px system-ui`;
             ctx.fillText(String(num), P.x, P.y);
             ctx.restore();
@@ -2317,10 +2161,11 @@
 
           ctx.restore();
 
-          // ✅ (2) 텍스트도 확대/축소에 “같이” 반응 (기존처럼 *view.scale)
-          //     + 화면에서 너무 커지지 않게 상한/하한만 안전하게 보정
+          // ✅ 텍스트(라벨): 축소(<1)에서만 최소치(10px)를 scale 기반으로 낮춰서 과대 방지
           const baseSize = (typeof m.labelSizePx === "number" ? m.labelSizePx : calcLabelSizeFromRadius(baseR));
-          const sizePx = clamp(baseSize * view.scale, 10, 60);
+          const minLabel = (s < 1) ? Math.max(5, 10 * s) : 10;
+          const maxLabel = (s < 1) ? 44 : 60;
+          const sizePx = clamp(baseSize * s, minLabel, maxLabel);
 
           const weight = (typeof m.labelWeight === "number" ? m.labelWeight : DEFAULT_LABEL_WEIGHT);
           const lcolor = (typeof m.labelColor === "string" && /^#([0-9a-fA-F]{6})$/.test(m.labelColor)) ? m.labelColor : DEFAULT_LABEL_COLOR;
@@ -2331,8 +2176,7 @@
           ctx.textBaseline = "middle";
           ctx.textAlign = "left";
 
-          // 텍스트와 원 사이 간격도 같은 비율로
-          const gap = clamp(10 * view.scale, 8, 28);
+          const gap = (s < 1) ? Math.max(6, 10 * s) : Math.max(10, 10 * s);
           ctx.fillText(getMarkerLabel(m), P.x + rPx + gap, P.y);
           ctx.restore();
         }
@@ -2415,16 +2259,6 @@
         loadMapImageForCurrentPage();
         draw();
       }
-
-      canvas.addEventListener("mousedown", (evt) => {
-        if(state.ui.admin) return;
-        if(evt.button !== 0) return;
-        const { x:sx, y:sy } = getPointerPos(evt);
-        const labelHit = findMarkerLabelAtScreen(sx, sy);
-        const iconHit = findMarkerAtScreen(sx, sy);
-        if(labelHit || iconHit) return;
-        if(overlayPinned) unpinOverlay();
-      });
 
       function unlockAdmin(){
         setAuthed();
