@@ -847,7 +847,7 @@ if (typeof structuredClone !== "function") {
 
   // Load or init
   const loaded = safeParse(localStorage.getItem(LS_KEY) || "", null);
-  const state = (loaded && loaded.games && Array.isArray(loaded.games)) ? loaded : structuredClone(defaultState);
+  let state = (loaded && loaded.games && Array.isArray(loaded.games)) ? loaded : structuredClone(defaultState);
 
   // Normalize
   if(!state.ui) state.ui = structuredClone(defaultState.ui);
@@ -874,6 +874,37 @@ if (typeof structuredClone !== "function") {
       if(!Array.isArray(p.links)) p.links = [];
     }
   }
+// ✅ [SYNC] localStorage에 저장된 최신 저장시간 읽기
+function getSavedUpdatedAt(){
+  try{
+    const json = localStorage.getItem(LS_KEY);
+    if(!json) return 0;
+    const s = JSON.parse(json);
+    return Number(s?._updatedAt || 0);
+  }catch(e){
+    return 0;
+  }
+}
+
+// ✅ [SYNC] 저장된 state를 다시 읽어서 화면에 반영
+function applyLatestStateFromStorage(){
+  try{
+    const json = localStorage.getItem(LS_KEY);
+    if(!json) return false;
+    const next = safeParse(json, null);
+    if(!next) return false;
+
+    // state 교체
+    state = next;
+
+    // 다시 그리기
+    try{ buildUI(); }catch(e){}
+    try{ draw(); }catch(e){}
+    return true;
+  }catch(e){
+    return false;
+  }
+}
 
   function getGameById(id){ return state.games.find(g => g.id === id) || null; }
   function getCurrentGame(){
@@ -2243,6 +2274,18 @@ if (typeof structuredClone !== "function") {
 
   init();
 })();
+  // ✅ [SYNC] 인덱스 자동 동기화 (모바일 포함)
+let _lastSeenUpdatedAt = getSavedUpdatedAt();
+
+setInterval(() => {
+  const t = getSavedUpdatedAt();
+  if (t && t > _lastSeenUpdatedAt) {
+    _lastSeenUpdatedAt = t;
+    applyLatestStateFromStorage();
+  }
+}, 1500);
+
 </script>
 </body>
 </html>
+
