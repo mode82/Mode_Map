@@ -190,7 +190,6 @@
       box-shadow: 0 10px 22px rgba(0,0,0,.18);
     }
 
-    /* ====== HOVER OVERLAY (메모창) ====== */
     #hoverOverlay{
       position:absolute;
       display:none;
@@ -198,21 +197,21 @@
       background: rgba(10,16,28,.78);
       border: 1px solid rgba(124,196,255,.18);
       border-radius: var(--r16);
-      padding: calc(10px * var(--ovUIScale, 1)) calc(12px * var(--ovUIScale, 1));
+      padding:10px 12px;
       max-width:min(420px, 84vw);
       box-shadow: var(--shadow);
       backdrop-filter: blur(var(--blur));
       -webkit-backdrop-filter: blur(var(--blur));
       pointer-events:auto;
 
-      /* ✅ 추가: 줌(view.scale)에 맞춘 스케일 */
-      transform: scale(var(--ovScale, 1));
+      /* ✅ 메모장(오버레이) 스케일 적용을 위한 기본값 (JS에서 transform만 건드림) */
       transform-origin: top left;
+      will-change: transform;
     }
     #hoverOverlay .memoLabel{
-      font-size: calc(12px * var(--ovUIScale, 1));
+      font-size:12px;
       color: var(--muted);
-      margin-bottom: calc(6px * var(--ovUIScale, 1));
+      margin-bottom:6px;
       font-weight:800;
       letter-spacing:.2px;
     }
@@ -220,23 +219,15 @@
       width: 100%;
       resize:none;
       line-height:1.35;
-      padding: calc(10px * var(--ovUIScale, 1)) calc(10px * var(--ovUIScale, 1));
+      padding:10px 10px;
       border-radius:12px;
-      margin-bottom: calc(10px * var(--ovUIScale, 1));
-      font-size: calc(13px * var(--ovUIScale, 1));
+      margin-bottom:10px;
+      font-size:13px;
     }
     #hoverOverlay textarea[readonly]{ opacity: .95; }
-    #hoverOverlay .yt{ font-size: calc(14px * var(--ovUIScale, 1)); font-weight:900; letter-spacing:.2px; }
+    #hoverOverlay .yt{ font-size:14px; font-weight:900; letter-spacing:.2px; }
     #hoverOverlay .yt a{ color: rgba(231,238,248,.95); text-decoration:none; }
     #hoverOverlay .yt a:hover{ text-decoration: underline; }
-
-    /* ✅ 추가: 모바일 기본 메모창 UI 크기 축소 */
-    @media (max-width: 700px){
-      #hoverOverlay{ --ovUIScale: 0.80; }
-    }
-    @media (max-width: 420px){
-      #hoverOverlay{ --ovUIScale: 0.74; }
-    }
 
     .modalBackdrop{
       position:fixed; inset:0;
@@ -583,7 +574,6 @@
     </aside>
   </div>
 
-  <!-- 마커 편집 모달(관리자용) -->
   <div class="modalBackdrop" id="markerModalBackdrop" aria-hidden="true">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="markerModalTitle">
       <div class="modalHeader">
@@ -709,7 +699,6 @@
     </div>
   </div>
 
-  <!-- 카테고리 편집 모달(관리자용) -->
   <div class="modalBackdrop" id="catModalBackdrop" aria-hidden="true">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="catModalTitle">
       <div class="modalHeader">
@@ -763,6 +752,7 @@
   <script>
     (() => {
       const IS_ADMIN_PAGE = /admin82\.html$/i.test(location.pathname);
+      const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
       const ADMIN_PASSWORD = "0000000001";
       const AUTH_KEY = "mm_admin_auth_v1";
@@ -1027,7 +1017,6 @@
         if(t) return t;
         return "유튜브";
       }
-
       function getSortedGroupMarkers(groupId){
         return currentMarkers()
           .filter(x => Number(x.groupId||0) === Number(groupId||0))
@@ -1063,7 +1052,6 @@
         }
         return null;
       }
-
       function applyChainMasterStyleByChain(chain){
         if(!chain) return;
         const master = currentMarkers().find(x => x.id === chain.masterId);
@@ -1291,11 +1279,30 @@
 
       const view = { scale:1, minScale:0.05, maxScale:10, offsetX:0, offsetY:0 };
 
-      /* ✅ 추가: 메모창(hoverOverlay) 스케일을 뷰 축소에 따라 같이 줄이기 */
-      function updateOverlayScale(){
-        // 축소될 때만 줄어들고, 확대는 1배로 제한
-        const s = Math.min(1, Math.max(0.55, view.scale));
-        hoverOverlay.style.setProperty("--ovScale", s.toFixed(3));
+      /* ✅ [메모장 스케일] 기준 스케일 저장(리셋 기준) */
+      let __baseViewScaleForOverlay = null;
+
+      /* ✅ [메모장 스케일] 모바일 기본 축소(기기 기준) */
+      const __isCoarse = window.matchMedia ? window.matchMedia("(pointer: coarse)").matches : false;
+      const __isSmall = window.matchMedia ? window.matchMedia("(max-width: 900px)").matches : false;
+      const __isMobile = __isCoarse || __isSmall;
+
+      function __getOverlayScale(){
+        // 모바일 기본 크기 축소(요구사항: 모바일 기본도 줄이기)
+        const base = __isMobile ? 0.78 : 1.0;
+
+        // 축소(줌아웃)될 때만 같이 줄이기: (현재/리셋) 비율을 1 이하로만 적용
+        const baseView = (__baseViewScaleForOverlay && isFinite(__baseViewScaleForOverlay)) ? __baseViewScaleForOverlay : view.scale;
+        const ratio = clamp(view.scale / baseView, 0.55, 1.0);
+
+        return clamp(base * ratio, 0.55, 1.0);
+      }
+
+      function __applyOverlayScale(){
+        // 관리자에서는 오버레이 안 씀
+        if(state.ui.admin) return;
+        const s = __getOverlayScale();
+        hoverOverlay.style.transform = `scale(${s})`;
       }
 
       function resizeCanvas(){
@@ -1306,10 +1313,7 @@
         ctx.setTransform(dpr,0,0,dpr,0,0);
         draw();
       }
-      window.addEventListener("resize", () => {
-        resizeCanvas();
-        updateOverlayScale();
-      });
+      window.addEventListener("resize", () => { resizeCanvas(); __applyOverlayScale(); });
 
       function worldToScreen(wx, wy){
         return { x: wx * view.scale + view.offsetX, y: wy * view.scale + view.offsetY };
@@ -1326,7 +1330,10 @@
         view.scale = clamp(s, view.minScale, view.maxScale);
         view.offsetX = (w - mw * view.scale) / 2;
         view.offsetY = (h - mh * view.scale) / 2;
-        updateOverlayScale();
+
+        /* ✅ [메모장 스케일] 리셋 기준 스케일 갱신 */
+        __baseViewScaleForOverlay = view.scale;
+        __applyOverlayScale();
       }
 
       function setAdminMode(on){
@@ -1341,7 +1348,6 @@
         saveState();
         syncAdminOnlyVisibility();
         refreshAll();
-        draw();
       }
 
       if(!IS_ADMIN_PAGE){
@@ -1541,6 +1547,7 @@
           const name = document.createElement("div");
           name.className = "name";
           name.textContent = p.name || "Page";
+
           left.appendChild(name);
 
           const actions = document.createElement("div");
@@ -1781,12 +1788,10 @@
         hideHoverOverlay(true);
       }
       function positionOverlay(clientX, clientY){
+        __applyOverlayScale(); /* ✅ 메모장 스케일 적용(표시/이동 시) */
+
         const stageRect = centerStage.getBoundingClientRect();
         const pad = 10;
-
-        // ✅ 스케일 적용된 상태에서도 위치가 어색하지 않게 먼저 스케일 갱신
-        updateOverlayScale();
-
         let x = clientX - stageRect.left + 16;
         let y = clientY - stageRect.top + 16;
         hoverOverlay.style.left = x + "px";
@@ -1908,7 +1913,6 @@
         }
       });
 
-      // --- 유저: dim reset ---
       resetDimBtn.addEventListener("click", () => {
         if(state.ui.admin) return;
         state.ui.dimmedMarkerIds = [];
@@ -1991,7 +1995,9 @@
         view.offsetX += (after.x - before.x) * view.scale;
         view.offsetY += (after.y - before.y) * view.scale;
 
-        updateOverlayScale(); /* ✅ 추가 */
+        /* ✅ [메모장 스케일] 줌아웃 시 같이 줄이기 */
+        __applyOverlayScale();
+
         draw();
       }, { passive:false });
 
@@ -2009,7 +2015,7 @@
         if(evt.button === 2){
           if(state.ui.admin){
             const w = screenToWorld(sx, sy);
-            createMarkerAtWorld(w.x, w.y);
+            if(typeof createMarkerAtWorld === "function") createMarkerAtWorld(w.x, w.y);
           }
           return;
         }
@@ -2099,7 +2105,10 @@
           if(Math.abs(dx) > 2 || Math.abs(dy) > 2) didDrag = true;
           view.offsetX = viewStart.ox + dx;
           view.offsetY = viewStart.oy + dy;
-          updateOverlayScale(); /* ✅ 추가 */
+
+          /* ✅ [메모장 스케일] 이동 중에도 현재 스케일 유지 */
+          __applyOverlayScale();
+
           draw();
         }
       });
@@ -2195,10 +2204,7 @@
         ctx.fill();
       }
 
-      /* ✅ 중요: draw()가 마커/텍스트/선 모두 그립니다 (안 보이던 문제 해결) */
       function draw(){
-        updateOverlayScale(); /* ✅ 추가 (가장 안전) */
-
         const rect = canvas.getBoundingClientRect();
         const w = rect.width, h = rect.height;
 
@@ -2206,7 +2212,6 @@
         const numMap = buildNumberMap();
         const mp = currentMap();
 
-        // 1-pass: 지도(월드 변환)
         ctx.save();
         ctx.translate(view.offsetX, view.offsetY);
         ctx.scale(view.scale, view.scale);
@@ -2239,12 +2244,10 @@
 
         ctx.restore();
 
-        // 2-pass: 선/마커/텍스트(스크린 px)
         const visible = getVisibleMarkers();
         const visibleSet = new Set(visible.map(m => m.id));
         countInfo.textContent = `표시 중 마커: ${visible.length} / 페이지 전체: ${currentMarkers().length}`;
 
-        // 선/화살표
         ctx.save();
         ctx.globalAlpha = 0.85;
         ctx.strokeStyle = "#ffffff";
@@ -2279,7 +2282,6 @@
         }
         ctx.restore();
 
-        // 마커/텍스트
         const dimSet = new Set(state.ui.dimmedMarkerIds || []);
 
         for(const m of visible){
@@ -2293,6 +2295,7 @@
           const baseR = (typeof m.radiusPx === "number" ? m.radiusPx : DEFAULT_MARKER_RADIUS_PX);
           const rPx = Math.max(2, baseR * view.scale);
 
+          /* ✅ 마커 모양(원/숫자/테두리) = “1번 사진에서 정상”이었던 로직 그대로 유지 */
           const strokeW = clamp(rPx * 0.18, 1, 4);
           const strokeWSelected = clamp(rPx * 0.22, 1.5, 5);
 
@@ -2343,349 +2346,6 @@
         }
       }
 
-      /* ====== 관리자: 마커 생성/편집(필수 함수들) ====== */
-      function setModalVisible(on){
-        markerModalBackdrop.style.display = on ? "flex" : "none";
-        markerModalBackdrop.setAttribute("aria-hidden", on ? "false" : "true");
-        if(!on) modalMarkerId = "";
-      }
-      function rebuildModalCategories(){
-        modalCategory.innerHTML = "";
-        for(const c of currentCategories()){
-          const opt = document.createElement("option");
-          opt.value = c.name;
-          opt.textContent = c.name;
-          modalCategory.appendChild(opt);
-        }
-      }
-      function openMarkerModal(markerId){
-        if(!state.ui.admin) return;
-        const m = currentMarkers().find(x => x.id === markerId);
-        if(!m) return;
-        modalMarkerId = markerId;
-
-        rebuildModalCategories();
-        modalTitle.value = m.title || "";
-        modalCategory.value = m.category || (currentCategories()[0]?.name || "default");
-
-        const useCat = !(m.colorOverride || "").trim();
-        modalUseCategoryColor.checked = useCat;
-        modalColor.disabled = useCat;
-        modalColor.value = useCat ? getCategoryColor(modalCategory.value) : (m.colorOverride || "#ffffff");
-
-        modalYoutubeUrl.value = m.youtubeUrl || "";
-        modalYoutubeLabel.value = m.youtubeLabel || "";
-        modalMemo.value = m.memo || "";
-
-        const r = (typeof m.radiusPx === "number" && isFinite(m.radiusPx)) ? m.radiusPx : DEFAULT_MARKER_RADIUS_PX;
-        setRadiusUI(r);
-
-        modalFontWeight.value = String((typeof m.labelWeight === "number" && isFinite(m.labelWeight)) ? m.labelWeight : DEFAULT_LABEL_WEIGHT);
-        modalFontColor.value = (typeof m.labelColor === "string" && /^#([0-9a-fA-F]{6})$/.test(m.labelColor)) ? m.labelColor : DEFAULT_LABEL_COLOR;
-
-        modalCoord.textContent = `${(m.x||0).toFixed(4)}, ${(m.y||0).toFixed(4)}`;
-
-        setModalVisible(true);
-      }
-      closeMarkerModalBtn.addEventListener("click", () => setModalVisible(false));
-      markerModalBackdrop.addEventListener("mousedown", (e) => {
-        if(e.target === markerModalBackdrop) setModalVisible(false);
-      });
-
-      function createMarkerAtWorld(worldX, worldY){
-        if(!state.ui.admin) return;
-        const mp = currentMap();
-        const nx = clamp01(worldX / mp.width);
-        const ny = clamp01(worldY / mp.height);
-
-        const baseR = DEFAULT_MARKER_RADIUS_PX;
-        const m = {
-          id: uid(),
-          x: nx, y: ny,
-          category: state.ui.createCategory || (currentCategories()[0]?.name || "default"),
-          title: "",
-          youtubeUrl: "",
-          youtubeLabel: "",
-          createdAt: nowISO(),
-          colorOverride: (state.ui.createColorOverride || "").trim(),
-          radiusPx: baseR,
-          labelSizePx: calcLabelSizeFromRadius(baseR),
-          labelWeight: DEFAULT_LABEL_WEIGHT,
-          labelColor: DEFAULT_LABEL_COLOR,
-          groupId: (typeof state.ui.createGroupId === "number" ? state.ui.createGroupId : 0),
-          chainStart: false,
-          memo: ""
-        };
-
-        const arr = currentMarkers();
-
-        // "이어붙이기"가 켜져 있으면 해당 마커 뒤로 삽입 (createdAt을 살짝 조정해서 순서 유지)
-        const afterId = (state.ui.insertAfterMarkerId || "").trim();
-        if(afterId){
-          const after = arr.find(x => x.id === afterId);
-          if(after){
-            const t = Date.parse(after.createdAt || nowISO());
-            m.createdAt = new Date(t + 1).toISOString();
-          }else{
-            state.ui.insertAfterMarkerId = "";
-          }
-        }
-
-        arr.push(m);
-        normalizeAllChainsCurrentPage();
-        rebuildLinks();
-
-        state.ui.lastCreatedMarkerId = m.id;
-        state.ui.selectedMarkerId = m.id;
-
-        saveState();
-        refreshAll();
-        draw();
-
-        // 우클릭 생성 즉시 모달 오픈 (기존과 동일한 동작 기대)
-        openMarkerModal(m.id);
-      }
-
-      function deleteMarker(markerId){
-        const p = getCurrentPage();
-        p.markers = p.markers.filter(x => x.id !== markerId);
-        p.links = p.links.filter(l => l.fromId !== markerId && l.toId !== markerId);
-        if(state.ui.selectedMarkerId === markerId) state.ui.selectedMarkerId = "";
-        if(state.ui.insertAfterMarkerId === markerId) state.ui.insertAfterMarkerId = "";
-        normalizeAllChainsCurrentPage();
-        rebuildLinks();
-        saveState();
-        refreshAll();
-        draw();
-      }
-
-      deleteMarkerBtn.addEventListener("click", () => {
-        if(!state.ui.admin) return;
-        if(!modalMarkerId) return;
-        if(!confirm("이 마커를 삭제할까요?")) return;
-        deleteMarker(modalMarkerId);
-        setModalVisible(false);
-      });
-
-      saveMarkerBtn.addEventListener("click", () => {
-        if(!state.ui.admin) return;
-        const m = currentMarkers().find(x => x.id === modalMarkerId);
-        if(!m) return;
-
-        m.title = String(modalTitle.value || "");
-        m.category = String(modalCategory.value || (currentCategories()[0]?.name || "default"));
-
-        if(modalUseCategoryColor.checked) m.colorOverride = "";
-        else m.colorOverride = String(modalColor.value || "").trim();
-
-        m.youtubeUrl = String(modalYoutubeUrl.value || "");
-        m.youtubeLabel = String(modalYoutubeLabel.value || "");
-        m.memo = String(modalMemo.value || "");
-
-        const r = clamp(Number(modalRadius.value), 6, 30);
-        m.radiusPx = r;
-        m.labelSizePx = clamp(calcLabelSizeFromRadius(r), 10, 48);
-
-        m.labelWeight = clamp(Number(modalFontWeight.value || DEFAULT_LABEL_WEIGHT), 400, 900);
-        m.labelColor = String(modalFontColor.value || DEFAULT_LABEL_COLOR);
-
-        // 체인 마스터 스타일 전파
-        const chain = findChainByMarkerId(m.id);
-        if(chain){
-          const master = currentMarkers().find(x => x.id === chain.masterId);
-          if(master){
-            // master 기준으로 전파되므로, 현재가 master가 아니면 master에 반영하지 않음
-            // (원본 정책 유지 느낌을 위해: 현재 마커가 속한 체인의 마스터가 수정 중이면 전파)
-            if(master.id === m.id){
-              applyChainMasterStyleByChain(chain);
-            }
-          }
-        }
-
-        normalizeAllChainsCurrentPage();
-        rebuildLinks();
-        saveState();
-        refreshAll();
-        draw();
-        setModalVisible(false);
-      });
-
-      // 새 체인 시작 / 이어서 시작
-      startNewGroupFromHereBtn.addEventListener("click", () => {
-        if(!state.ui.admin) return;
-        const m = currentMarkers().find(x => x.id === modalMarkerId);
-        if(!m) return;
-        m.chainStart = true;
-        normalizeAllChainsCurrentPage();
-        rebuildLinks();
-        saveState();
-        draw();
-        alert("이 마커부터 새로운 번호(체인)가 시작됩니다.");
-      });
-      continueNumberingFromHereBtn.addEventListener("click", () => {
-        if(!state.ui.admin) return;
-        const m = currentMarkers().find(x => x.id === modalMarkerId);
-        if(!m) return;
-        state.ui.insertAfterMarkerId = m.id;
-        saveState();
-        refreshHints();
-        alert("이 마커 뒤로 이어서 추가됩니다. (우클릭으로 마커 추가)");
-      });
-
-      /* ====== 카테고리 편집(관리자) ====== */
-      function setCatModalVisible(on){
-        catModalBackdrop.style.display = on ? "flex" : "none";
-        catModalBackdrop.setAttribute("aria-hidden", on ? "false" : "true");
-      }
-      closeCatModalBtn.addEventListener("click", () => setCatModalVisible(false));
-      catModalBackdrop.addEventListener("mousedown", (e) => {
-        if(e.target === catModalBackdrop) setCatModalVisible(false);
-      });
-      editCategoriesBtn.addEventListener("click", () => {
-        if(!state.ui.admin) return;
-        rebuildCatEditor();
-        rebuildCatPalette();
-        setCatModalVisible(true);
-      });
-
-      function rebuildCatPalette(){
-        catPaletteBar.innerHTML = "";
-        for(const p of PALETTE){
-          const wrap = document.createElement("div");
-          wrap.className = "swatch";
-          const b = document.createElement("button");
-          b.type = "button";
-          b.title = `${p.label} (${p.color})`;
-          b.style.background = p.color;
-          b.addEventListener("click", () => {
-            if(!activeCatRowEl){
-              catPaletteHint.textContent = "카테고리 행을 먼저 클릭해서 선택하세요.";
-              return;
-            }
-            const colorInput = activeCatRowEl.querySelector('input[type="color"]');
-            if(colorInput){
-              colorInput.value = p.color;
-              colorInput.dispatchEvent(new Event("input"));
-            }
-          });
-          wrap.appendChild(b);
-          const lab = document.createElement("div");
-          lab.className = "swatchLabel";
-          lab.textContent = p.label;
-
-          const container = document.createElement("div");
-          container.className = "swatchWrap";
-          container.appendChild(wrap);
-          container.appendChild(lab);
-          catPaletteBar.appendChild(container);
-        }
-      }
-
-      function rebuildCatEditor(){
-        activeCatRowEl = null;
-        catEditorList.innerHTML = "";
-        const cats = structuredClone(currentCategories());
-        cats.forEach((c, idx) => {
-          const row = document.createElement("div");
-          row.className = "styleCard";
-          row.style.cursor = "pointer";
-          row.innerHTML = `
-            <div class="head">
-              <div class="t">카테고리 ${idx+1}</div>
-              <div class="d">name / color</div>
-            </div>
-            <div class="row" style="margin:0;">
-              <input class="catName" placeholder="name" value="${escapeHtml(c.name)}" />
-              <input class="catColor" type="color" value="${escapeHtml(c.color || "#ffffff")}" />
-            </div>
-            <div class="row" style="margin:0;">
-              <button class="iconBtn danger" type="button">삭제</button>
-            </div>
-          `;
-          row.addEventListener("click", () => {
-            activeCatRowEl = row;
-            catPaletteHint.textContent = "팔레트 색을 누르면 선택된 행에 적용됩니다.";
-          });
-          row.querySelector("button").addEventListener("click", (e) => {
-            e.stopPropagation();
-            row.remove();
-            if(activeCatRowEl === row) activeCatRowEl = null;
-          });
-          catEditorList.appendChild(row);
-        });
-      }
-
-      addCategoryRowBtn.addEventListener("click", () => {
-        if(!state.ui.admin) return;
-        const row = document.createElement("div");
-        row.className = "styleCard";
-        row.style.cursor = "pointer";
-        row.innerHTML = `
-          <div class="head">
-            <div class="t">카테고리</div>
-            <div class="d">name / color</div>
-          </div>
-          <div class="row" style="margin:0;">
-            <input class="catName" placeholder="name" value="" />
-            <input class="catColor" type="color" value="#ffffff" />
-          </div>
-          <div class="row" style="margin:0;">
-            <button class="iconBtn danger" type="button">삭제</button>
-          </div>
-        `;
-        row.addEventListener("click", () => {
-          activeCatRowEl = row;
-          catPaletteHint.textContent = "팔레트 색을 누르면 선택된 행에 적용됩니다.";
-        });
-        row.querySelector("button").addEventListener("click", (e) => {
-          e.stopPropagation();
-          row.remove();
-          if(activeCatRowEl === row) activeCatRowEl = null;
-        });
-        catEditorList.appendChild(row);
-      });
-
-      resetCategoriesBtn.addEventListener("click", () => {
-        if(!state.ui.admin) return;
-        if(!confirm("카테고리를 기본값으로 되돌릴까요?")) return;
-        getCurrentGame().categories = structuredClone(DEFAULT_CATEGORIES);
-        saveState();
-        rebuildCatEditor();
-        rebuildCatPalette();
-      });
-
-      saveCatListBtn.addEventListener("click", () => {
-        if(!state.ui.admin) return;
-        const rows = [...catEditorList.querySelectorAll(".styleCard")];
-        const list = rows.map(r => {
-          const name = (r.querySelector(".catName")?.value || "").trim();
-          const color = (r.querySelector(".catColor")?.value || "#ffffff").trim();
-          return { name, color };
-        });
-        const uniq = uniqByName(list);
-        if(uniq.length === 0){
-          alert("카테고리가 최소 1개 필요합니다.");
-          return;
-        }
-        getCurrentGame().categories = uniq;
-
-        // 기존 마커의 category가 사라졌으면 첫 카테고리로 보정
-        const firstName = uniq[0].name;
-        for(const m of currentMarkers()){
-          if(!uniq.find(c => c.name === m.category)){
-            m.category = firstName;
-            m.colorOverride = "";
-          }
-        }
-        normalizeAllChainsCurrentPage();
-        rebuildLinks();
-
-        saveState();
-        refreshAll();
-        setCatModalVisible(false);
-        draw();
-      });
-
       function refreshHeaderTitle(){
         const g = getCurrentGame();
         gameTitleText.textContent = g.name || "Map Demo";
@@ -2721,9 +2381,9 @@
         if(p.markers.length > 0) return;
 
         p.markers = [
-          { id: uid(), x:0.35, y:0.42, category:"boss", title:"1번 보스", youtubeUrl:"https://www.youtube.com/watch?v=dQw4w9WgXcQ", youtubeLabel:"보스 영상", createdAt: nowISO(), colorOverride:"", radiusPx: DEFAULT_MARKER_RADIUS_PX, labelSizePx: calcLabelSizeFromRadius(DEFAULT_MARKER_RADIUS_PX), labelWeight: DEFAULT_LABEL_WEIGHT, labelColor: DEFAULT_LABEL_COLOR, groupId: 0, chainStart: true, memo: "1번 보스" },
-          { id: uid(), x:0.58, y:0.55, category:"boss", title:"2번 보스", youtubeUrl:"", youtubeLabel:"", createdAt: nowISO(), colorOverride:"", radiusPx: DEFAULT_MARKER_RADIUS_PX, labelSizePx: calcLabelSizeFromRadius(DEFAULT_MARKER_RADIUS_PX), labelWeight: DEFAULT_LABEL_WEIGHT, labelColor: DEFAULT_LABEL_COLOR, groupId: 0, chainStart: false, memo: "" },
-          { id: uid(), x:0.22, y:0.63, category:"boss", title:"3번 보스", youtubeUrl:"", youtubeLabel:"", createdAt: nowISO(), colorOverride:"", radiusPx: DEFAULT_MARKER_RADIUS_PX, labelSizePx: calcLabelSizeFromRadius(DEFAULT_MARKER_RADIUS_PX), labelWeight: DEFAULT_LABEL_WEIGHT, labelColor: DEFAULT_LABEL_COLOR, groupId: 0, chainStart: false, memo: "" },
+          { id: uid(), x:0.35, y:0.42, category:"boss", title:"보스", youtubeUrl:"https://www.youtube.com/watch?v=dQw4w9WgXcQ", youtubeLabel:"보스 영상", createdAt: nowISO(), colorOverride:"", radiusPx: DEFAULT_MARKER_RADIUS_PX, labelSizePx: calcLabelSizeFromRadius(DEFAULT_MARKER_RADIUS_PX), labelWeight: DEFAULT_LABEL_WEIGHT, labelColor: DEFAULT_LABEL_COLOR, groupId: 0, chainStart: true, memo: "" },
+          { id: uid(), x:0.58, y:0.55, category:"boss", title:"채집", youtubeUrl:"", youtubeLabel:"", createdAt: nowISO(), colorOverride:"", radiusPx: DEFAULT_MARKER_RADIUS_PX, labelSizePx: calcLabelSizeFromRadius(DEFAULT_MARKER_RADIUS_PX), labelWeight: DEFAULT_LABEL_WEIGHT, labelColor: DEFAULT_LABEL_COLOR, groupId: 0, chainStart: false, memo: "" },
+          { id: uid(), x:0.22, y:0.63, category:"boss", title:"퀘스트", youtubeUrl:"", youtubeLabel:"", createdAt: nowISO(), colorOverride:"", radiusPx: DEFAULT_MARKER_RADIUS_PX, labelSizePx: calcLabelSizeFromRadius(DEFAULT_MARKER_RADIUS_PX), labelWeight: DEFAULT_LABEL_WEIGHT, labelColor: DEFAULT_LABEL_COLOR, groupId: 0, chainStart: false, memo: "" },
         ];
 
         normalizeAllChainsCurrentPage();
@@ -2761,7 +2421,10 @@
         resizeCanvas();
         resetView();
         loadMapImageForCurrentPage();
-        updateOverlayScale();
+
+        /* ✅ [메모장 스케일] 초기 적용 */
+        __applyOverlayScale();
+
         draw();
       }
 
@@ -2773,21 +2436,6 @@
         const iconHit = findMarkerAtScreen(sx, sy);
         if(labelHit || iconHit) return;
         if(overlayPinned) unpinOverlay();
-      });
-
-      // 관리자에서 좌클릭 = 마커 선택 + 모달 오픈 (드래그 아니면)
-      canvas.addEventListener("mouseup", (evt) => {
-        if(!state.ui.admin) return;
-        if(evt.button !== 0) return;
-        if(didDrag) return;
-        const { x:sx, y:sy } = getPointerPos(evt);
-        const m = findMarkerAtScreen(sx, sy);
-        if(m){
-          state.ui.selectedMarkerId = m.id;
-          saveState();
-          renderSelectedPanel();
-          openMarkerModal(m.id);
-        }
       });
 
       function unlockAdmin(){
