@@ -915,6 +915,68 @@
       const SCALE_MARKERS_WITH_ZOOM = IS_COARSE_POINTER; // 모바일에서만 true
 
       // ==========================================================
+      // ✅✅ [ADD] REMOTE STATE (index와 동일하게 /data 포함)
+      // - 인덱스에서 REMOTE_STATE_URL에 /data 붙인 것과 동일하게 맞춤
+      // - 기본은 현재 폴더 기준: ./data/state.json
+      // ==========================================================
+      const REMOTE_STATE_URL = new URL("./data/state.json", location.href).toString();
+
+      async function fetchRemoteState(){
+        try{
+          const bust = (REMOTE_STATE_URL.includes("?") ? "&" : "?") + "v=" + Date.now();
+          const res = await fetch(REMOTE_STATE_URL + bust, { cache:"no-store" });
+          if(!res.ok) return null;
+          const j = await res.json();
+          return j;
+        }catch(e){
+          return null;
+        }
+      }
+
+      async function pushRemoteState(payload){
+        // 서버가 PUT/POST 중 무엇을 받는지 모르니 둘 다 시도
+        const body = JSON.stringify(payload);
+        const headers = { "Content-Type":"application/json;charset=utf-8" };
+
+        try{
+          let res = await fetch(REMOTE_STATE_URL, { method:"PUT", headers, body });
+          if(!res.ok){
+            res = await fetch(REMOTE_STATE_URL, { method:"POST", headers, body });
+          }
+          if(!res.ok){
+            console.warn("[remote] save failed:", res.status, REMOTE_STATE_URL);
+            return false;
+          }
+          return true;
+        }catch(e){
+          console.warn("[remote] save error:", e);
+          return false;
+        }
+      }
+
+      function isLikelyState(obj){
+        return !!(obj && typeof obj === "object" && Array.isArray(obj.games) && obj.ui);
+      }
+
+      function getUpdatedAtSafe(st){
+        const v = Number(st?._updatedAt);
+        return Number.isFinite(v) ? v : 0;
+      }
+
+      // remote 저장 디바운스
+      let __remoteTimer = null;
+      function scheduleRemoteSave(){
+        if(!IS_ADMIN_PAGE) return;
+        if(!state?.ui?.admin) return;
+        if(!isAuthed()) return;
+        clearTimeout(__remoteTimer);
+        __remoteTimer = setTimeout(() => {
+          const snapshot = state;
+          pushRemoteState(snapshot);
+        }, 800);
+      }
+
+      // ==========================================================
       // ✅ [PATCH] 로고 저장/로드 (URL 방식)
       // ==========================================================
       const LOGO_KEY = "mm_logo_url_v1";
@@ -972,8 +1034,7 @@
       });
 
       // 슬롯 클릭(버튼이 안 보이는 경우도 대비)
-      $logoSlot.addEventListener("click", (e) => {
-        // 로고가 보이는 상태에서 유저 클릭 실수 방지: 관리자+관리자모드일 때만 동작
+      $logoSlot.addEventListener("click", () => {
         promptLogoUrl();
       });
 
@@ -1096,6 +1157,8 @@
         }catch(e){
           console.warn(e);
         }
+        // ✅ [ADD] 관리자에서 변경 시 원격 저장 스케줄
+        scheduleRemoteSave();
       }
 
       function escapeHtml(s){
@@ -1184,32 +1247,59 @@
         ]
       };
 
-      const loaded = safeParse(localStorage.getItem(LS_KEY) || "", null);
-      const state = (loaded && loaded.games && Array.isArray(loaded.games)) ? loaded : structuredClone(defaultState);
+      // ✅ [PATCH] const -> let (원격 state로 교체 가능하도록)
+      const loadedLocal = safeParse(localStorage.getItem(LS_KEY) || "", null);
+      let state = (loadedLocal && loadedLocal.games && Array.isArray(loadedLocal.games)) ? loadedLocal : structuredClone(defaultState);
 
-      if(!state.ui) state.ui = structuredClone(defaultState.ui);
-      if(!Array.isArray(state.ui.dimmedMarkerIds)) state.ui.dimmedMarkerIds = [];
-      if(!Array.isArray(state.games) || state.games.length === 0) state.games = structuredClone(defaultState.games);
+      function normalizeStateShape(){
+        if(!state.ui) state.ui = structuredClone(defaultState.ui);
+        if(!Array.isArray(state.ui.dimmedMarkerIds)) state.ui.dimmedMarkerIds = [];
+        if(!Array.isArray(state.games) || state.games.length === 0) state.games = structuredClone(defaultState.games);
 
-      for(const g of state.games){
-        if(!g.id) g.id = uid();
-        if(typeof g.name !== "string") g.name = "Game";
-        if(!Array.isArray(g.categories) || g.categories.length === 0) g.categories = structuredClone(DEFAULT_CATEGORIES);
-        if(!Array.isArray(g.pages) || g.pages.length === 0){
-          g.pages = [{ id: uid(), name:"1번마을", map:{imageKey:"", imageUrl:"", width:2200, height:1400}, markers:[], links:[] }];
-        }
-        for(const p of g.pages){
-          if(!p.id) p.id = uid();
-          if(typeof p.name !== "string") p.name = "Page";
-          if(!p.map) p.map = { imageKey:"", imageUrl:"", width:2200, height:1400 };
-          if(typeof p.map.imageKey !== "string") p.map.imageKey = "";
-          if(typeof p.map.imageUrl !== "string") p.map.imageUrl = "";
-          if(typeof p.map.width !== "number" || !isFinite(p.map.width)) p.map.width = 2200;
-          if(typeof p.map.height !== "number" || !isFinite(p.map.height)) p.map.height = 1400;
-          if(!Array.isArray(p.markers)) p.markers = [];
-          if(!Array.isArray(p.links)) p.links = [];
+        for(const g of state.games){
+          if(!g.id) g.id = uid();
+          if(typeof g.name !== "string") g.name = "Game";
+          if(!Array.isArray(g.categories) || g.categories.length === 0) g.categories = structuredClone(DEFAULT_CATEGORIES);
+          if(!Array.isArray(g.pages) || g.pages.length === 0){
+            g.pages = [{ id: uid(), name:"1번마을", map:{imageKey:"", imageUrl:"", width:2200, height:1400}, markers:[], links:[] }];
+          }
+          for(const p of g.pages){
+            if(!p.id) p.id = uid();
+            if(typeof p.name !== "string") p.name = "Page";
+            if(!p.map) p.map = { imageKey:"", imageUrl:"", width:2200, height:1400 };
+            if(typeof p.map.imageKey !== "string") p.map.imageKey = "";
+            if(typeof p.map.imageUrl !== "string") p.map.imageUrl = "";
+            if(typeof p.map.width !== "number" || !isFinite(p.map.width)) p.map.width = 2200;
+            if(typeof p.map.height !== "number" || !isFinite(p.map.height)) p.map.height = 1400;
+            if(!Array.isArray(p.markers)) p.markers = [];
+            if(!Array.isArray(p.links)) p.links = [];
+          }
         }
       }
+      normalizeStateShape();
+
+      // ==========================================================
+      // ✅✅ [ADD] 원격 state 로드: local보다 최신이면 remote로 교체
+      // ==========================================================
+      (async () => {
+        const remote = await fetchRemoteState();
+        if(!isLikelyState(remote)) return;
+
+        const rAt = getUpdatedAtSafe(remote);
+        const lAt = getUpdatedAtSafe(state);
+
+        if(rAt > lAt){
+          state = remote;
+          normalizeStateShape();
+          try{
+            localStorage.setItem(LS_KEY, JSON.stringify(state));
+          }catch(e){}
+          // 화면 갱신은 init 후에 한 번 더 돌려도 되지만,
+          // 여기서는 init에서 다시 refreshAll을 하니 안전하게 플래그만 둠
+          __BOOT_REMOTE_APPLIED = true;
+        }
+      })();
+      let __BOOT_REMOTE_APPLIED = false;
 
       function getGameById(id){ return state.games.find(g => g.id === id) || null; }
 
@@ -1667,11 +1757,13 @@
         location.reload();
       });
 
-      exportStateBtn?.addEventListener("click", () => {
+      exportStateBtn?.addEventListener("click", async () => {
         if(!state.ui.admin) return;
         saveState();
         const json = localStorage.getItem(LS_KEY);
         if(!json){ alert("저장된 데이터가 없습니다."); return; }
+
+        // 1) 다운로드
         const blob = new Blob([json], { type: "application/json;charset=utf-8" });
         const a = document.createElement("a");
         a.href = URL.createObjectURL(blob);
@@ -1680,6 +1772,9 @@
         a.click();
         a.remove();
         setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+
+        // 2) 원격 저장도 한 번 시도(서버가 지원할 때만 성공)
+        await pushRemoteState(state);
       });
 
       removeAllLinksBtn.addEventListener("click", () => {
@@ -3006,8 +3101,6 @@
           ctx.strokeStyle = "#223042";
           ctx.lineWidth = 4 / view.scale;
           ctx.strokeRect(0,0,mp.width, mp.height);
-
-          /* ✅ [PATCH] 새로고침 시 지도 이미지 자리 안내 문구 제거 (관리자도 포함) */
         }
 
         const visible = getVisibleMarkers();
@@ -3255,6 +3348,19 @@
       });
 
       init();
+
+      // ✅✅ [ADD] 부팅 중 remote가 적용된 경우: 화면 한 번 더 정렬
+      // (remote fetch는 비동기라 init 이후 적용될 수도 있어서 안전 처리)
+      setTimeout(() => {
+        if(__BOOT_REMOTE_APPLIED){
+          normalizeStateShape();
+          refreshAll();
+          resizeCanvas();
+          resetView();
+          loadMapImageForCurrentPage();
+          draw();
+        }
+      }, 600);
     })();
   </script>
 </body>
