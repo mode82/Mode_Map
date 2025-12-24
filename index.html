@@ -1539,6 +1539,7 @@
         }
 
         // 1) IDB first (device-local)
+        /*
         const blob = await idbGet(key).catch(()=>null);
         if(blob){
           mapObjectUrl = URL.createObjectURL(blob);
@@ -1554,6 +1555,7 @@
           mapImg.src = mapObjectUrl;
           return;
         }
+        */
 
         // 2) Fallback: public URL (shared across devices)
         if(url && isValidUrl(url)){
@@ -3300,3 +3302,4 @@
   </script>
 </body>
 </html>
+
