@@ -117,42 +117,47 @@
     .center{ position:relative; overflow:hidden; }
     #canvas{ width:100%; height:100%; display:block; background:#0b0f14; }
 
-    /* ✅ (추가) 좌/우 패널 숨김 토글 버튼 (글씨 없이 기호만) */
+    /* ✅ (수정) 좌/우 패널 숨김 토글 버튼: 아이콘 더 크게 + 밖으로 튀어나온 ‘핸들’ 느낌(클립되지 않게 내부에서 더 크게) */
     .sideToggle{
       position:absolute;
       top: 14px;
-      width: 32px;
-      height: 56px;
+      width: 46px;
+      height: 74px;
       padding: 0;
-      border-radius: 12px;
-      border: 1px solid rgba(39,52,74,.9);
-      background: rgba(14,22,38,.70);
-      box-shadow: 0 10px 22px rgba(0,0,0,.18);
+      border-radius: 16px;
+      border: 1px solid rgba(39,52,74,.95);
+      background: linear-gradient(180deg, rgba(16,24,38,.88), rgba(10,16,28,.70));
+      box-shadow: 0 14px 26px rgba(0,0,0,.26);
       display:flex;
       align-items:center;
       justify-content:center;
-      font-size: 16px;
+      font-size: 24px;
       font-weight: 900;
       line-height: 1;
       user-select:none;
       z-index: 60;
+      letter-spacing: -1px;
     }
     .sideToggle:hover{
-      border-color: rgba(124,196,255,.55);
-      box-shadow: 0 0 0 3px rgba(124,196,255,.12), 0 10px 22px rgba(0,0,0,.18);
+      border-color: rgba(124,196,255,.65);
+      box-shadow: 0 0 0 3px rgba(124,196,255,.12), 0 14px 26px rgba(0,0,0,.26);
     }
     .sideToggle:active{ transform: translateY(1px); }
     .sideToggle.left{
-      left: 0;
-      transform: translateX(-50%);
+      left: 6px;
       border-top-left-radius: 0;
       border-bottom-left-radius: 0;
     }
     .sideToggle.right{
-      right: 0;
-      transform: translateX(50%);
+      right: 6px;
       border-top-right-radius: 0;
       border-bottom-right-radius: 0;
+    }
+
+    /* ✅ (추가) 헤더 좌측: 로고자리/1차카테고리 자리 확보용 (보이지 않게, 공간만 유지) */
+    .reservedSlot{
+      visibility: hidden;
+      pointer-events: none;
     }
 
     .section{
@@ -320,9 +325,9 @@
       #canvas{ height: 55vh; }
       .grid2{ grid-template-columns: 1fr; }
 
-      /* ✅ (추가) 작은 화면에서 토글 버튼이 너무 튀지 않게 */
-      .sideToggle.left{ transform: translateX(0); left: 10px; border-radius: 12px; }
-      .sideToggle.right{ transform: translateX(0); right: 10px; border-radius: 12px; }
+      /* ✅ (수정) 작은 화면에서도 버튼이 잘 보이게 */
+      .sideToggle.left{ left: 10px; border-radius: 16px; }
+      .sideToggle.right{ right: 10px; border-radius: 16px; }
     }
 
     input[type="color"]{
@@ -505,6 +510,21 @@
 
 <body>
   <header>
+    <!-- ✅ (추가) 로고자리(보이지 않게, 공간만 확보) -->
+    <div class="titleWrap reservedSlot" aria-hidden="true">
+      <div class="titleBtn">
+        <span>아이온2</span><span class="muted caret">▾</span>
+      </div>
+    </div>
+
+    <!-- ✅ (추가) 1차 카테고리 자리(보이지 않게, 공간만 확보) -->
+    <div class="titleWrap reservedSlot" aria-hidden="true">
+      <div class="titleBtn">
+        <span>아이온2</span><span class="muted caret">▾</span>
+      </div>
+    </div>
+
+    <!-- (기존) 2차 카테고리(현재 아이온2) -->
     <div class="titleWrap" id="titleWrap">
       <div class="titleBtn" id="gameTitleBtn" title="클릭해서 게임 목록/추가">
         <span id="gameTitleText">Map Demo</span>
@@ -550,7 +570,7 @@
     <div class="center" id="centerStage">
       <canvas id="canvas"></canvas>
 
-      <!-- ✅ (추가) 좌/우 패널 숨김 토글: 글씨 없이 기호만 -->
+      <!-- ✅ (기존) 좌/우 패널 숨김 토글: 글씨 없이 기호만 -->
       <button id="toggleLeftBtn" class="sideToggle left" type="button" aria-label="좌측 패널 숨기기/보이기" title="좌측 숨기기/보이기">❮</button>
       <button id="toggleRightBtn" class="sideToggle right" type="button" aria-label="우측 패널 숨기기/보이기" title="우측 숨기기/보이기">❯</button>
 
@@ -1609,7 +1629,7 @@
             delBtn.type = "button";
             delBtn.textContent = "삭제";
             delBtn.addEventListener("click", async () => {
-              if(!confirm(`게임 "${g.name}" 을 삭제할까요?\n(페이지/마커는 localStorage에서 제거됩니다. 이미지 blob은 DB에 남을 수 있습니다)`)) return;
+              if(!confirm(\`게임 "\${g.name}" 을 삭제할까요?\n(페이지/마커는 localStorage에서 제거됩니다. 이미지 blob은 DB에 남을 수 있습니다)\`)) return;
               state.games = state.games.filter(x => x.id !== g.id);
               if(state.games.length === 0){
                 state.games = structuredClone(defaultState.games);
@@ -1636,7 +1656,7 @@
         const g = getCurrentGame();
         const curPage = getCurrentPage();
 
-        pageBadge.textContent = `${escapeHtml(g.name)} / ${escapeHtml(curPage.name)}`;
+        pageBadge.textContent = \`\${escapeHtml(g.name)} / \${escapeHtml(curPage.name)}\`;
         pageList.innerHTML = "";
 
         for(const p of g.pages){
@@ -1701,9 +1721,9 @@
             del.title = "페이지 삭제";
             del.addEventListener("click", async (e) => {
               e.stopPropagation();
-              if(!confirm(`페이지 "${p.name}" 을 삭제할까요?\n(이미지 blob은 DB에 남을 수 있습니다)`)) return;
+              if(!confirm(\`페이지 "\${p.name}" 을 삭제할까요?\n(이미지 blob은 DB에 남을 수 있습니다)\`)) return;
               try{
-                const key = `mapimg_${g.id}_${p.id}`;
+                const key = \`mapimg_\${g.id}_\${p.id}\`;
                 await idbDel(key);
               }catch(e2){}
               g.pages = g.pages.filter(x => x.id !== p.id);
@@ -1733,7 +1753,7 @@
         if(!state.ui.admin) return;
         const g = getCurrentGame();
         const nextNum = (g.pages?.length || 0) + 1;
-        const name = prompt("새 페이지 이름 (예: 2번마을)", `${nextNum}번마을`);
+        const name = prompt("새 페이지 이름 (예: 2번마을)", \`\${nextNum}번마을\`);
         if(!name) return;
         const p = { id: uid(), name: String(name).trim(), map:{ imageKey:"", imageUrl:"", width:2200, height:1400 }, markers:[], links:[] };
         g.pages.push(p);
@@ -1787,7 +1807,7 @@
           const wrap = document.createElement("div");
           wrap.className = "swatch" + (state.ui.activePaintColor === p.color ? " active" : "");
           const b = document.createElement("button");
-          b.title = `${p.label} (${p.color})`;
+          b.title = \`\${p.label} (\${p.color})\`;
           b.style.background = p.color;
           b.addEventListener("click", () => {
             state.ui.activePaintColor = p.color;
@@ -1861,13 +1881,13 @@
           return;
         }
         const name = (m.title || "").trim() || "(이름 없음)";
-        selectedHeader.textContent = `선택한 마커: ${name}`;
+        selectedHeader.textContent = \`선택한 마커: \${name}\`;
 
         const url = (m.youtubeUrl || "").trim();
         const display = getUserYoutubeDisplay(m);
 
         if(url && isValidUrl(url)){
-          youtubeBox.innerHTML = `<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(display)}</a>`;
+          youtubeBox.innerHTML = \`<a href="\${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">\${escapeHtml(display)}</a>\`;
         }else{
           youtubeBox.textContent = display ? display : "없음";
         }
@@ -1914,9 +1934,9 @@
         const url = (m.youtubeUrl || "").trim();
         if(url && isValidUrl(url)){
           const displayName = escapeHtml(getUserYoutubeDisplay(m));
-          hoverYt.innerHTML = `<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${displayName}</a>`;
+          hoverYt.innerHTML = \`<a href="\${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">\${displayName}</a>\`;
         }else{
-          hoverYt.innerHTML = `<span class="muted">유튜브 없음</span>`;
+          hoverYt.innerHTML = \`<span class="muted">유튜브 없음</span>\`;
         }
       }
       function showHoverOverlayForMarker(m, clientX, clientY){
@@ -1949,7 +1969,7 @@
           const b = document.createElement("button");
           b.type = "button";
           b.className = "qc";
-          b.title = `글씨색: ${p.label} (${p.color})`;
+          b.title = \`글씨색: \${p.label} (\${p.color})\`;
           const i = document.createElement("i");
           i.style.background = p.color;
           b.appendChild(i);
@@ -2060,7 +2080,7 @@
         const label = getMarkerLabel(m);
 
         ctx.save();
-        ctx.font = `${weight} ${sizePx}px system-ui`;
+        ctx.font = \`\${weight} \${sizePx}px system-ui\`;
         const w = ctx.measureText(label).width;
         ctx.restore();
 
@@ -2517,7 +2537,6 @@
         rebuildLinks();
         saveState();
 
-        /* ✅ (추가) 시작 시 패널 숨김 상태 적용 */
         __applySidebarLayout();
 
         refreshAll();
