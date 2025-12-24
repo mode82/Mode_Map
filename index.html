@@ -847,7 +847,8 @@
       // - 캐시 방지: ?v=timestamp
       // - 유저가 불투명 처리한 dim 상태는 유지(로컬 우선)
       // ==========================================================
-      const REMOTE_STATE_URL = "./state.json";
+      // ✅ [FIX] 상태 파일 경로를 ./data/state.json 로 통일 + new URL 방식 적용
+      const REMOTE_STATE_URL = new URL("./data/state.json", location.href).toString();
       const REMOTE_SYNC_INTERVAL_MS = 15000;
 
       async function tryFetchRemoteState(){
@@ -2177,7 +2178,7 @@
       });
 
       // ==========================================================
-      // Marker modal
+      // Marker modal (동일)
       // ==========================================================
       function buildFontColorQuick(){
         modalFontColorQuick.innerHTML = "";
@@ -2423,7 +2424,7 @@
       });
 
       // ==========================================================
-      // Category Modal
+      // Category Modal (동일)
       // ==========================================================
       editCategoriesBtn.addEventListener("click", () => openCatModal());
 
@@ -2853,11 +2854,6 @@
 
         const m = findMarkerAtScreen(sx, sy);
         if(m){
-          // ==========================================================
-          // ✅ [PATCH] (1) 유저모드 마커 클릭 불투명 토글(30%)
-          // - 여러 개 누적 dim 유지
-          // - dim된 마커를 다시 클릭하면 해당 마커만 해제
-          // ==========================================================
           state.ui.selectedMarkerId = m.id;
 
           if(!state.ui.admin){
@@ -2870,10 +2866,9 @@
             saveState();
             renderSelectedPanel();
             draw();
-            return; // 유저모드에서는 드래그(마커 이동) 없음
+            return;
           }
 
-          // (기존 관리자 드래그 로직 유지)
           saveState();
           renderSelectedPanel();
           draggingMarkerId = m.id;
@@ -2925,7 +2920,6 @@
           draw();
         }
 
-        // ✅ 유저모드에서 라벨 hover만 overlay
         if(!state.ui.admin && !overlayPinned){
           const mLabel = findMarkerLabelAtScreen(sx, sy);
           if(mLabel){
@@ -3062,7 +3056,6 @@
         const numMap = buildNumberMap();
         const mp = currentMap();
 
-        // ✅ [PATCH] (1) dim 상태를 빠르게 조회하기 위한 Set
         const dimSet = new Set(Array.isArray(state.ui.dimmedMarkerIds) ? state.ui.dimmedMarkerIds : []);
 
         ctx.save();
@@ -3077,8 +3070,6 @@
           ctx.strokeStyle = "#223042";
           ctx.lineWidth = 4 / view.scale;
           ctx.strokeRect(0,0,mp.width, mp.height);
-
-          /* ✅ [PATCH] 새로고침 시 지도 이미지 자리 안내 문구 제거 (관리자도 포함) */
         }
 
         const visible = getVisibleMarkers();
@@ -3123,7 +3114,6 @@
           const denom = markerScaleDenom();
           const r = radiusPx / denom;
 
-          // ✅ [PATCH] (1) 불투명 30% 적용 (마커+텍스트 전체)
           const isDimmed = dimSet.has(m.id);
           const alpha = isDimmed ? 0.30 : 1.0;
 
@@ -3278,7 +3268,6 @@
         rebuildLinks();
         saveState();
 
-        // ✅ 로고 로드
         loadLogo();
 
         refreshAll();
@@ -3287,15 +3276,9 @@
         await loadMapImageForCurrentPage();
         draw();
 
-        // ✅ [PATCH] (3) 원격 state.json 동기화 시작
         if(!IS_ADMIN_PAGE){
-          // 첫 로딩 즉시 1회
           syncStateFromRemoteIfNewer();
-
-          // 주기 동기화
           setInterval(syncStateFromRemoteIfNewer, REMOTE_SYNC_INTERVAL_MS);
-
-          // 탭 재진입 시 즉시 동기화
           document.addEventListener("visibilitychange", () => {
             if(document.visibilityState === "visible") syncStateFromRemoteIfNewer();
           });
@@ -3306,9 +3289,9 @@
       // ✅ [INDEX] 관리자 인증/락 로직 제거 + 유저모드 고정
       // ==========================================================
       function lockToUserMode(){
-        adminToggleWrap.style.display = "none";     // 토글 자체 숨김
+        adminToggleWrap.style.display = "none";
         adminToggle.checked = false;
-        setAdminMode(false);                        // state.ui.admin = false
+        setAdminMode(false);
       }
 
       lockToUserMode();
@@ -3317,4 +3300,3 @@
   </script>
 </body>
 </html>
-
