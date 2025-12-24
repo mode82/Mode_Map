@@ -28,6 +28,10 @@
       --shadow: 0 18px 60px rgba(0,0,0,.45);
       --shadow2: 0 8px 24px rgba(0,0,0,.35);
       --blur: 14px;
+
+      /* ✅ [ADD] 상단 카테고리 슬롯(1~4) 폭 */
+      --topSlotW: 150px;
+      --topSlotH: 38px;
     }
 
     *{ box-sizing:border-box; }
@@ -426,6 +430,8 @@
       background: rgba(14,22,38,.55);
       cursor:pointer;
       user-select:none;
+      width: 100%;
+      justify-content: space-between;
     }
     .titleBtn:hover{ border-color: rgba(124,196,255,.55); box-shadow: 0 0 0 3px rgba(124,196,255,.12); }
     .titleBtn .caret{ opacity:.8; }
@@ -520,18 +526,88 @@
       font-size: 12px;
       display: none;
     }
+
+    /* ==========================================================
+       ✅ [ADD] 상단 카테고리 1~4 슬롯 UI
+       ========================================================== */
+    .topSlots{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .topSlot{
+      width: var(--topSlotW);
+      height: var(--topSlotH);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border-radius: 14px;
+      border:1px solid rgba(39,52,74,.9);
+      background: rgba(14,22,38,.55);
+      overflow:hidden;
+      position:relative;
+      flex: 0 0 auto;
+    }
+    .topSlot.placeholder{
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* 카테고리1 = 로고 자리 */
+    #logoSlot{
+      padding: 0;
+      justify-content: center;
+    }
+    #logoImg{
+      width:100%;
+      height:100%;
+      object-fit: contain;
+      display:none; /* 로고 없으면 표시 X (공간만 유지) */
+      padding:4px;
+    }
+    #logoUploadBtn{
+      position:absolute;
+      inset:0;
+      border:0;
+      background: transparent;
+      cursor:pointer;
+      font-weight:900;
+      color: rgba(231,238,248,.88);
+      display:none; /* adminOnly처럼 토글 */
+    }
+    #logoUploadBtn:hover{
+      box-shadow: 0 0 0 3px rgba(124,196,255,.10) inset;
+    }
   </style>
 </head>
 
 <body>
   <header>
-    <!-- ✅ MAP DEMO = 게임 이름 자리 + 클릭 시 드롭다운 (항상 표시) -->
-    <div class="titleWrap" id="titleWrap">
-      <div class="titleBtn" id="gameTitleBtn" title="클릭해서 게임 목록/추가">
-        <span id="gameTitleText">Map Demo</span>
-        <span class="muted caret">▾</span>
+    <!-- ✅ [변경] 카테고리 1~4 슬롯 (총 4칸) -->
+    <div class="topSlots" id="topSlots">
+      <!-- 카테고리1: 로고 이미지 자리 (없으면 아무것도 안 보이고 공간만 유지) -->
+      <div class="topSlot" id="logoSlot" title="로고 자리 (카테고리1)">
+        <img id="logoImg" alt="logo" />
+        <button id="logoUploadBtn" class="adminOnly" type="button">로고 업로드</button>
+        <input id="logoFileInput" type="file" accept="image/*" style="display:none;" />
       </div>
-      <div class="drop" id="gameDrop"></div>
+
+      <!-- 카테고리2: 현재 (기존 3번=아이온2 자리) => 여기로 이동 -->
+      <div class="topSlot" id="cat2Slot" title="카테고리2 (현재 게임)">
+        <div class="titleWrap" id="titleWrap" style="width:100%; height:100%;">
+          <div class="titleBtn" id="gameTitleBtn" title="클릭해서 게임 목록/추가" style="height:100%;">
+            <span id="gameTitleText" style="min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Map Demo</span>
+            <span class="muted caret">▾</span>
+          </div>
+          <div class="drop" id="gameDrop"></div>
+        </div>
+      </div>
+
+      <!-- 카테고리3: 자리만 확보 (보이지 않게) -->
+      <div class="topSlot placeholder" id="cat3Slot" aria-hidden="true"></div>
+
+      <!-- 카테고리4: 자리만 확보 (보이지 않게) -->
+      <div class="topSlot placeholder" id="cat4Slot" aria-hidden="true"></div>
     </div>
 
     <!-- ✅ 관리자 모드 토글(유저 페이지에서는 숨김 처리됨) -->
@@ -638,7 +714,8 @@
       <div class="section" id="selectedSection">
         <h3 id="selectedHeader">선택한 마커</h3>
         <div class="hr"></div>
-        <div class="muted">유튜브</div>
+        <!-- ✅ [변경] 우측 유튜브 텍스트 라벨 변경 -->
+        <div class="muted">링크</div>
         <div id="youtubeBox" class="linkBox" style="margin-top:8px;">-</div>
       </div>
     </aside>
@@ -838,6 +915,66 @@
       // ✅ [PATCH] 모바일(터치)에서는 마커도 줌 비율에 맞춰 같이 스케일
       const IS_COARSE_POINTER = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
       const SCALE_MARKERS_WITH_ZOOM = IS_COARSE_POINTER; // 모바일에서만 true
+
+      // ==========================================================
+      // ✅ [ADD] 로고 저장/로드 (카테고리1)
+      // ==========================================================
+      const LOGO_KEY = "mm_logo_dataurl_v1";
+      const $logoImg = document.getElementById("logoImg");
+      const $logoUploadBtn = document.getElementById("logoUploadBtn");
+      const $logoFileInput = document.getElementById("logoFileInput");
+      const $logoSlot = document.getElementById("logoSlot");
+
+      function loadLogo(){
+        try{
+          const v = (localStorage.getItem(LOGO_KEY) || "").trim();
+          if(v){
+            $logoImg.src = v;
+            $logoImg.style.display = "block";
+          }else{
+            $logoImg.removeAttribute("src");
+            $logoImg.style.display = "none";
+          }
+        }catch{
+          $logoImg.style.display = "none";
+        }
+      }
+
+      async function fileToDataURL(file){
+        return new Promise((resolve, reject) => {
+          const r = new FileReader();
+          r.onload = () => resolve(String(r.result || ""));
+          r.onerror = () => reject(r.error);
+          r.readAsDataURL(file);
+        });
+      }
+
+      $logoUploadBtn.addEventListener("click", () => {
+        if(!IS_ADMIN_PAGE) return;
+        $logoFileInput.click();
+      });
+
+      $logoSlot.addEventListener("dblclick", () => {
+        if(!IS_ADMIN_PAGE) return;
+        // 더블클릭 시 로고 제거 (관리자만)
+        if(!confirm("로고를 제거할까요?")) return;
+        localStorage.removeItem(LOGO_KEY);
+        loadLogo();
+      });
+
+      $logoFileInput.addEventListener("change", async (e) => {
+        const f = e.target.files && e.target.files[0];
+        if(!f) return;
+        if(!f.type.startsWith("image/")) return;
+        try{
+          const dataUrl = await fileToDataURL(f);
+          localStorage.setItem(LOGO_KEY, dataUrl);
+          loadLogo();
+        }catch(err){
+          console.warn(err);
+        }
+        $logoFileInput.value = "";
+      });
 
       // ==========================================================
       // Admin Auth (24h) - only admin page
@@ -1368,6 +1505,9 @@
         document.querySelectorAll(".adminOnly").forEach(el => {
           el.style.display = state.ui.admin ? "" : "none";
         });
+
+        // ✅ [ADD] 로고 업로드 버튼도 adminOnly에 맞춰 동작 (로고는 유저에서도 보이게 가능)
+        $logoUploadBtn.style.display = (state.ui.admin && IS_ADMIN_PAGE) ? "" : "none";
       }
 
       // ==========================================================
@@ -2927,21 +3067,22 @@
           ctx.lineWidth = 4 / view.scale;
           ctx.strokeRect(0,0,mp.width, mp.height);
 
-          ctx.fillStyle = "#7a8aa0";
-          ctx.font = `800 ${28 / view.scale}px system-ui`;
+          /* ✅ [변경] 유저(index) 새로고침 시 안내 문구 전체 제거 */
+          if(IS_ADMIN_PAGE){
+            ctx.fillStyle = "#7a8aa0";
+            ctx.font = `800 ${28 / view.scale}px system-ui`;
 
-          const g = getCurrentGame();
-          const p = getCurrentPage();
+            const g = getCurrentGame();
+            const p = getCurrentPage();
 
-          const msg = IS_ADMIN_PAGE
-            ? `"${g.name} / ${p.name}" 지도 이미지를 업로드하거나, URL을 설정하세요 (관리자 모드)`
-            : `"${g.name} / ${p.name}" 지도 이미지가 설정되지 않았습니다.\n관리자에서 URL을 설정하면 폰에서도 동일하게 보입니다.`;
+            const msg = `"${g.name} / ${p.name}" 지도 이미지를 업로드하거나, URL을 설정하세요 (관리자 모드)`;
 
-          const lines = String(msg).split("\n");
-          let y = 70/view.scale;
-          for(const line of lines){
-            ctx.fillText(line, 40/view.scale, y);
-            y += 34/view.scale;
+            const lines = String(msg).split("\n");
+            let y = 70/view.scale;
+            for(const line of lines){
+              ctx.fillText(line, 40/view.scale, y);
+              y += 34/view.scale;
+            }
           }
         }
 
@@ -3153,6 +3294,10 @@
         normalizeAllChainsCurrentPage();
         rebuildLinks();
         saveState();
+
+        // ✅ [ADD] 로고 로드
+        loadLogo();
+
         refreshAll();
         resizeCanvas();
         resetView();
