@@ -417,13 +417,20 @@
     .drop .item .gname{ font-weight:900; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .drop .item .gmeta{ font-size:12px; color: var(--muted); margin-top:4px; }
 
-    /* ✅ (추가) 1번/2번 카테고리 자리만 확보(노출 X) */
+    /* ✅ 추가: 카테고리(슬롯) 자리만 확보하고 “보이지 않게” */
     .titleWrap.placeholder{
-      pointer-events:none;
-      user-select:none;
+      visibility:hidden;          /* 자리 유지 + 화면에는 미표시 */
+      pointer-events:none;        /* 클릭 불가 */
     }
-    .titleWrap.placeholder .titleBtn{
-      visibility:hidden; /* 공간은 차지하고 화면에는 안 보이게 */
+    .titleWrap.placeholder .drop{ display:none !important; }
+
+    /* ✅ 추가: 1번(로고) 슬롯용 이미지 자리(현재는 placeholder로 숨김) */
+    .logoSlot{
+      width: 132px;
+      height: 28px;
+      object-fit: contain;
+      display:block;
+      filter: drop-shadow(0 8px 18px rgba(0,0,0,.35));
     }
 
     #__adminLockOverlay{
@@ -472,29 +479,37 @@
 
 <body>
   <header>
-    <!-- ✅ (추가) 1번 카테고리(로고자리) - 자리만 확보, 노출 X -->
+    <!-- ✅ 1번 슬롯: 로고 자리(이미지 자리) - 현재는 보이지 않게(자리만 확보) -->
     <div class="titleWrap placeholder" aria-hidden="true">
-      <div class="titleBtn" title="(자리만 확보됨)">
-        <span>LOGO</span>
-        <span class="muted caret">▾</span>
+      <div class="titleBtn" title="(로고 자리: 현재 숨김)">
+        <!-- 나중에 로고 쓰려면 placeholder 클래스 제거 + 아래 src를 로고로 바꾸면 됨 -->
+        <img class="logoSlot" alt="LOGO" src="" />
       </div>
     </div>
 
-    <!-- ✅ (추가) 2번 카테고리(다른 분야 선택 예정) - 자리만 확보, 노출 X -->
-    <div class="titleWrap placeholder" aria-hidden="true">
-      <div class="titleBtn" title="(자리만 확보됨)">
-        <span>Category</span>
-        <span class="muted caret">▾</span>
-      </div>
-    </div>
-
-    <!-- ✅ 기존 3번 카테고리(현재: 아이온2) 그대로 유지 -->
+    <!-- ✅ 2번 슬롯: 현재 3번(아이온2/Map Demo 드롭다운)을 이 자리로 이동 -->
     <div class="titleWrap" id="titleWrap">
       <div class="titleBtn" id="gameTitleBtn" title="클릭해서 게임 목록/추가">
         <span id="gameTitleText">Map Demo</span>
         <span class="muted caret">▾</span>
       </div>
       <div class="drop" id="gameDrop"></div>
+    </div>
+
+    <!-- ✅ 3번 슬롯: 다른 분야 선택 예정 자리 - 현재는 보이지 않게(자리만 확보) -->
+    <div class="titleWrap placeholder" aria-hidden="true">
+      <div class="titleBtn" title="(2번/3번 자리: 현재 숨김)">
+        <span>Category</span>
+        <span class="muted caret">▾</span>
+      </div>
+    </div>
+
+    <!-- ✅ 4번 슬롯: 추가로 한 칸 더 확보(현재는 보이지 않게 자리만 확보) -->
+    <div class="titleWrap placeholder" aria-hidden="true">
+      <div class="titleBtn" title="(4번 자리: 현재 숨김)">
+        <span>Category</span>
+        <span class="muted caret">▾</span>
+      </div>
     </div>
 
     <span class="pill" id="adminToggleWrap">
@@ -593,10 +608,7 @@
       <div class="section" id="selectedSection">
         <h3 id="selectedHeader">선택한 마커</h3>
         <div class="hr"></div>
-
-        <!-- ✅ (수정) '유튜브' 텍스트를 '유튜브 링크'로 변경 -->
         <div class="muted">유튜브 링크</div>
-
         <div id="youtubeBox" class="linkBox" style="margin-top:8px;">-</div>
       </div>
     </aside>
