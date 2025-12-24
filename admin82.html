@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Interactive Multi-Map Demo v7.0.0</title>
+  <title>Interactive Multi-Map Demo v7.0.0 (admin82)</title>
 
   <style>
     :root{
@@ -29,7 +29,6 @@
       --shadow2: 0 8px 24px rgba(0,0,0,.35);
       --blur: 14px;
 
-      /* ✅ [ADD] 상단 카테고리 슬롯(1~4) 폭 */
       --topSlotW: 150px;
       --topSlotH: 38px;
     }
@@ -62,6 +61,7 @@
       border-bottom: 1px solid rgba(31,42,58,.9);
       backdrop-filter: blur(var(--blur));
       -webkit-backdrop-filter: blur(var(--blur));
+      flex-wrap: wrap;
     }
 
     button, input, select, textarea{
@@ -217,7 +217,6 @@
       box-shadow: 0 10px 22px rgba(0,0,0,.18);
     }
 
-    /* Hover overlay (user mode) */
     #hoverOverlay{
       position:absolute;
       display:none;
@@ -256,7 +255,6 @@
     #hoverOverlay .yt a{ color: rgba(231,238,248,.95); text-decoration:none; }
     #hoverOverlay .yt a:hover{ text-decoration: underline; }
 
-    /* Modals */
     .modalBackdrop{
       position:fixed;
       inset:0;
@@ -362,14 +360,12 @@
     .rangeRow input[type="range"]{ flex:1; }
     .rangeRow input[type="number"]{ width:86px; }
 
-    /* Reset button (shape baseline) */
     .resetDanger{
       border: 2px solid rgba(255,93,93,.92) !important;
       background: rgba(26,10,12,.45) !important;
       box-shadow: 0 0 0 4px rgba(255,93,93,.10);
     }
 
-    /* Page buttons: keep same size/shape as resetDanger, but different colors */
     .pageBtn{
       width:100%;
       padding:12px 12px;
@@ -416,7 +412,6 @@
     .iconBtn:hover{ border-color: rgba(124,196,255,.55); box-shadow:none; }
     .iconBtn.danger{ border-color: rgba(255,93,93,.55) !important; }
 
-    /* Title dropdown */
     .titleWrap{ position:relative; }
     .titleBtn{
       display:flex;
@@ -467,69 +462,6 @@
     .drop .item .gname{ font-weight:900; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .drop .item .gmeta{ font-size:12px; color: var(--muted); margin-top:4px; }
 
-    /* Admin Lock Overlay (only on admin82.html) */
-    #__adminLockOverlay{
-      position: fixed;
-      inset: 0;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      background: rgba(0,0,0,.78);
-      backdrop-filter: blur(6px);
-      z-index: 2147483647;
-    }
-    #__adminLockCard{
-      width: min(420px, calc(100vw - 32px));
-      background: rgba(20, 24, 36, .92);
-      border: 1px solid rgba(255,255,255,.14);
-      border-radius: 16px;
-      padding: 18px 18px 16px;
-      box-shadow: 0 20px 60px rgba(0,0,0,.5);
-      color: #fff;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-    }
-    #__adminLockCard h2{ margin: 0 0 8px; font-size: 18px; }
-    #__adminLockCard p{ margin: 0 0 14px; opacity: .85; font-size: 13px; line-height: 1.4; }
-    #__adminPw{
-      width: 100%;
-      padding: 10px 12px;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,.16);
-      background: rgba(0,0,0,.25);
-      color: #fff;
-      outline: none;
-    }
-    #__adminLockRow{ display:flex; gap:10px; margin-top:12px; }
-    #__adminUnlockBtn{
-      flex: 1;
-      padding: 10px 12px;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,.16);
-      background: rgba(124,196,255,.18);
-      color: #fff;
-      cursor: pointer;
-      font-weight: 700;
-    }
-    #__adminUnlockBtn:active{ transform: translateY(1px); }
-    #__adminLockMsg{ margin-top: 10px; font-size: 12px; opacity: .9; min-height: 16px; }
-    #__adminLogoutBtn{
-      position: fixed;
-      right: 12px;
-      bottom: 12px;
-      z-index: 2147483646;
-      padding: 8px 10px;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,.16);
-      background: rgba(255,80,80,.18);
-      color: #fff;
-      cursor: pointer;
-      font-size: 12px;
-      display: none;
-    }
-
-    /* ==========================================================
-       ✅ [ADD] 상단 카테고리 1~4 슬롯 UI
-       ========================================================== */
     .topSlots{
       display:flex;
       align-items:center;
@@ -553,16 +485,16 @@
       pointer-events: none;
     }
 
-    /* 카테고리1 = 로고 자리 */
     #logoSlot{
       padding: 0;
       justify-content: center;
+      border: 0;
     }
     #logoImg{
       width:100%;
       height:100%;
       object-fit: contain;
-      display:none; /* 로고 없으면 표시 X (공간만 유지) */
+      display:none;
       padding:4px;
     }
     #logoUploadBtn{
@@ -573,7 +505,7 @@
       cursor:pointer;
       font-weight:900;
       color: rgba(231,238,248,.88);
-      display:none; /* 로고 없을 때도 관리자에서만 보이게 토글 */
+      display:none;
     }
     #logoUploadBtn:hover{
       box-shadow: 0 0 0 3px rgba(124,196,255,.10) inset;
@@ -583,15 +515,12 @@
 
 <body>
   <header>
-    <!-- ✅ 카테고리 1~4 슬롯 (총 4칸) -->
     <div class="topSlots" id="topSlots">
-      <!-- 카테고리1: 로고 자리 (URL 방식) -->
       <div class="topSlot" id="logoSlot" title="로고 자리 (카테고리1)">
         <img id="logoImg" alt="logo" />
         <button id="logoUploadBtn" class="adminOnly" type="button">로고 URL</button>
       </div>
 
-      <!-- 카테고리2: 현재 게임 -->
       <div class="topSlot" id="cat2Slot" title="카테고리2 (현재 게임)">
         <div class="titleWrap" id="titleWrap" style="width:100%; height:100%;">
           <div class="titleBtn" id="gameTitleBtn" title="클릭해서 게임 목록/추가" style="height:100%;">
@@ -602,22 +531,17 @@
         </div>
       </div>
 
-      <!-- 카테고리3: 자리만 확보 (보이지 않게) -->
       <div class="topSlot placeholder" id="cat3Slot" aria-hidden="true"></div>
-
-      <!-- 카테고리4: 자리만 확보 (보이지 않게) -->
       <div class="topSlot placeholder" id="cat4Slot" aria-hidden="true"></div>
     </div>
 
-    <!-- ✅ 관리자 모드 토글 -->
     <span class="pill" id="adminToggleWrap">
       <span class="badge" id="modeBadge">USER</span>
       <label class="muted" style="margin:0;">관리자</label>
       <input id="adminToggle" type="checkbox" />
     </span>
 
-    <!-- ✅ 상단 메뉴: 관리자 모드에서만 -->
-    <button id="uploadBtn" class="adminOnly">지도 업로드</button>
+    <button id="uploadBtn" class="adminOnly">지도 업로드(IDB)</button>
     <button id="exportStateBtn" class="adminOnly">state.json 내보내기</button>
     <button id="resetViewBtn" class="adminOnly">뷰 리셋</button>
     <button id="clearAllBtn" class="danger adminOnly">전체 초기화</button>
@@ -625,7 +549,6 @@
   </header>
 
   <div class="wrap">
-    <!-- ✅ 좌측: 페이지 -->
     <aside class="panel left">
       <div class="section">
         <h3>
@@ -633,15 +556,14 @@
           <span class="badge" id="pageBadge" style="margin-left:auto;">-</span>
         </h3>
 
-        <!-- 관리자 모드에서만 보이는 +페이지추가 -->
         <button id="addPageBtn" class="pageBtn adminOnly" style="justify-content:center;">
           <span class="name">+ 페이지 추가</span>
         </button>
 
-        <!-- ✅ [PATCH] 안내 문구는 관리자에서만 보이게 -->
         <div class="muted adminOnly" style="margin:10px 0 8px; line-height:1.4;">
-          • 페이지 버튼 클릭 → 같은 게임 안에서 지도 페이지 이동<br/>
-          • <b>폰/다른 기기</b>에서도 지도 보이게 하려면: 관리자에서 <b>URL</b> 버튼으로 지도 이미지 URL 설정
+          • <b>모바일에서 예전 이미지가 뜨는 현상</b>을 없애기 위해, 모바일은 <b>IDB 이미지 로드 금지</b>입니다.<br/>
+          • 따라서 <b>페이지의 URL</b> 버튼으로 지도 이미지 URL을 꼭 설정하세요 (GitHub에 올린 이미지 경로).<br/>
+          • 지도 업로드(IDB)는 <b>이 PC/이 브라우저에서만</b> 보입니다.
         </div>
 
         <div id="pageList" style="display:flex; flex-direction:column; gap:10px;"></div>
@@ -651,7 +573,6 @@
     <div class="center" id="centerStage">
       <canvas id="canvas"></canvas>
 
-      <!-- 유저모드: 텍스트에 hover/click 했을 때만 표시 -->
       <div id="hoverOverlay">
         <div class="memoLabel">메모</div>
         <textarea id="hoverMemo" cols="10" rows="3" placeholder="" readonly></textarea>
@@ -659,7 +580,6 @@
       </div>
     </div>
 
-    <!-- ✅ 우측 -->
     <aside class="panel right">
       <div class="section" id="categorySection">
         <h3>카테고리</h3>
@@ -705,8 +625,7 @@
         </div>
       </div>
 
-      <!-- 유저모드: 마커 초기화 -->
-      <div class="section" id="userResetSection">
+      <div class="section" id="userResetSection" style="display:none;">
         <button id="resetDimBtn" class="smallBtn resetDanger" style="width:100%;">마커 초기화</button>
       </div>
 
@@ -719,7 +638,6 @@
     </aside>
   </div>
 
-  <!-- Marker Edit Modal -->
   <div class="modalBackdrop" id="markerModalBackdrop" aria-hidden="true">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="markerModalTitle">
       <div class="modalHeader">
@@ -848,7 +766,6 @@
     </div>
   </div>
 
-  <!-- Category Edit Modal -->
   <div class="modalBackdrop" id="catModalBackdrop" aria-hidden="true">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="catModalTitle">
       <div class="modalHeader">
@@ -881,21 +798,6 @@
     </div>
   </div>
 
-  <!-- Admin Lock UI -->
-  <div id="__adminLockOverlay">
-    <div id="__adminLockCard">
-      <h2>관리자 인증</h2>
-      <p>비밀번호를 입력하면 이 브라우저에서 24시간 동안 인증이 유지됩니다.</p>
-      <input id="__adminPw" type="password" inputmode="numeric" autocomplete="current-password" placeholder="관리자 비밀번호" />
-      <div id="__adminLockRow">
-        <button id="__adminUnlockBtn" type="button">확인</button>
-      </div>
-      <div id="__adminLockMsg"></div>
-    </div>
-  </div>
-  <button id="__adminLogoutBtn" type="button">관리자 로그아웃</button>
-
-  <!-- ✅ iOS 폴리필: structuredClone 없으면 흰 화면 방지 -->
   <script>
     if (typeof structuredClone !== "function") {
       window.structuredClone = (obj) => JSON.parse(JSON.stringify(obj));
@@ -904,242 +806,28 @@
 
   <script>
     (() => {
-      // ==========================================================
-      // Page mode detect
-      // ==========================================================
       const IS_ADMIN_PAGE = /admin82\.html$/i.test(location.pathname);
       const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-      // ✅ [PATCH] 모바일(터치)에서는 마커도 줌 비율에 맞춰 같이 스케일
       const IS_COARSE_POINTER = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
-      const SCALE_MARKERS_WITH_ZOOM = IS_COARSE_POINTER; // 모바일에서만 true
+      const SCALE_MARKERS_WITH_ZOOM = IS_COARSE_POINTER;
 
-      // ==========================================================
-      // ✅✅ [ADD] REMOTE STATE (index와 동일하게 /data 포함)
-      // - 인덱스에서 REMOTE_STATE_URL에 /data 붙인 것과 동일하게 맞춤
-      // - 기본은 현재 폴더 기준: ./data/state.json
-      // ==========================================================
+      // ✅ 모바일에서 "예전 IDB 이미지"가 뜨는 원인 제거:
+      // - 모바일(터치)에서는 IDB 이미지 로드를 금지하고 URL만 사용
+      const DISABLE_IDB_IMAGE_ON_MOBILE = IS_COARSE_POINTER;
+
+      // ✅ 통일된 원격 state.json 경로
       const REMOTE_STATE_URL = new URL("./data/state.json", location.href).toString();
 
-      async function fetchRemoteState(){
-        try{
-          const bust = (REMOTE_STATE_URL.includes("?") ? "&" : "?") + "v=" + Date.now();
-          const res = await fetch(REMOTE_STATE_URL + bust, { cache:"no-store" });
-          if(!res.ok) return null;
-          const j = await res.json();
-          return j;
-        }catch(e){
-          return null;
-        }
-      }
+      // 관리자 인증(24시간)
+      const ADMIN_PASS = "0000000001";
+      const ADMIN_AUTH_KEY = "mm_admin_auth_until_v1";
+      const AUTH_MS = 24 * 60 * 60 * 1000;
 
-      async function pushRemoteState(payload){
-        // 서버가 PUT/POST 중 무엇을 받는지 모르니 둘 다 시도
-        const body = JSON.stringify(payload);
-        const headers = { "Content-Type":"application/json;charset=utf-8" };
-
-        try{
-          let res = await fetch(REMOTE_STATE_URL, { method:"PUT", headers, body });
-          if(!res.ok){
-            res = await fetch(REMOTE_STATE_URL, { method:"POST", headers, body });
-          }
-          if(!res.ok){
-            console.warn("[remote] save failed:", res.status, REMOTE_STATE_URL);
-            return false;
-          }
-          return true;
-        }catch(e){
-          console.warn("[remote] save error:", e);
-          return false;
-        }
-      }
-
-      function isLikelyState(obj){
-        return !!(obj && typeof obj === "object" && Array.isArray(obj.games) && obj.ui);
-      }
-
-      function getUpdatedAtSafe(st){
-        const v = Number(st?._updatedAt);
-        return Number.isFinite(v) ? v : 0;
-      }
-
-      // remote 저장 디바운스
-      let __remoteTimer = null;
-      function scheduleRemoteSave(){
-        if(!IS_ADMIN_PAGE) return;
-        if(!state?.ui?.admin) return;
-        if(!isAuthed()) return;
-        clearTimeout(__remoteTimer);
-        __remoteTimer = setTimeout(() => {
-          const snapshot = state;
-          pushRemoteState(snapshot);
-        }, 800);
-      }
-
-      // ==========================================================
-      // ✅ [PATCH] 로고 저장/로드 (URL 방식)
-      // ==========================================================
-      const LOGO_KEY = "mm_logo_url_v1";
-      const $logoImg = document.getElementById("logoImg");
-      const $logoUploadBtn = document.getElementById("logoUploadBtn");
-      const $logoSlot = document.getElementById("logoSlot");
-
-      function normalizeUrlMaybe(u){
-        const v = String(u || "").trim();
-        if(!v) return "";
-        try { return new URL(v, location.href).toString(); } catch { return v; }
-      }
-
-      function loadLogo(){
-        try{
-          const raw = (localStorage.getItem(LOGO_KEY) || "").trim();
-          const url = normalizeUrlMaybe(raw);
-          if(url){
-            $logoImg.src = url;
-            $logoImg.style.display = "block";
-          }else{
-            $logoImg.removeAttribute("src");
-            $logoImg.style.display = "none";
-          }
-        }catch{
-          $logoImg.style.display = "none";
-        }
-      }
-
-      function promptLogoUrl(){
-        // 관리자+관리자모드에서만
-        if(!IS_ADMIN_PAGE) return;
-        if(!state?.ui?.admin) return;
-
-        const cur = (localStorage.getItem(LOGO_KEY) || "").trim();
-        const v = prompt(
-          "로고 이미지 URL을 입력하세요.\n예) ./assets/logo.png 또는 https://.../logo.png\n(빈 값으로 저장하면 로고가 제거됩니다)",
-          cur || "./assets/logo.png"
-        );
-        if(v === null) return;
-
-        const next = String(v).trim();
-        if(!next){
-          localStorage.removeItem(LOGO_KEY);
-        }else{
-          localStorage.setItem(LOGO_KEY, next);
-        }
-        loadLogo();
-      }
-
-      // 버튼 클릭
-      $logoUploadBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        promptLogoUrl();
-      });
-
-      // 슬롯 클릭(버튼이 안 보이는 경우도 대비)
-      $logoSlot.addEventListener("click", () => {
-        promptLogoUrl();
-      });
-
-      // 더블클릭: 제거
-      $logoSlot.addEventListener("dblclick", () => {
-        if(!IS_ADMIN_PAGE) return;
-        if(!state?.ui?.admin) return;
-        if(!confirm("로고를 제거할까요?")) return;
-        localStorage.removeItem(LOGO_KEY);
-        loadLogo();
-      });
-
-      // ==========================================================
-      // Admin Auth (24h) - only admin page
-      // ==========================================================
-      const ADMIN_PASSWORD = "0000000001";
-      const AUTH_KEY = "mm_admin_auth_v1";
-      const SESSION_MS = 24 * 60 * 60 * 1000;
-
-      const $lock = document.getElementById("__adminLockOverlay");
-      const $pw = document.getElementById("__adminPw");
-      const $unlock = document.getElementById("__adminUnlockBtn");
-      const $msg = document.getElementById("__adminLockMsg");
-      const $logout = document.getElementById("__adminLogoutBtn");
-
-      function getAuth(){
-        try{
-          const raw = localStorage.getItem(AUTH_KEY);
-          if(!raw) return null;
-          const obj = JSON.parse(raw);
-          if(!obj || typeof obj.exp !== "number") return null;
-          return obj;
-        }catch{
-          return null;
-        }
-      }
-      function isAuthed(){
-        const a = getAuth();
-        return !!(a && a.exp > Date.now());
-      }
-      function setAuthed(){
-        localStorage.setItem(AUTH_KEY, JSON.stringify({ exp: Date.now() + SESSION_MS }));
-      }
-      function clearAuthed(){
-        localStorage.removeItem(AUTH_KEY);
-      }
-      function showLock(show){
-        if(!IS_ADMIN_PAGE) return;
-        $lock.style.display = show ? "flex" : "none";
-        $logout.style.display = show ? "none" : "block";
-        if(show) setTimeout(()=> $pw.focus(), 50);
-      }
-
-      // ==========================================================
-      // Storage / DB
-      // ==========================================================
       const LS_KEY = "imgmap_multi_v700";
       const IDB_NAME = "imgmap_multi_db_v700";
       const IDB_STORE = "blobs";
 
-      function openDB(){
-        return new Promise((resolve, reject) => {
-          const req = indexedDB.open(IDB_NAME, 1);
-          req.onupgradeneeded = () => {
-            const db = req.result;
-            if(!db.objectStoreNames.contains(IDB_STORE)) db.createObjectStore(IDB_STORE);
-          };
-          req.onsuccess = () => resolve(req.result);
-          req.onerror = () => reject(req.error);
-        });
-      }
-
-      async function idbPut(key, blob){
-        const db = await openDB();
-        return new Promise((resolve, reject) => {
-          const tx = db.transaction(IDB_STORE, "readwrite");
-          tx.objectStore(IDB_STORE).put(blob, key);
-          tx.oncomplete = () => { db.close(); resolve(true); };
-          tx.onerror = () => { db.close(); reject(tx.error); };
-        });
-      }
-
-      async function idbGet(key){
-        const db = await openDB();
-        return new Promise((resolve, reject) => {
-          const tx = db.transaction(IDB_STORE, "readonly");
-          const req = tx.objectStore(IDB_STORE).get(key);
-          req.onsuccess = () => { db.close(); resolve(req.result || null); };
-          req.onerror = () => { db.close(); reject(req.error); };
-        });
-      }
-
-      async function idbDel(key){
-        const db = await openDB();
-        return new Promise((resolve, reject) => {
-          const tx = db.transaction(IDB_STORE, "readwrite");
-          tx.objectStore(IDB_STORE).delete(key);
-          tx.oncomplete = () => { db.close(); resolve(true); };
-          tx.onerror = () => { db.close(); reject(tx.error); };
-        });
-      }
-
-      // ==========================================================
-      // Utils
-      // ==========================================================
       const nowISO = () => new Date().toISOString();
       const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
       const clamp01 = v => clamp(v,0,1);
@@ -1149,16 +837,18 @@
         try { return JSON.parse(json); } catch { return fallback; }
       }
 
+      function hasAuth(){
+        const until = Number(localStorage.getItem(ADMIN_AUTH_KEY) || 0);
+        return (until && Date.now() < until);
+      }
+      function grantAuth(){
+        localStorage.setItem(ADMIN_AUTH_KEY, String(Date.now() + AUTH_MS));
+      }
+
       function saveState(){
         state._updatedAt = Date.now();
         state._updatedAtISO = new Date().toISOString();
-        try{
-          localStorage.setItem(LS_KEY, JSON.stringify(state));
-        }catch(e){
-          console.warn(e);
-        }
-        // ✅ [ADD] 관리자에서 변경 시 원격 저장 스케줄
-        scheduleRemoteSave();
+        try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){ console.warn(e); }
       }
 
       function escapeHtml(s){
@@ -1191,9 +881,6 @@
       }
       function isoFromMs(ms){ return new Date(ms).toISOString(); }
 
-      // ==========================================================
-      // Config
-      // ==========================================================
       const DEFAULT_CATEGORIES = [
         { name:"boss",   color:"#ff6b6b" },
         { name:"gather", color:"#ffd43b" },
@@ -1217,9 +904,6 @@
       const LABEL_SIZE_RATIO = 1.5;
       const calcLabelSizeFromRadius = (r) => Math.round(r * LABEL_SIZE_RATIO);
 
-      // ==========================================================
-      // Data Model
-      // ==========================================================
       const defaultState = {
         ui: {
           admin:false,
@@ -1247,85 +931,48 @@
         ]
       };
 
-      // ✅ [PATCH] const -> let (원격 state로 교체 가능하도록)
-      const loadedLocal = safeParse(localStorage.getItem(LS_KEY) || "", null);
-      let state = (loadedLocal && loadedLocal.games && Array.isArray(loadedLocal.games)) ? loadedLocal : structuredClone(defaultState);
+      const loaded = safeParse(localStorage.getItem(LS_KEY) || "", null);
+      const state = (loaded && loaded.games && Array.isArray(loaded.games)) ? loaded : structuredClone(defaultState);
 
-      function normalizeStateShape(){
-        if(!state.ui) state.ui = structuredClone(defaultState.ui);
-        if(!Array.isArray(state.ui.dimmedMarkerIds)) state.ui.dimmedMarkerIds = [];
-        if(!Array.isArray(state.games) || state.games.length === 0) state.games = structuredClone(defaultState.games);
+      if(!state.ui) state.ui = structuredClone(defaultState.ui);
+      if(!Array.isArray(state.ui.dimmedMarkerIds)) state.ui.dimmedMarkerIds = [];
+      if(!Array.isArray(state.games) || state.games.length === 0) state.games = structuredClone(defaultState.games);
 
-        for(const g of state.games){
-          if(!g.id) g.id = uid();
-          if(typeof g.name !== "string") g.name = "Game";
-          if(!Array.isArray(g.categories) || g.categories.length === 0) g.categories = structuredClone(DEFAULT_CATEGORIES);
-          if(!Array.isArray(g.pages) || g.pages.length === 0){
-            g.pages = [{ id: uid(), name:"1번마을", map:{imageKey:"", imageUrl:"", width:2200, height:1400}, markers:[], links:[] }];
-          }
-          for(const p of g.pages){
-            if(!p.id) p.id = uid();
-            if(typeof p.name !== "string") p.name = "Page";
-            if(!p.map) p.map = { imageKey:"", imageUrl:"", width:2200, height:1400 };
-            if(typeof p.map.imageKey !== "string") p.map.imageKey = "";
-            if(typeof p.map.imageUrl !== "string") p.map.imageUrl = "";
-            if(typeof p.map.width !== "number" || !isFinite(p.map.width)) p.map.width = 2200;
-            if(typeof p.map.height !== "number" || !isFinite(p.map.height)) p.map.height = 1400;
-            if(!Array.isArray(p.markers)) p.markers = [];
-            if(!Array.isArray(p.links)) p.links = [];
-          }
+      for(const g of state.games){
+        if(!g.id) g.id = uid();
+        if(typeof g.name !== "string") g.name = "Game";
+        if(!Array.isArray(g.categories) || g.categories.length === 0) g.categories = structuredClone(DEFAULT_CATEGORIES);
+        if(!Array.isArray(g.pages) || g.pages.length === 0){
+          g.pages = [{ id: uid(), name:"1번마을", map:{imageKey:"", imageUrl:"", width:2200, height:1400}, markers:[], links:[] }];
+        }
+        for(const p of g.pages){
+          if(!p.id) p.id = uid();
+          if(typeof p.name !== "string") p.name = "Page";
+          if(!p.map) p.map = { imageKey:"", imageUrl:"", width:2200, height:1400 };
+          if(typeof p.map.imageKey !== "string") p.map.imageKey = "";
+          if(typeof p.map.imageUrl !== "string") p.map.imageUrl = "";
+          if(typeof p.map.width !== "number" || !isFinite(p.map.width)) p.map.width = 2200;
+          if(typeof p.map.height !== "number" || !isFinite(p.map.height)) p.map.height = 1400;
+          if(!Array.isArray(p.markers)) p.markers = [];
+          if(!Array.isArray(p.links)) p.links = [];
         }
       }
-      normalizeStateShape();
-
-      // ==========================================================
-      // ✅✅ [ADD] 원격 state 로드: local보다 최신이면 remote로 교체
-      // ==========================================================
-      (async () => {
-        const remote = await fetchRemoteState();
-        if(!isLikelyState(remote)) return;
-
-        const rAt = getUpdatedAtSafe(remote);
-        const lAt = getUpdatedAtSafe(state);
-
-        if(rAt > lAt){
-          state = remote;
-          normalizeStateShape();
-          try{
-            localStorage.setItem(LS_KEY, JSON.stringify(state));
-          }catch(e){}
-          // 화면 갱신은 init 후에 한 번 더 돌려도 되지만,
-          // 여기서는 init에서 다시 refreshAll을 하니 안전하게 플래그만 둠
-          __BOOT_REMOTE_APPLIED = true;
-        }
-      })();
-      let __BOOT_REMOTE_APPLIED = false;
 
       function getGameById(id){ return state.games.find(g => g.id === id) || null; }
-
       function getCurrentGame(){
         if(!state.currentGameId) state.currentGameId = state.games[0].id;
         const g = getGameById(state.currentGameId);
-        if(!g){
-          state.currentGameId = state.games[0].id;
-          return state.games[0];
-        }
+        if(!g){ state.currentGameId = state.games[0].id; return state.games[0]; }
         return g;
       }
-
       function getPageById(game, pid){ return game.pages.find(p => p.id === pid) || null; }
-
       function getCurrentPage(){
         const g = getCurrentGame();
         if(!state.currentPageId) state.currentPageId = g.pages[0].id;
         const p = getPageById(g, state.currentPageId);
-        if(!p){
-          state.currentPageId = g.pages[0].id;
-          return g.pages[0];
-        }
+        if(!p){ state.currentPageId = g.pages[0].id; return g.pages[0]; }
         return p;
       }
-
       function currentCategories(){ return getCurrentGame().categories; }
       function currentMarkers(){ return getCurrentPage().markers; }
       function currentLinks(){ return getCurrentPage().links; }
@@ -1362,24 +1009,18 @@
         loadMapImageForCurrentPage();
       }
 
-      // ==========================================================
-      // Chain rule helpers (page-local)
-      // ==========================================================
       function getCategoryColor(name){
         const c = currentCategories().find(x => x.name === name);
         return c?.color || "#e6edf3";
       }
-
       function getMarkerColor(m){
         const ov = (m.colorOverride || "").trim();
         return ov ? ov : getCategoryColor(m.category);
       }
-
       function getMarkerLabel(m){
         const t = (m.title || "").trim();
         return t ? t : (m.category || "").trim();
       }
-
       function getUserYoutubeDisplay(m){
         const name = (m.youtubeLabel || "").trim();
         if(name) return name;
@@ -1459,7 +1100,6 @@
         for(const g of groups) applyAllChainsInGroup(g);
       }
 
-      // Links rebuild (page-local)
       function rebuildLinks(){
         const markers = currentMarkers();
         const byGroup = new Map();
@@ -1508,9 +1148,7 @@
         }
       }
 
-      // ==========================================================
       // DOM
-      // ==========================================================
       const canvas = document.getElementById("canvas");
       const ctx = canvas.getContext("2d");
       const centerStage = document.getElementById("centerStage");
@@ -1550,8 +1188,6 @@
       const hoverOverlay = document.getElementById("hoverOverlay");
       const hoverYt = document.getElementById("hoverYt");
       const hoverMemo = document.getElementById("hoverMemo");
-
-      const resetDimBtn = document.getElementById("resetDimBtn");
 
       // game dropdown
       const gameTitleBtn = document.getElementById("gameTitleBtn");
@@ -1597,21 +1233,107 @@
       let activeCatRowEl = null;
       let modalMarkerId = "";
 
-      // ==========================================================
-      // Admin-only visibility
-      // ==========================================================
+      // Logo
+      const LOGO_KEY = "mm_logo_url_v1";
+      const $logoImg = document.getElementById("logoImg");
+      const $logoUploadBtn = document.getElementById("logoUploadBtn");
+      const $logoSlot = document.getElementById("logoSlot");
+
+      function normalizeUrlMaybe(u){
+        const v = String(u || "").trim();
+        if(!v) return "";
+        try { return new URL(v, location.href).toString(); } catch { return v; }
+      }
+      function loadLogo(){
+        try{
+          const raw = (localStorage.getItem(LOGO_KEY) || "").trim();
+          const url = normalizeUrlMaybe(raw);
+          if(url){
+            $logoImg.src = url;
+            $logoImg.style.display = "block";
+          }else{
+            $logoImg.removeAttribute("src");
+            $logoImg.style.display = "none";
+          }
+        }catch{
+          $logoImg.style.display = "none";
+        }
+      }
+      function promptLogoUrl(){
+        if(!IS_ADMIN_PAGE) return;
+        if(!state?.ui?.admin) return;
+
+        const cur = (localStorage.getItem(LOGO_KEY) || "").trim();
+        const v = prompt(
+          "로고 이미지 URL을 입력하세요.\n예) ./assets/logo.png 또는 https://.../logo.png\n(빈 값으로 저장하면 로고가 제거됩니다)",
+          cur || "./assets/logo.png"
+        );
+        if(v === null) return;
+
+        const next = String(v).trim();
+        if(!next) localStorage.removeItem(LOGO_KEY);
+        else localStorage.setItem(LOGO_KEY, next);
+        loadLogo();
+      }
+
+      $logoUploadBtn.addEventListener("click", (e) => { e.stopPropagation(); promptLogoUrl(); });
+      $logoSlot.addEventListener("click", () => promptLogoUrl());
+      $logoSlot.addEventListener("dblclick", () => {
+        if(!IS_ADMIN_PAGE) return;
+        if(!state?.ui?.admin) return;
+        if(!confirm("로고를 제거할까요?")) return;
+        localStorage.removeItem(LOGO_KEY);
+        loadLogo();
+      });
+
       function syncAdminOnlyVisibility(){
         document.querySelectorAll(".adminOnly").forEach(el => {
           el.style.display = state.ui.admin ? "" : "none";
         });
-
-        // 로고 버튼은 관리자+admin82에서만
         $logoUploadBtn.style.display = (state.ui.admin && IS_ADMIN_PAGE) ? "" : "none";
       }
 
-      // ==========================================================
-      // Map image load per page (IDB -> fallback URL)
-      // ==========================================================
+      // IndexedDB
+      function openDB(){
+        return new Promise((resolve, reject) => {
+          const req = indexedDB.open(IDB_NAME, 1);
+          req.onupgradeneeded = () => {
+            const db = req.result;
+            if(!db.objectStoreNames.contains(IDB_STORE)) db.createObjectStore(IDB_STORE);
+          };
+          req.onsuccess = () => resolve(req.result);
+          req.onerror = () => reject(req.error);
+        });
+      }
+      async function idbPut(key, blob){
+        const db = await openDB();
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction(IDB_STORE, "readwrite");
+          tx.objectStore(IDB_STORE).put(blob, key);
+          tx.oncomplete = () => { db.close(); resolve(true); };
+          tx.onerror = () => { db.close(); reject(tx.error); };
+        });
+      }
+      async function idbGet(key){
+        const db = await openDB();
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction(IDB_STORE, "readonly");
+          const req = tx.objectStore(IDB_STORE).get(key);
+          req.onsuccess = () => { db.close(); resolve(req.result || null); };
+          req.onerror = () => { db.close(); reject(req.error); };
+        });
+      }
+      async function idbDel(key){
+        const db = await openDB();
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction(IDB_STORE, "readwrite");
+          tx.objectStore(IDB_STORE).delete(key);
+          tx.oncomplete = () => { db.close(); resolve(true); };
+          tx.onerror = () => { db.close(); reject(tx.error); };
+        });
+      }
+
+      // Map image load
       const mapImg = new Image();
       mapImg.crossOrigin = "anonymous";
       let mapImgReady = false;
@@ -1625,34 +1347,14 @@
 
       async function loadMapImageForCurrentPage(){
         mapImgReady = false;
-        if(mapObjectUrl){
-          URL.revokeObjectURL(mapObjectUrl);
-          mapObjectUrl = null;
-        }
+        if(mapObjectUrl){ URL.revokeObjectURL(mapObjectUrl); mapObjectUrl = null; }
 
         const key = currentMapImageKey();
-
-        // 1) IDB first (device-local)
-        const blob = await idbGet(key).catch(()=>null);
-        if(blob){
-          mapObjectUrl = URL.createObjectURL(blob);
-          mapImg.onload = () => {
-            mapImgReady = true;
-            const mp = currentMap();
-            mp.width = mapImg.naturalWidth || mapImg.width;
-            mp.height = mapImg.naturalHeight || mapImg.height;
-            saveState();
-            resetView();
-            draw();
-          };
-          mapImg.onerror = () => { mapImgReady = false; draw(); };
-          mapImg.src = mapObjectUrl;
-          return;
-        }
-
-        // 2) Fallback: public URL (shared across devices)
         const mp = currentMap();
+
         const url = (mp.imageUrl || "").trim();
+
+        // ✅ URL이 있으면 (PC/모바일 공통) URL 먼저 로드
         if(url && isValidUrl(url)){
           const abs = new URL(url, location.href).toString();
           mapImg.onload = () => {
@@ -1668,17 +1370,51 @@
           return;
         }
 
-        // 3) Nothing
+        // ✅ 모바일은 IDB 금지 → 오래된 이미지가 절대 뜨지 않음
+        if(DISABLE_IDB_IMAGE_ON_MOBILE){
+          mapImgReady = false;
+          draw();
+          return;
+        }
+
+        // PC에서만 IDB fallback
+        const blob = await idbGet(key).catch(()=>null);
+        if(blob){
+          mapObjectUrl = URL.createObjectURL(blob);
+          mapImg.onload = () => {
+            mapImgReady = true;
+            mp.width = mapImg.naturalWidth || mapImg.width;
+            mp.height = mapImg.naturalHeight || mapImg.height;
+            saveState();
+            resetView();
+            draw();
+          };
+          mapImg.onerror = () => { mapImgReady = false; draw(); };
+          mapImg.src = mapObjectUrl;
+          return;
+        }
+
         mapImgReady = false;
         draw();
       }
 
-      // ==========================================================
       // View
-      // ==========================================================
       const view = { scale:1, minScale:0.05, maxScale:10, offsetX:0, offsetY:0 };
-
       const markerScaleDenom = () => (SCALE_MARKERS_WITH_ZOOM ? 1 : view.scale);
+
+      function clampViewToBounds(){
+        const rect = canvas.getBoundingClientRect();
+        const cw = rect.width, ch = rect.height;
+        const mp = currentMap();
+        const mw = mp.width * view.scale;
+        const mh = mp.height * view.scale;
+
+        if(mw <= cw) view.offsetX = (cw - mw) / 2;
+        else view.offsetX = clamp(view.offsetX, cw - mw, 0);
+
+        if(mh <= ch) view.offsetY = (ch - mh) / 2;
+        else view.offsetY = clamp(view.offsetY, ch - mh, 0);
+      }
 
       function resizeCanvas(){
         const rect = canvas.getBoundingClientRect();
@@ -1686,6 +1422,7 @@
         canvas.width = Math.floor(rect.width * dpr);
         canvas.height = Math.floor(rect.height * dpr);
         ctx.setTransform(dpr,0,0,dpr,0,0);
+        clampViewToBounds();
         draw();
       }
       window.addEventListener("resize", resizeCanvas);
@@ -1706,11 +1443,10 @@
         view.scale = clamp(s, view.minScale, view.maxScale);
         view.offsetX = (w - mw * view.scale) / 2;
         view.offsetY = (h - mh * view.scale) / 2;
+        clampViewToBounds();
       }
 
-      // ==========================================================
-      // Mode
-      // ==========================================================
+      // Mode (admin auth gate)
       function setAdminMode(on){
         state.ui.admin = !!on;
         modeBadge.textContent = state.ui.admin ? "ADMIN" : "USER";
@@ -1726,17 +1462,34 @@
       }
 
       adminToggleWrap.style.display = "";
-      adminToggle.addEventListener("change", () => setAdminMode(adminToggle.checked));
+      adminToggle.addEventListener("change", () => {
+        if(adminToggle.checked){
+          if(!hasAuth()){
+            const pw = prompt("관리자 비밀번호를 입력하세요.", "");
+            if(pw !== ADMIN_PASS){
+              alert("비밀번호가 올바르지 않습니다.");
+              adminToggle.checked = false;
+              setAdminMode(false);
+              return;
+            }
+            grantAuth();
+          }
+          setAdminMode(true);
+        }else{
+          setAdminMode(false);
+        }
+      });
 
-      // ==========================================================
-      // Header buttons (admin only visible)
-      // ==========================================================
+      // Header buttons
       uploadBtn.addEventListener("click", () => fileInput.click());
       fileInput.addEventListener("change", async (e) => {
         if(!state.ui.admin) return;
         const f = e.target.files && e.target.files[0];
         if(!f) return;
         if(!f.type.startsWith("image/")) return;
+
+        // 모바일에서도 업로드는 가능하지만, 모바일은 IDB 로드를 막아놨기 때문에
+        // 업로드 후 확인이 어려울 수 있음(안전). PC에서 URL 설정을 권장.
         const key = currentMapImageKey();
         try{
           await idbPut(key, f);
@@ -1757,13 +1510,11 @@
         location.reload();
       });
 
-      exportStateBtn?.addEventListener("click", async () => {
+      exportStateBtn?.addEventListener("click", () => {
         if(!state.ui.admin) return;
         saveState();
         const json = localStorage.getItem(LS_KEY);
         if(!json){ alert("저장된 데이터가 없습니다."); return; }
-
-        // 1) 다운로드
         const blob = new Blob([json], { type: "application/json;charset=utf-8" });
         const a = document.createElement("a");
         a.href = URL.createObjectURL(blob);
@@ -1772,9 +1523,6 @@
         a.click();
         a.remove();
         setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-
-        // 2) 원격 저장도 한 번 시도(서버가 지원할 때만 성공)
-        await pushRemoteState(state);
       });
 
       removeAllLinksBtn.addEventListener("click", () => {
@@ -1794,9 +1542,7 @@
         draw();
       });
 
-      // ==========================================================
       // Game dropdown
-      // ==========================================================
       let gameDropOpen = false;
       function closeGameDrop(){ gameDropOpen = false; gameDrop.style.display = "none"; }
       function openGameDrop(){ gameDropOpen = true; rebuildGameDrop(); gameDrop.style.display = "block"; }
@@ -1889,9 +1635,7 @@
             delBtn.addEventListener("click", async () => {
               if(!confirm(`게임 "${g.name}" 을 삭제할까요?\n(페이지/마커는 localStorage에서 제거됩니다. 이미지 blob은 DB에 남을 수 있습니다)`)) return;
               state.games = state.games.filter(x => x.id !== g.id);
-              if(state.games.length === 0){
-                state.games = structuredClone(defaultState.games);
-              }
+              if(state.games.length === 0) state.games = structuredClone(defaultState.games);
               state.currentGameId = state.games[0].id;
               state.currentPageId = state.games[0].pages[0].id;
               saveState();
@@ -1910,9 +1654,7 @@
         }
       }
 
-      // ==========================================================
       // Page list
-      // ==========================================================
       function rebuildPageList(){
         const g = getCurrentGame();
         const curPage = getCurrentPage();
@@ -1942,12 +1684,12 @@
             urlBtn.className = "iconBtn";
             urlBtn.type = "button";
             urlBtn.textContent = "URL";
-            urlBtn.title = "지도 이미지 URL 설정(폰/다른 기기 공유용)";
+            urlBtn.title = "지도 이미지 URL 설정(모바일/다른 기기 공유용)";
             urlBtn.addEventListener("click", (e) => {
               e.stopPropagation();
               const cur = (p.map?.imageUrl || "").trim();
               const v = prompt(
-                "지도 이미지 URL을 입력하세요.\n예) ./assets/maps/map1.png\n(이 URL이 설정되면 다른 기기에서도 지도가 보입니다)",
+                "지도 이미지 URL을 입력하세요.\n예) ./assets/maps/map1.png\n(모바일은 URL만 로드합니다. 꼭 설정하세요.)",
                 cur || "./assets/maps/map1.png"
               );
               if(v == null) return;
@@ -1989,9 +1731,7 @@
               if(g.pages.length === 0){
                 g.pages.push({ id: uid(), name:"1번마을", map:{ imageKey:"", imageUrl:"", width:2200, height:1400 }, markers:[], links:[] });
               }
-              if(state.currentPageId === p.id){
-                state.currentPageId = g.pages[0].id;
-              }
+              if(state.currentPageId === p.id) state.currentPageId = g.pages[0].id;
               saveState();
               refreshAll();
               loadMapImageForCurrentPage();
@@ -2020,9 +1760,7 @@
         setCurrentPage(p.id);
       });
 
-      // ==========================================================
       // Category bar
-      // ==========================================================
       function rebuildCategoryBar(){
         categoryBar.innerHTML = "";
         categoryBar.appendChild(makeCatButton("전체", "", "#223042"));
@@ -2068,9 +1806,7 @@
         return currentMarkers().filter(m => m.category === cat);
       }
 
-      // ==========================================================
       // Palette
-      // ==========================================================
       function rebuildPalette(){
         paletteBar.innerHTML = "";
         for(const p of PALETTE){
@@ -2151,9 +1887,7 @@
         rebuildPalette();
       });
 
-      // ==========================================================
       // Selected panel
-      // ==========================================================
       function renderSelectedPanel(){
         const m = currentMarkers().find(x => x.id === state.ui.selectedMarkerId);
         if(!m){
@@ -2177,21 +1911,15 @@
         rebuildPalette();
       }
 
-      // ==========================================================
-      // Hover overlay
-      // ==========================================================
+      // Hover overlay (admin에서는 기본 사용 안함)
       let overlayPinned = false;
       let pinnedMarkerId = "";
 
       function hideHoverOverlay(force=false){
-        if(force){
-          hoverOverlay.style.display = "none";
-          return;
-        }
+        if(force){ hoverOverlay.style.display = "none"; return; }
         if(overlayPinned) return;
         hoverOverlay.style.display = "none";
       }
-
       function unpinOverlay(){
         overlayPinned = false;
         pinnedMarkerId = "";
@@ -2226,34 +1954,7 @@
         }
       }
 
-      function showHoverOverlayForMarker(m, clientX, clientY){
-        if(state.ui.admin) return;
-        if(overlayPinned) return;
-        renderOverlayForMarker(m);
-        positionOverlay(clientX, clientY);
-      }
-
-      function showPinnedOverlayForMarker(m, clientX, clientY){
-        if(state.ui.admin) return;
-        overlayPinned = true;
-        pinnedMarkerId = m.id;
-        renderOverlayForMarker(m);
-        positionOverlay(clientX, clientY);
-      }
-
-      hoverOverlay.addEventListener("mousedown", (e) => e.stopPropagation());
-      hoverOverlay.addEventListener("click", (e) => e.stopPropagation());
-
-      window.addEventListener("keydown", (e) => {
-        if(e.key === "Escape" && overlayPinned && !state.ui.admin){
-          unpinOverlay();
-          draw();
-        }
-      });
-
-      // ==========================================================
-      // Marker modal
-      // ==========================================================
+      // Marker modal helpers
       function buildFontColorQuick(){
         modalFontColorQuick.innerHTML = "";
         for(const p of PALETTE){
@@ -2497,9 +2198,7 @@
         closeMarkerModal();
       });
 
-      // ==========================================================
       // Category Modal
-      // ==========================================================
       editCategoriesBtn.addEventListener("click", () => openCatModal());
 
       function openCatModal(){
@@ -2510,12 +2209,10 @@
         catModalBackdrop.style.display = "flex";
         catModalBackdrop.setAttribute("aria-hidden","false");
       }
-
       function closeCatModal(){
         catModalBackdrop.style.display = "none";
         catModalBackdrop.setAttribute("aria-hidden","true");
       }
-
       closeCatModalBtn.addEventListener("click", closeCatModal);
       catModalBackdrop.addEventListener("click", (e) => { if(e.target === catModalBackdrop) closeCatModal(); });
 
@@ -2660,9 +2357,6 @@
         closeCatModal();
       });
 
-      // ==========================================================
-      // Admin hints
-      // ==========================================================
       function refreshHints(){
         createCategoryHint.textContent = state.ui.createCategory || "-";
 
@@ -2685,9 +2379,7 @@
         insertAfterHint.textContent = `${(m.title||"").trim() || "(이름 없음)"} / chain ${chainNo}`;
       }
 
-      // ==========================================================
       // Create markers
-      // ==========================================================
       function getDefaultCreateColorOverride(){
         const a = (state.ui.createColorOverride || "").trim();
         if(a) return a;
@@ -2816,19 +2508,7 @@
         draw();
       }
 
-      // ==========================================================
-      // User: dim reset
-      // ==========================================================
-      resetDimBtn.addEventListener("click", () => {
-        if(state.ui.admin) return;
-        state.ui.dimmedMarkerIds = [];
-        saveState();
-        draw();
-      });
-
-      // ==========================================================
-      // Input (pan/zoom/drag/hover)
-      // ==========================================================
+      // Input
       function getPointerPos(evt){
         const rect = canvas.getBoundingClientRect();
         return { x: evt.clientX - rect.left, y: evt.clientY - rect.top };
@@ -2899,6 +2579,7 @@
         view.offsetX += (after.x - before.x) * view.scale;
         view.offsetY += (after.y - before.y) * view.scale;
 
+        clampViewToBounds();
         draw();
       }, { passive:false });
 
@@ -2926,6 +2607,11 @@
         const m = findMarkerAtScreen(sx, sy);
         if(m){
           state.ui.selectedMarkerId = m.id;
+          if(!state.ui.admin){
+            saveState(); renderSelectedPanel(); draw();
+            return;
+          }
+
           saveState();
           renderSelectedPanel();
           draggingMarkerId = m.id;
@@ -2961,8 +2647,7 @@
           const ny = clamp01(mwy / mp.height);
 
           if(Math.abs(nx - m.x) > 0.0001 || Math.abs(ny - m.y) > 0.0001) didDrag = true;
-          m.x = nx;
-          m.y = ny;
+          m.x = nx; m.y = ny;
           draw();
           return;
         }
@@ -2973,8 +2658,11 @@
           if(Math.abs(dx) > 2 || Math.abs(dy) > 2) didDrag = true;
           view.offsetX = viewStart.ox + dx;
           view.offsetY = viewStart.oy + dy;
+          clampViewToBounds();
           draw();
         }
+
+        // admin에서는 hover overlay 사용 안함(원하면 나중에 활성화 가능)
       });
 
       window.addEventListener("mouseup", () => {
@@ -2996,9 +2684,7 @@
         if(m) openMarkerModal(m.id);
       });
 
-      // ==========================================================
       // Draw
-      // ==========================================================
       function drawBackgroundGrid(){
         const rect = canvas.getBoundingClientRect();
         const w = rect.width, h = rect.height;
@@ -3008,12 +2694,8 @@
         ctx.fillRect(0,0,w,h);
         ctx.globalAlpha = 0.10;
         ctx.strokeStyle = "#243447";
-        for(let x=0; x<w; x+=40){
-          ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h); ctx.stroke();
-        }
-        for(let y=0; y<h; y+=40){
-          ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke();
-        }
+        for(let x=0; x<w; x+=40){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h); ctx.stroke(); }
+        for(let y=0; y<h; y+=40){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke(); }
         ctx.restore();
       }
 
@@ -3088,6 +2770,7 @@
 
         const numMap = buildNumberMap();
         const mp = currentMap();
+        const dimSet = new Set(Array.isArray(state.ui.dimmedMarkerIds) ? state.ui.dimmedMarkerIds : []);
 
         ctx.save();
         ctx.translate(view.offsetX, view.offsetY);
@@ -3145,7 +2828,11 @@
           const denom = markerScaleDenom();
           const r = radiusPx / denom;
 
+          const isDimmed = dimSet.has(m.id);
+          const alpha = isDimmed ? 0.30 : 1.0;
+
           ctx.save();
+          ctx.globalAlpha = alpha;
           ctx.translate(wx, wy);
 
           ctx.beginPath();
@@ -3187,9 +2874,6 @@
         ctx.restore();
       }
 
-      // ==========================================================
-      // Refresh helpers
-      // ==========================================================
       function refreshHeaderTitle(){
         const g = getCurrentGame();
         gameTitleText.textContent = g.name || "Map Demo";
@@ -3206,9 +2890,6 @@
         syncAdminOnlyVisibility();
       }
 
-      // ==========================================================
-      // Init sample markers (only once)
-      // ==========================================================
       function ensureSampleMarkersOnce(){
         const p = getCurrentPage();
         if(p.markers.length > 0) return;
@@ -3228,37 +2909,7 @@
             groupId: 0,
             chainStart: true,
             memo: ""
-          },
-          {
-            id: uid(), x:0.58, y:0.55, category:"boss",
-            title:"채집",
-            youtubeUrl:"",
-            youtubeLabel:"",
-            createdAt: nowISO(),
-            colorOverride:"",
-            radiusPx: DEFAULT_MARKER_RADIUS_PX,
-            labelSizePx: calcLabelSizeFromRadius(DEFAULT_MARKER_RADIUS_PX),
-            labelWeight: DEFAULT_LABEL_WEIGHT,
-            labelColor: DEFAULT_LABEL_COLOR,
-            groupId: 0,
-            chainStart: false,
-            memo: ""
-          },
-          {
-            id: uid(), x:0.22, y:0.63, category:"boss",
-            title:"퀘스트",
-            youtubeUrl:"",
-            youtubeLabel:"",
-            createdAt: nowISO(),
-            colorOverride:"",
-            radiusPx: DEFAULT_MARKER_RADIUS_PX,
-            labelSizePx: calcLabelSizeFromRadius(DEFAULT_MARKER_RADIUS_PX),
-            labelWeight: DEFAULT_LABEL_WEIGHT,
-            labelColor: DEFAULT_LABEL_COLOR,
-            groupId: 0,
-            chainStart: false,
-            memo: ""
-          },
+          }
         ];
 
         normalizeAllChainsCurrentPage();
@@ -3266,14 +2917,19 @@
         saveState();
       }
 
-      // ==========================================================
-      // Final init
-      // ==========================================================
-      function init(){
+      async function init(){
         getCurrentGame();
         getCurrentPage();
         ensureCreateDefaults();
         ensureSampleMarkersOnce();
+
+        // 인증 만료 시 강제 USER
+        if(state.ui.admin && !hasAuth()){
+          state.ui.admin = false;
+        }
+
+        adminToggle.checked = !!state.ui.admin;
+        setAdminMode(!!state.ui.admin);
 
         for(const m of currentMarkers()){
           if(typeof m.title !== "string") m.title = "";
@@ -3295,72 +2951,15 @@
         rebuildLinks();
         saveState();
 
-        // ✅ 로고 로드
         loadLogo();
-
         refreshAll();
         resizeCanvas();
         resetView();
-        loadMapImageForCurrentPage();
+        await loadMapImageForCurrentPage();
         draw();
       }
 
-      // ==========================================================
-      // Admin auth wiring
-      // ==========================================================
-      function unlockAdmin(){
-        setAuthed();
-        showLock(false);
-        adminToggleWrap.style.display = "";
-        adminToggle.checked = true;
-        setAdminMode(true);
-      }
-
-      function lockAdmin(){
-        showLock(true);
-        adminToggle.checked = false;
-        setAdminMode(false);
-      }
-
-      if(!isAuthed()){
-        lockAdmin();
-      }else{
-        showLock(false);
-        adminToggle.checked = true;
-        setAdminMode(true);
-      }
-
-      $unlock.addEventListener("click", () => {
-        if(($pw.value || "") === ADMIN_PASSWORD) unlockAdmin();
-        else {
-          $msg.textContent = "비밀번호가 올바르지 않습니다.";
-          $pw.select();
-        }
-      });
-
-      $pw.addEventListener("keydown", (e) => {
-        if(e.key === "Enter") $unlock.click();
-      });
-
-      $logout.addEventListener("click", () => {
-        clearAuthed();
-        location.reload();
-      });
-
       init();
-
-      // ✅✅ [ADD] 부팅 중 remote가 적용된 경우: 화면 한 번 더 정렬
-      // (remote fetch는 비동기라 init 이후 적용될 수도 있어서 안전 처리)
-      setTimeout(() => {
-        if(__BOOT_REMOTE_APPLIED){
-          normalizeStateShape();
-          refreshAll();
-          resizeCanvas();
-          resetView();
-          loadMapImageForCurrentPage();
-          draw();
-        }
-      }, 600);
     })();
   </script>
 </body>
