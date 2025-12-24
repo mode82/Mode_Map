@@ -117,49 +117,6 @@
     .center{ position:relative; overflow:hidden; }
     #canvas{ width:100%; height:100%; display:block; background:#0b0f14; }
 
-    /* ✅ (수정) 좌/우 패널 숨김 토글 버튼: 아이콘 더 크게 + 밖으로 튀어나온 ‘핸들’ 느낌(클립되지 않게 내부에서 더 크게) */
-    .sideToggle{
-      position:absolute;
-      top: 14px;
-      width: 46px;
-      height: 74px;
-      padding: 0;
-      border-radius: 16px;
-      border: 1px solid rgba(39,52,74,.95);
-      background: linear-gradient(180deg, rgba(16,24,38,.88), rgba(10,16,28,.70));
-      box-shadow: 0 14px 26px rgba(0,0,0,.26);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size: 24px;
-      font-weight: 900;
-      line-height: 1;
-      user-select:none;
-      z-index: 60;
-      letter-spacing: -1px;
-    }
-    .sideToggle:hover{
-      border-color: rgba(124,196,255,.65);
-      box-shadow: 0 0 0 3px rgba(124,196,255,.12), 0 14px 26px rgba(0,0,0,.26);
-    }
-    .sideToggle:active{ transform: translateY(1px); }
-    .sideToggle.left{
-      left: 6px;
-      border-top-left-radius: 0;
-      border-bottom-left-radius: 0;
-    }
-    .sideToggle.right{
-      right: 6px;
-      border-top-right-radius: 0;
-      border-bottom-right-radius: 0;
-    }
-
-    /* ✅ (추가) 헤더 좌측: 로고자리/1차카테고리 자리 확보용 (보이지 않게, 공간만 유지) */
-    .reservedSlot{
-      visibility: hidden;
-      pointer-events: none;
-    }
-
     .section{
       border:1px solid rgba(31,42,58,.9);
       border-radius: var(--r18);
@@ -247,6 +204,7 @@
       -webkit-backdrop-filter: blur(var(--blur));
       pointer-events:auto;
 
+      /* ✅ 메모장(오버레이) 스케일 적용을 위한 기본값 (JS에서 transform만 건드림) */
       transform-origin: top left;
       will-change: transform;
     }
@@ -324,10 +282,6 @@
       .panel.right{ border-left:none; border-top:1px solid rgba(31,42,58,.85); }
       #canvas{ height: 55vh; }
       .grid2{ grid-template-columns: 1fr; }
-
-      /* ✅ (수정) 작은 화면에서도 버튼이 잘 보이게 */
-      .sideToggle.left{ left: 10px; border-radius: 16px; }
-      .sideToggle.right{ right: 10px; border-radius: 16px; }
     }
 
     input[type="color"]{
@@ -510,21 +464,6 @@
 
 <body>
   <header>
-    <!-- ✅ (추가) 로고자리(보이지 않게, 공간만 확보) -->
-    <div class="titleWrap reservedSlot" aria-hidden="true">
-      <div class="titleBtn">
-        <span>아이온2</span><span class="muted caret">▾</span>
-      </div>
-    </div>
-
-    <!-- ✅ (추가) 1차 카테고리 자리(보이지 않게, 공간만 확보) -->
-    <div class="titleWrap reservedSlot" aria-hidden="true">
-      <div class="titleBtn">
-        <span>아이온2</span><span class="muted caret">▾</span>
-      </div>
-    </div>
-
-    <!-- (기존) 2차 카테고리(현재 아이온2) -->
     <div class="titleWrap" id="titleWrap">
       <div class="titleBtn" id="gameTitleBtn" title="클릭해서 게임 목록/추가">
         <span id="gameTitleText">Map Demo</span>
@@ -569,10 +508,6 @@
 
     <div class="center" id="centerStage">
       <canvas id="canvas"></canvas>
-
-      <!-- ✅ (기존) 좌/우 패널 숨김 토글: 글씨 없이 기호만 -->
-      <button id="toggleLeftBtn" class="sideToggle left" type="button" aria-label="좌측 패널 숨기기/보이기" title="좌측 숨기기/보이기">❮</button>
-      <button id="toggleRightBtn" class="sideToggle right" type="button" aria-label="우측 패널 숨기기/보이기" title="우측 숨기기/보이기">❯</button>
 
       <div id="hoverOverlay">
         <div class="memoLabel">메모</div>
@@ -1275,72 +1210,6 @@
       const resetCategoriesBtn = document.getElementById("resetCategoriesBtn");
       const saveCatListBtn = document.getElementById("saveCatListBtn");
 
-      /* ✅ (추가) 좌/우 패널 숨김 토글 상태/버튼 */
-      const __wrapEl = document.querySelector(".wrap");
-      const __leftPanel = document.querySelector(".panel.left");
-      const __rightPanel = document.querySelector(".panel.right");
-      const __toggleLeftBtn = document.getElementById("toggleLeftBtn");
-      const __toggleRightBtn = document.getElementById("toggleRightBtn");
-      const __LEFT_KEY = "mm_sidebar_left_collapsed_v1";
-      const __RIGHT_KEY = "mm_sidebar_right_collapsed_v1";
-      let __leftCollapsed = localStorage.getItem(__LEFT_KEY) === "1";
-      let __rightCollapsed = localStorage.getItem(__RIGHT_KEY) === "1";
-
-      function __applySidebarLayout(){
-        const stacked = window.matchMedia ? window.matchMedia("(max-width: 1100px)").matches : false;
-
-        if(__leftPanel) __leftPanel.style.display = __leftCollapsed ? "none" : "";
-        if(__rightPanel) __rightPanel.style.display = __rightCollapsed ? "none" : "";
-
-        if(__toggleLeftBtn){
-          __toggleLeftBtn.textContent = __leftCollapsed ? "❯" : "❮";
-        }
-        if(__toggleRightBtn){
-          __toggleRightBtn.textContent = __rightCollapsed ? "❮" : "❯";
-        }
-
-        if(!__wrapEl) return;
-
-        if(stacked){
-          __wrapEl.style.gridTemplateColumns = "1fr";
-          return;
-        }
-
-        if(__leftCollapsed && __rightCollapsed){
-          __wrapEl.style.gridTemplateColumns = "1fr";
-        }else if(__leftCollapsed && !__rightCollapsed){
-          __wrapEl.style.gridTemplateColumns = "1fr 380px";
-        }else if(!__leftCollapsed && __rightCollapsed){
-          __wrapEl.style.gridTemplateColumns = "380px 1fr";
-        }else{
-          __wrapEl.style.gridTemplateColumns = "380px 1fr 380px";
-        }
-      }
-
-      __toggleLeftBtn?.addEventListener("click", (e) => {
-        e.stopPropagation();
-        __leftCollapsed = !__leftCollapsed;
-        localStorage.setItem(__LEFT_KEY, __leftCollapsed ? "1" : "0");
-        __applySidebarLayout();
-        resizeCanvas();
-        resetView();
-        draw();
-      });
-
-      __toggleRightBtn?.addEventListener("click", (e) => {
-        e.stopPropagation();
-        __rightCollapsed = !__rightCollapsed;
-        localStorage.setItem(__RIGHT_KEY, __rightCollapsed ? "1" : "0");
-        __applySidebarLayout();
-        resizeCanvas();
-        resetView();
-        draw();
-      });
-
-      window.addEventListener("resize", () => {
-        __applySidebarLayout();
-      });
-
       let activeCatRowEl = null;
       let modalMarkerId = "";
 
@@ -1410,20 +1279,27 @@
 
       const view = { scale:1, minScale:0.05, maxScale:10, offsetX:0, offsetY:0 };
 
+      /* ✅ [메모장 스케일] 기준 스케일 저장(리셋 기준) */
       let __baseViewScaleForOverlay = null;
 
+      /* ✅ [메모장 스케일] 모바일 기본 축소(기기 기준) */
       const __isCoarse = window.matchMedia ? window.matchMedia("(pointer: coarse)").matches : false;
       const __isSmall = window.matchMedia ? window.matchMedia("(max-width: 900px)").matches : false;
       const __isMobile = __isCoarse || __isSmall;
 
       function __getOverlayScale(){
+        // ✅ (수정) 모바일 기본 크기: 80%
         const base = __isMobile ? 0.80 : 1.0;
+
+        // 축소(줌아웃)될 때만 같이 줄이기: (현재/리셋) 비율을 1 이하로만 적용
         const baseView = (__baseViewScaleForOverlay && isFinite(__baseViewScaleForOverlay)) ? __baseViewScaleForOverlay : view.scale;
         const ratio = clamp(view.scale / baseView, 0.55, 1.0);
+
         return clamp(base * ratio, 0.55, 1.0);
       }
 
       function __applyOverlayScale(){
+        // 관리자에서는 오버레이 안 씀
         if(state.ui.admin) return;
         const s = __getOverlayScale();
         hoverOverlay.style.transform = `scale(${s})`;
@@ -1455,6 +1331,7 @@
         view.offsetX = (w - mw * view.scale) / 2;
         view.offsetY = (h - mh * view.scale) / 2;
 
+        /* ✅ [메모장 스케일] 리셋 기준 스케일 갱신 */
         __baseViewScaleForOverlay = view.scale;
         __applyOverlayScale();
       }
@@ -1629,7 +1506,7 @@
             delBtn.type = "button";
             delBtn.textContent = "삭제";
             delBtn.addEventListener("click", async () => {
-              if(!confirm(\`게임 "\${g.name}" 을 삭제할까요?\n(페이지/마커는 localStorage에서 제거됩니다. 이미지 blob은 DB에 남을 수 있습니다)\`)) return;
+              if(!confirm(`게임 "${g.name}" 을 삭제할까요?\n(페이지/마커는 localStorage에서 제거됩니다. 이미지 blob은 DB에 남을 수 있습니다)`)) return;
               state.games = state.games.filter(x => x.id !== g.id);
               if(state.games.length === 0){
                 state.games = structuredClone(defaultState.games);
@@ -1656,7 +1533,7 @@
         const g = getCurrentGame();
         const curPage = getCurrentPage();
 
-        pageBadge.textContent = \`\${escapeHtml(g.name)} / \${escapeHtml(curPage.name)}\`;
+        pageBadge.textContent = `${escapeHtml(g.name)} / ${escapeHtml(curPage.name)}`;
         pageList.innerHTML = "";
 
         for(const p of g.pages){
@@ -1721,9 +1598,9 @@
             del.title = "페이지 삭제";
             del.addEventListener("click", async (e) => {
               e.stopPropagation();
-              if(!confirm(\`페이지 "\${p.name}" 을 삭제할까요?\n(이미지 blob은 DB에 남을 수 있습니다)\`)) return;
+              if(!confirm(`페이지 "${p.name}" 을 삭제할까요?\n(이미지 blob은 DB에 남을 수 있습니다)`)) return;
               try{
-                const key = \`mapimg_\${g.id}_\${p.id}\`;
+                const key = `mapimg_${g.id}_${p.id}`;
                 await idbDel(key);
               }catch(e2){}
               g.pages = g.pages.filter(x => x.id !== p.id);
@@ -1753,7 +1630,7 @@
         if(!state.ui.admin) return;
         const g = getCurrentGame();
         const nextNum = (g.pages?.length || 0) + 1;
-        const name = prompt("새 페이지 이름 (예: 2번마을)", \`\${nextNum}번마을\`);
+        const name = prompt("새 페이지 이름 (예: 2번마을)", `${nextNum}번마을`);
         if(!name) return;
         const p = { id: uid(), name: String(name).trim(), map:{ imageKey:"", imageUrl:"", width:2200, height:1400 }, markers:[], links:[] };
         g.pages.push(p);
@@ -1807,7 +1684,7 @@
           const wrap = document.createElement("div");
           wrap.className = "swatch" + (state.ui.activePaintColor === p.color ? " active" : "");
           const b = document.createElement("button");
-          b.title = \`\${p.label} (\${p.color})\`;
+          b.title = `${p.label} (${p.color})`;
           b.style.background = p.color;
           b.addEventListener("click", () => {
             state.ui.activePaintColor = p.color;
@@ -1881,13 +1758,13 @@
           return;
         }
         const name = (m.title || "").trim() || "(이름 없음)";
-        selectedHeader.textContent = \`선택한 마커: \${name}\`;
+        selectedHeader.textContent = `선택한 마커: ${name}`;
 
         const url = (m.youtubeUrl || "").trim();
         const display = getUserYoutubeDisplay(m);
 
         if(url && isValidUrl(url)){
-          youtubeBox.innerHTML = \`<a href="\${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">\${escapeHtml(display)}</a>\`;
+          youtubeBox.innerHTML = `<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(display)}</a>`;
         }else{
           youtubeBox.textContent = display ? display : "없음";
         }
@@ -1911,7 +1788,7 @@
         hideHoverOverlay(true);
       }
       function positionOverlay(clientX, clientY){
-        __applyOverlayScale();
+        __applyOverlayScale(); /* ✅ 메모장 스케일 적용(표시/이동 시) */
 
         const stageRect = centerStage.getBoundingClientRect();
         const pad = 10;
@@ -1934,9 +1811,9 @@
         const url = (m.youtubeUrl || "").trim();
         if(url && isValidUrl(url)){
           const displayName = escapeHtml(getUserYoutubeDisplay(m));
-          hoverYt.innerHTML = \`<a href="\${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">\${displayName}</a>\`;
+          hoverYt.innerHTML = `<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${displayName}</a>`;
         }else{
-          hoverYt.innerHTML = \`<span class="muted">유튜브 없음</span>\`;
+          hoverYt.innerHTML = `<span class="muted">유튜브 없음</span>`;
         }
       }
       function showHoverOverlayForMarker(m, clientX, clientY){
@@ -1969,7 +1846,7 @@
           const b = document.createElement("button");
           b.type = "button";
           b.className = "qc";
-          b.title = \`글씨색: \${p.label} (\${p.color})\`;
+          b.title = `글씨색: ${p.label} (${p.color})`;
           const i = document.createElement("i");
           i.style.background = p.color;
           b.appendChild(i);
@@ -2080,7 +1957,7 @@
         const label = getMarkerLabel(m);
 
         ctx.save();
-        ctx.font = \`\${weight} \${sizePx}px system-ui\`;
+        ctx.font = `${weight} ${sizePx}px system-ui`;
         const w = ctx.measureText(label).width;
         ctx.restore();
 
@@ -2118,6 +1995,7 @@
         view.offsetX += (after.x - before.x) * view.scale;
         view.offsetY += (after.y - before.y) * view.scale;
 
+        /* ✅ [메모장 스케일] 줌아웃 시 같이 줄이기 */
         __applyOverlayScale();
 
         draw();
@@ -2228,6 +2106,7 @@
           view.offsetX = viewStart.ox + dx;
           view.offsetY = viewStart.oy + dy;
 
+          /* ✅ [메모장 스케일] 이동 중에도 현재 스케일 유지 */
           __applyOverlayScale();
 
           draw();
@@ -2416,6 +2295,8 @@
           const baseR = (typeof m.radiusPx === "number" ? m.radiusPx : DEFAULT_MARKER_RADIUS_PX);
           const rPx = Math.max(2, baseR * view.scale);
 
+          /* ✅ (수정) 줌아웃 시 테두리가 과하게 두꺼워지는 문제 해결:
+             최소 clamp 값을 낮춰, “작아질 때만 두꺼워 보이는 현상” 제거 */
           const strokeW = clamp(rPx * 0.18, 0.35, 4);
           const strokeWSelected = clamp(rPx * 0.22, 0.55, 5);
 
@@ -2440,6 +2321,7 @@
             ctx.fillStyle = "#000000";
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
+            /* ✅ (수정) 마커가 작아졌을 때 숫자 최소 크기가 너무 커 보이는 문제 완화 */
             const fs = clamp(rPx * 0.92, 6, 46);
             ctx.font = `900 ${fs}px system-ui`;
             ctx.fillText(String(num), P.x, P.y);
@@ -2537,13 +2419,12 @@
         rebuildLinks();
         saveState();
 
-        __applySidebarLayout();
-
         refreshAll();
         resizeCanvas();
         resetView();
         loadMapImageForCurrentPage();
 
+        /* ✅ [메모장 스케일] 초기 적용 */
         __applyOverlayScale();
 
         draw();
@@ -2599,3 +2480,4 @@
   </script>
 </body>
 </html>
+
