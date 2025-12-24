@@ -204,7 +204,6 @@
       -webkit-backdrop-filter: blur(var(--blur));
       pointer-events:auto;
 
-      /* ✅ 메모장(오버레이) 스케일 적용을 위한 기본값 (JS에서 transform만 건드림) */
       transform-origin: top left;
       will-change: transform;
     }
@@ -418,6 +417,15 @@
     .drop .item .gname{ font-weight:900; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .drop .item .gmeta{ font-size:12px; color: var(--muted); margin-top:4px; }
 
+    /* ✅ (추가) 1번/2번 카테고리 자리만 확보(노출 X) */
+    .titleWrap.placeholder{
+      pointer-events:none;
+      user-select:none;
+    }
+    .titleWrap.placeholder .titleBtn{
+      visibility:hidden; /* 공간은 차지하고 화면에는 안 보이게 */
+    }
+
     #__adminLockOverlay{
       position: fixed; inset: 0; display: none; align-items: center; justify-content: center;
       background: rgba(0,0,0,.78); backdrop-filter: blur(6px); z-index: 2147483647;
@@ -464,6 +472,23 @@
 
 <body>
   <header>
+    <!-- ✅ (추가) 1번 카테고리(로고자리) - 자리만 확보, 노출 X -->
+    <div class="titleWrap placeholder" aria-hidden="true">
+      <div class="titleBtn" title="(자리만 확보됨)">
+        <span>LOGO</span>
+        <span class="muted caret">▾</span>
+      </div>
+    </div>
+
+    <!-- ✅ (추가) 2번 카테고리(다른 분야 선택 예정) - 자리만 확보, 노출 X -->
+    <div class="titleWrap placeholder" aria-hidden="true">
+      <div class="titleBtn" title="(자리만 확보됨)">
+        <span>Category</span>
+        <span class="muted caret">▾</span>
+      </div>
+    </div>
+
+    <!-- ✅ 기존 3번 카테고리(현재: 아이온2) 그대로 유지 -->
     <div class="titleWrap" id="titleWrap">
       <div class="titleBtn" id="gameTitleBtn" title="클릭해서 게임 목록/추가">
         <span id="gameTitleText">Map Demo</span>
@@ -568,7 +593,10 @@
       <div class="section" id="selectedSection">
         <h3 id="selectedHeader">선택한 마커</h3>
         <div class="hr"></div>
-        <div class="muted">유튜브</div>
+
+        <!-- ✅ (수정) '유튜브' 텍스트를 '유튜브 링크'로 변경 -->
+        <div class="muted">유튜브 링크</div>
+
         <div id="youtubeBox" class="linkBox" style="margin-top:8px;">-</div>
       </div>
     </aside>
@@ -1279,27 +1307,20 @@
 
       const view = { scale:1, minScale:0.05, maxScale:10, offsetX:0, offsetY:0 };
 
-      /* ✅ [메모장 스케일] 기준 스케일 저장(리셋 기준) */
       let __baseViewScaleForOverlay = null;
 
-      /* ✅ [메모장 스케일] 모바일 기본 축소(기기 기준) */
       const __isCoarse = window.matchMedia ? window.matchMedia("(pointer: coarse)").matches : false;
       const __isSmall = window.matchMedia ? window.matchMedia("(max-width: 900px)").matches : false;
       const __isMobile = __isCoarse || __isSmall;
 
       function __getOverlayScale(){
-        // ✅ (수정) 모바일 기본 크기: 80%
         const base = __isMobile ? 0.80 : 1.0;
-
-        // 축소(줌아웃)될 때만 같이 줄이기: (현재/리셋) 비율을 1 이하로만 적용
         const baseView = (__baseViewScaleForOverlay && isFinite(__baseViewScaleForOverlay)) ? __baseViewScaleForOverlay : view.scale;
         const ratio = clamp(view.scale / baseView, 0.55, 1.0);
-
         return clamp(base * ratio, 0.55, 1.0);
       }
 
       function __applyOverlayScale(){
-        // 관리자에서는 오버레이 안 씀
         if(state.ui.admin) return;
         const s = __getOverlayScale();
         hoverOverlay.style.transform = `scale(${s})`;
@@ -1331,7 +1352,6 @@
         view.offsetX = (w - mw * view.scale) / 2;
         view.offsetY = (h - mh * view.scale) / 2;
 
-        /* ✅ [메모장 스케일] 리셋 기준 스케일 갱신 */
         __baseViewScaleForOverlay = view.scale;
         __applyOverlayScale();
       }
@@ -1788,7 +1808,7 @@
         hideHoverOverlay(true);
       }
       function positionOverlay(clientX, clientY){
-        __applyOverlayScale(); /* ✅ 메모장 스케일 적용(표시/이동 시) */
+        __applyOverlayScale();
 
         const stageRect = centerStage.getBoundingClientRect();
         const pad = 10;
@@ -1995,7 +2015,6 @@
         view.offsetX += (after.x - before.x) * view.scale;
         view.offsetY += (after.y - before.y) * view.scale;
 
-        /* ✅ [메모장 스케일] 줌아웃 시 같이 줄이기 */
         __applyOverlayScale();
 
         draw();
@@ -2106,7 +2125,6 @@
           view.offsetX = viewStart.ox + dx;
           view.offsetY = viewStart.oy + dy;
 
-          /* ✅ [메모장 스케일] 이동 중에도 현재 스케일 유지 */
           __applyOverlayScale();
 
           draw();
@@ -2295,8 +2313,6 @@
           const baseR = (typeof m.radiusPx === "number" ? m.radiusPx : DEFAULT_MARKER_RADIUS_PX);
           const rPx = Math.max(2, baseR * view.scale);
 
-          /* ✅ (수정) 줌아웃 시 테두리가 과하게 두꺼워지는 문제 해결:
-             최소 clamp 값을 낮춰, “작아질 때만 두꺼워 보이는 현상” 제거 */
           const strokeW = clamp(rPx * 0.18, 0.35, 4);
           const strokeWSelected = clamp(rPx * 0.22, 0.55, 5);
 
@@ -2321,7 +2337,6 @@
             ctx.fillStyle = "#000000";
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
-            /* ✅ (수정) 마커가 작아졌을 때 숫자 최소 크기가 너무 커 보이는 문제 완화 */
             const fs = clamp(rPx * 0.92, 6, 46);
             ctx.font = `900 ${fs}px system-ui`;
             ctx.fillText(String(num), P.x, P.y);
@@ -2424,7 +2439,6 @@
         resetView();
         loadMapImageForCurrentPage();
 
-        /* ✅ [메모장 스케일] 초기 적용 */
         __applyOverlayScale();
 
         draw();
@@ -2480,4 +2494,3 @@
   </script>
 </body>
 </html>
-
