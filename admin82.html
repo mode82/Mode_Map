@@ -573,7 +573,7 @@
       cursor:pointer;
       font-weight:900;
       color: rgba(231,238,248,.88);
-      display:none; /* adminOnly처럼 토글 */
+      display:none; /* 로고 없을 때도 관리자에서만 보이게 토글 */
     }
     #logoUploadBtn:hover{
       box-shadow: 0 0 0 3px rgba(124,196,255,.10) inset;
@@ -583,16 +583,15 @@
 
 <body>
   <header>
-    <!-- ✅ [변경] 카테고리 1~4 슬롯 (총 4칸) -->
+    <!-- ✅ 카테고리 1~4 슬롯 (총 4칸) -->
     <div class="topSlots" id="topSlots">
-      <!-- 카테고리1: 로고 이미지 자리 (없으면 아무것도 안 보이고 공간만 유지) -->
+      <!-- 카테고리1: 로고 자리 (URL 방식) -->
       <div class="topSlot" id="logoSlot" title="로고 자리 (카테고리1)">
         <img id="logoImg" alt="logo" />
-        <button id="logoUploadBtn" class="adminOnly" type="button">로고 업로드</button>
-        <input id="logoFileInput" type="file" accept="image/*" style="display:none;" />
+        <button id="logoUploadBtn" class="adminOnly" type="button">로고 URL</button>
       </div>
 
-      <!-- 카테고리2: 현재 (기존 3번=아이온2 자리) => 여기로 이동 -->
+      <!-- 카테고리2: 현재 게임 -->
       <div class="topSlot" id="cat2Slot" title="카테고리2 (현재 게임)">
         <div class="titleWrap" id="titleWrap" style="width:100%; height:100%;">
           <div class="titleBtn" id="gameTitleBtn" title="클릭해서 게임 목록/추가" style="height:100%;">
@@ -610,7 +609,7 @@
       <div class="topSlot placeholder" id="cat4Slot" aria-hidden="true"></div>
     </div>
 
-    <!-- ✅ 관리자 모드 토글(유저 페이지에서는 숨김 처리됨) -->
+    <!-- ✅ 관리자 모드 토글 -->
     <span class="pill" id="adminToggleWrap">
       <span class="badge" id="modeBadge">USER</span>
       <label class="muted" style="margin:0;">관리자</label>
@@ -714,7 +713,6 @@
       <div class="section" id="selectedSection">
         <h3 id="selectedHeader">선택한 마커</h3>
         <div class="hr"></div>
-        <!-- ✅ [변경] 우측 유튜브 텍스트 라벨 변경 -->
         <div class="muted">링크</div>
         <div id="youtubeBox" class="linkBox" style="margin-top:8px;">-</div>
       </div>
@@ -883,7 +881,7 @@
     </div>
   </div>
 
-  <!-- Admin Lock UI (only on admin82.html) -->
+  <!-- Admin Lock UI -->
   <div id="__adminLockOverlay">
     <div id="__adminLockCard">
       <h2>관리자 인증</h2>
@@ -917,19 +915,25 @@
       const SCALE_MARKERS_WITH_ZOOM = IS_COARSE_POINTER; // 모바일에서만 true
 
       // ==========================================================
-      // ✅ [ADD] 로고 저장/로드 (카테고리1)
+      // ✅ [PATCH] 로고 저장/로드 (URL 방식)
       // ==========================================================
-      const LOGO_KEY = "mm_logo_dataurl_v1";
+      const LOGO_KEY = "mm_logo_url_v1";
       const $logoImg = document.getElementById("logoImg");
       const $logoUploadBtn = document.getElementById("logoUploadBtn");
-      const $logoFileInput = document.getElementById("logoFileInput");
       const $logoSlot = document.getElementById("logoSlot");
+
+      function normalizeUrlMaybe(u){
+        const v = String(u || "").trim();
+        if(!v) return "";
+        try { return new URL(v, location.href).toString(); } catch { return v; }
+      }
 
       function loadLogo(){
         try{
-          const v = (localStorage.getItem(LOGO_KEY) || "").trim();
-          if(v){
-            $logoImg.src = v;
+          const raw = (localStorage.getItem(LOGO_KEY) || "").trim();
+          const url = normalizeUrlMaybe(raw);
+          if(url){
+            $logoImg.src = url;
             $logoImg.style.display = "block";
           }else{
             $logoImg.removeAttribute("src");
@@ -940,40 +944,46 @@
         }
       }
 
-      async function fileToDataURL(file){
-        return new Promise((resolve, reject) => {
-          const r = new FileReader();
-          r.onload = () => resolve(String(r.result || ""));
-          r.onerror = () => reject(r.error);
-          r.readAsDataURL(file);
-        });
+      function promptLogoUrl(){
+        // 관리자+관리자모드에서만
+        if(!IS_ADMIN_PAGE) return;
+        if(!state?.ui?.admin) return;
+
+        const cur = (localStorage.getItem(LOGO_KEY) || "").trim();
+        const v = prompt(
+          "로고 이미지 URL을 입력하세요.\n예) ./assets/logo.png 또는 https://.../logo.png\n(빈 값으로 저장하면 로고가 제거됩니다)",
+          cur || "./assets/logo.png"
+        );
+        if(v === null) return;
+
+        const next = String(v).trim();
+        if(!next){
+          localStorage.removeItem(LOGO_KEY);
+        }else{
+          localStorage.setItem(LOGO_KEY, next);
+        }
+        loadLogo();
       }
 
-      $logoUploadBtn.addEventListener("click", () => {
-        if(!IS_ADMIN_PAGE) return;
-        $logoFileInput.click();
+      // 버튼 클릭
+      $logoUploadBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        promptLogoUrl();
       });
 
+      // 슬롯 클릭(버튼이 안 보이는 경우도 대비)
+      $logoSlot.addEventListener("click", (e) => {
+        // 로고가 보이는 상태에서 유저 클릭 실수 방지: 관리자+관리자모드일 때만 동작
+        promptLogoUrl();
+      });
+
+      // 더블클릭: 제거
       $logoSlot.addEventListener("dblclick", () => {
         if(!IS_ADMIN_PAGE) return;
-        // 더블클릭 시 로고 제거 (관리자만)
+        if(!state?.ui?.admin) return;
         if(!confirm("로고를 제거할까요?")) return;
         localStorage.removeItem(LOGO_KEY);
         loadLogo();
-      });
-
-      $logoFileInput.addEventListener("change", async (e) => {
-        const f = e.target.files && e.target.files[0];
-        if(!f) return;
-        if(!f.type.startsWith("image/")) return;
-        try{
-          const dataUrl = await fileToDataURL(f);
-          localStorage.setItem(LOGO_KEY, dataUrl);
-          loadLogo();
-        }catch(err){
-          console.warn(err);
-        }
-        $logoFileInput.value = "";
       });
 
       // ==========================================================
@@ -1079,7 +1089,6 @@
       }
 
       function saveState(){
-        // ✅ [SYNC] 마지막 저장 시각 기록 (모바일이 “최신 여부” 판단에 사용)
         state._updatedAt = Date.now();
         state._updatedAtISO = new Date().toISOString();
         try{
@@ -1506,7 +1515,7 @@
           el.style.display = state.ui.admin ? "" : "none";
         });
 
-        // ✅ [ADD] 로고 업로드 버튼도 adminOnly에 맞춰 동작 (로고는 유저에서도 보이게 가능)
+        // 로고 버튼은 관리자+admin82에서만
         $logoUploadBtn.style.display = (state.ui.admin && IS_ADMIN_PAGE) ? "" : "none";
       }
 
@@ -1579,7 +1588,6 @@
       // ==========================================================
       const view = { scale:1, minScale:0.05, maxScale:10, offsetX:0, offsetY:0 };
 
-      // ✅ [PATCH] (view 선언 후) 마커 스케일 분모 함수
       const markerScaleDenom = () => (SCALE_MARKERS_WITH_ZOOM ? 1 : view.scale);
 
       function resizeCanvas(){
@@ -1627,15 +1635,8 @@
         refreshAll();
       }
 
-      // Admin toggle: user page에서는 숨김 + 강제 USER
-      if(!IS_ADMIN_PAGE){
-        adminToggleWrap.style.display = "none";
-        state.ui.admin = false;
-        adminToggle.checked = false;
-      }else{
-        adminToggleWrap.style.display = "";
-        adminToggle.addEventListener("change", () => setAdminMode(adminToggle.checked));
-      }
+      adminToggleWrap.style.display = "";
+      adminToggle.addEventListener("change", () => setAdminMode(adminToggle.checked));
 
       // ==========================================================
       // Header buttons (admin only visible)
@@ -1699,7 +1700,7 @@
       });
 
       // ==========================================================
-      // Game dropdown (Map Demo 클릭)
+      // Game dropdown
       // ==========================================================
       let gameDropOpen = false;
       function closeGameDrop(){ gameDropOpen = false; gameDrop.style.display = "none"; }
@@ -1815,7 +1816,7 @@
       }
 
       // ==========================================================
-      // Page list (LEFT, both modes)
+      // Page list
       // ==========================================================
       function rebuildPageList(){
         const g = getCurrentGame();
@@ -1834,16 +1835,7 @@
           const name = document.createElement("div");
           name.className = "name";
           name.textContent = p.name || "Page";
-
-          /* ✅ [수정] 마커 숫자 / URL표시(meta) 제거 */
-          // const meta = document.createElement("div");
-          // meta.className = "meta";
-          // const mk = p.markers?.length || 0;
-          // const hasUrl = (p.map?.imageUrl || "").trim() ? "URL✓" : "URL-";
-          // meta.textContent = `마커 ${mk} · ${hasUrl}`;
-
           left.appendChild(name);
-          // left.appendChild(meta);
 
           const actions = document.createElement("div");
           actions.className = "pageActions";
@@ -2411,7 +2403,7 @@
       });
 
       // ==========================================================
-      // Category Modal (game-local)
+      // Category Modal
       // ==========================================================
       editCategoriesBtn.addEventListener("click", () => openCatModal());
 
@@ -2599,7 +2591,7 @@
       }
 
       // ==========================================================
-      // Create markers (admin, page-local)
+      // Create markers
       // ==========================================================
       function getDefaultCreateColorOverride(){
         const a = (state.ui.createColorOverride || "").trim();
@@ -2827,7 +2819,6 @@
         const { x:sx, y:sy } = getPointerPos(evt);
         didDrag = false;
 
-        // 우클릭: 관리자 마커 추가
         if(evt.button === 2){
           if(state.ui.admin){
             const w = screenToWorld(sx, sy);
@@ -2837,37 +2828,9 @@
         }
         if(evt.button !== 0) return;
 
-        // 유저모드: 텍스트 클릭 -> 오버레이 고정
-        if(!state.ui.admin){
-          const labelHit = findMarkerLabelAtScreen(sx, sy);
-          if(labelHit){
-            state.ui.selectedMarkerId = labelHit.id;
-            saveState();
-            renderSelectedPanel();
-            showPinnedOverlayForMarker(labelHit, evt.clientX, evt.clientY);
-            draw();
-            return;
-          }
-        }
-
-        // 마커 아이콘 hit?
         const m = findMarkerAtScreen(sx, sy);
         if(m){
           state.ui.selectedMarkerId = m.id;
-
-          // 유저모드: 아이콘 클릭 시 "불투명 30%" 토글
-          if(!state.ui.admin){
-            const set = new Set(state.ui.dimmedMarkerIds || []);
-            if(set.has(m.id)) set.delete(m.id);
-            else set.add(m.id);
-            state.ui.dimmedMarkerIds = [...set];
-            saveState();
-            renderSelectedPanel();
-            draw();
-            return;
-          }
-
-          // 관리자모드: 드래그 이동
           saveState();
           renderSelectedPanel();
           draggingMarkerId = m.id;
@@ -2882,14 +2845,6 @@
           return;
         }
 
-        // 유저모드: 빈 곳 클릭하면 pin 해제
-        if(!state.ui.admin && overlayPinned){
-          unpinOverlay();
-          draw();
-          return;
-        }
-
-        // 패닝 시작
         isPanning = true;
         panStart = { x:sx, y:sy };
         viewStart = { ox:view.offsetX, oy:view.offsetY };
@@ -2897,15 +2852,6 @@
 
       canvas.addEventListener("mousemove", (evt) => {
         const { x:sx, y:sy } = getPointerPos(evt);
-
-        // 유저모드: 텍스트 hover일 때만 오버레이
-        if(!state.ui.admin){
-          if(!overlayPinned){
-            const labelHit = findMarkerLabelAtScreen(sx, sy);
-            if(labelHit) showHoverOverlayForMarker(labelHit, evt.clientX, evt.clientY);
-            else hideHoverOverlay(false);
-          }
-        }
 
         if(draggingMarkerId && state.ui.admin){
           const m = currentMarkers().find(x => x.id === draggingMarkerId);
@@ -2955,10 +2901,6 @@
         if(m) openMarkerModal(m.id);
       });
 
-      centerStage.addEventListener("mouseleave", () => {
-        if(!state.ui.admin) hideHoverOverlay(true);
-      });
-
       // ==========================================================
       // Draw
       // ==========================================================
@@ -2980,7 +2922,6 @@
         ctx.restore();
       }
 
-      // ✅ 선/화살표가 줌해도 원 마커에 딱 붙게
       function drawArrow(ax, ay, bx, by){
         const dx = bx - ax;
         const dy = by - ay;
@@ -2992,7 +2933,6 @@
         ctx.lineTo(bx, by);
         ctx.stroke();
 
-        // 화살촉은 화면 픽셀 기준 크기로 유지
         const ux = dx / len;
         const uy = dy / len;
         const head = 10 / view.scale;
@@ -3067,30 +3007,13 @@
           ctx.lineWidth = 4 / view.scale;
           ctx.strokeRect(0,0,mp.width, mp.height);
 
-          /* ✅ [변경] 유저(index) 새로고침 시 안내 문구 전체 제거 */
-          if(IS_ADMIN_PAGE){
-            ctx.fillStyle = "#7a8aa0";
-            ctx.font = `800 ${28 / view.scale}px system-ui`;
-
-            const g = getCurrentGame();
-            const p = getCurrentPage();
-
-            const msg = `"${g.name} / ${p.name}" 지도 이미지를 업로드하거나, URL을 설정하세요 (관리자 모드)`;
-
-            const lines = String(msg).split("\n");
-            let y = 70/view.scale;
-            for(const line of lines){
-              ctx.fillText(line, 40/view.scale, y);
-              y += 34/view.scale;
-            }
-          }
+          /* ✅ [PATCH] 새로고침 시 지도 이미지 자리 안내 문구 제거 (관리자도 포함) */
         }
 
         const visible = getVisibleMarkers();
         const visibleSet = new Set(visible.map(m => m.id));
         countInfo.textContent = `표시 중 마커: ${visible.length} / 페이지 전체: ${currentMarkers().length}`;
 
-        // 링크
         ctx.save();
         ctx.strokeStyle = "#ffffff";
         ctx.fillStyle = "#ffffff";
@@ -3110,7 +3033,6 @@
           const arPx = (typeof a.radiusPx === "number" ? a.radiusPx : DEFAULT_MARKER_RADIUS_PX);
           const brPx = (typeof b.radiusPx === "number" ? b.radiusPx : DEFAULT_MARKER_RADIUS_PX);
 
-          // ✅ [PATCH] 모바일에서는 1(=줌 반영) / PC는 view.scale(=고정)
           const arWorld = arPx / markerScaleDenom();
           const brWorld = brPx / markerScaleDenom();
 
@@ -3118,9 +3040,6 @@
           drawArrow(seg.sx, seg.sy, seg.ex, seg.ey);
         }
         ctx.restore();
-
-        // 마커/라벨
-        const dimSet = new Set(state.ui.dimmedMarkerIds || []);
 
         for(const m of visible){
           const wx = m.x * mp.width;
@@ -3130,20 +3049,11 @@
           const color = getMarkerColor(m);
 
           const radiusPx = (typeof m.radiusPx === "number" ? m.radiusPx : DEFAULT_MARKER_RADIUS_PX);
-
-          // ✅ [PATCH] 모바일에서는 markerScaleDenom()=1 이라서 줌 따라 같이 변함
           const denom = markerScaleDenom();
           const r = radiusPx / denom;
 
           ctx.save();
           ctx.translate(wx, wy);
-
-          const dimIcon = (!state.ui.admin && dimSet.has(m.id));
-          const iconAlpha = dimIcon ? 0.30 : 1.0;
-
-          // 원 + 테두리 + 번호
-          ctx.save();
-          ctx.globalAlpha = iconAlpha;
 
           ctx.beginPath();
           ctx.fillStyle = color;
@@ -3166,9 +3076,6 @@
             ctx.restore();
           }
 
-          ctx.restore();
-
-          // 라벨 텍스트
           const sizePx = (typeof m.labelSizePx === "number" ? m.labelSizePx : calcLabelSizeFromRadius(radiusPx));
           const weight = (typeof m.labelWeight === "number" ? m.labelWeight : DEFAULT_LABEL_WEIGHT);
 
@@ -3295,7 +3202,7 @@
         rebuildLinks();
         saveState();
 
-        // ✅ [ADD] 로고 로드
+        // ✅ 로고 로드
         loadLogo();
 
         refreshAll();
@@ -3304,19 +3211,6 @@
         loadMapImageForCurrentPage();
         draw();
       }
-
-      // ==========================================================
-      // Extra: click blank area to unpin overlay (user)
-      // ==========================================================
-      canvas.addEventListener("mousedown", (evt) => {
-        if(state.ui.admin) return;
-        if(evt.button !== 0) return;
-        const { x:sx, y:sy } = getPointerPos(evt);
-        const labelHit = findMarkerLabelAtScreen(sx, sy);
-        const iconHit = findMarkerAtScreen(sx, sy);
-        if(labelHit || iconHit) return;
-        if(overlayPinned) unpinOverlay();
-      });
 
       // ==========================================================
       // Admin auth wiring
@@ -3335,34 +3229,30 @@
         setAdminMode(false);
       }
 
-      if(IS_ADMIN_PAGE){
-        if(!isAuthed()){
-          lockAdmin();
-        }else{
-          showLock(false);
-          adminToggle.checked = true;
-          setAdminMode(true);
-        }
-
-        $unlock.addEventListener("click", () => {
-          if(($pw.value || "") === ADMIN_PASSWORD) unlockAdmin();
-          else {
-            $msg.textContent = "비밀번호가 올바르지 않습니다.";
-            $pw.select();
-          }
-        });
-
-        $pw.addEventListener("keydown", (e) => {
-          if(e.key === "Enter") $unlock.click();
-        });
-
-        $logout.addEventListener("click", () => {
-          clearAuthed();
-          location.reload();
-        });
+      if(!isAuthed()){
+        lockAdmin();
       }else{
-        setAdminMode(false);
+        showLock(false);
+        adminToggle.checked = true;
+        setAdminMode(true);
       }
+
+      $unlock.addEventListener("click", () => {
+        if(($pw.value || "") === ADMIN_PASSWORD) unlockAdmin();
+        else {
+          $msg.textContent = "비밀번호가 올바르지 않습니다.";
+          $pw.select();
+        }
+      });
+
+      $pw.addEventListener("keydown", (e) => {
+        if(e.key === "Enter") $unlock.click();
+      });
+
+      $logout.addEventListener("click", () => {
+        clearAuthed();
+        location.reload();
+      });
 
       init();
     })();
