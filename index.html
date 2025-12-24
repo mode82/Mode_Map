@@ -55,7 +55,15 @@
       border-bottom: 1px solid rgba(31,42,58,.9);
       backdrop-filter: blur(var(--blur));
       -webkit-backdrop-filter: blur(var(--blur));
+
+      /* ✅ 추가(요구 3): 모바일에서도 상단이 세로로 늘어나지 않게 “가로 고정” */
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      overflow-y: hidden;
+      white-space: nowrap;
     }
+    header > *{ flex: 0 0 auto; } /* ✅ 추가: 헤더 아이템이 줄바꿈/세로확장 유도하지 않게 */
+
     button, input, select, textarea{
       background: rgba(16,24,38,.65);
       border: 1px solid rgba(39,52,74,.9);
@@ -149,6 +157,9 @@
       display:inline-flex;
       align-items:center;
       gap:8px;
+
+      /* ✅ 추가(요구 3): 버튼 내부 텍스트 줄바꿈 방지 */
+      white-space: nowrap;
     }
     .catDot{
       width:10px;
@@ -380,6 +391,9 @@
       background: rgba(14,22,38,.55);
       cursor:pointer;
       user-select:none;
+
+      /* ✅ 추가(요구 3): 헤더 버튼 내부 줄바꿈 방지 */
+      white-space: nowrap;
     }
     .titleBtn:hover{
       border-color: rgba(124,196,255,.55);
@@ -424,13 +438,25 @@
     }
     .titleWrap.placeholder .drop{ display:none !important; }
 
-    /* ✅ 추가: 1번(로고) 슬롯용 이미지 자리(현재는 placeholder로 숨김) */
+    /* ✅ 추가: 1번(로고) 슬롯용 이미지 자리 */
     .logoSlot{
       width: 132px;
       height: 28px;
       object-fit: contain;
       display:block;
       filter: drop-shadow(0 8px 18px rgba(0,0,0,.35));
+    }
+
+    /* ✅ 추가(요구 2): 로고의 “바깥 테두리” 안 보이게 */
+    .logoWrap .titleBtn{
+      border: none !important;
+      background: transparent !important;
+      box-shadow: none !important;
+      padding: 0 !important;
+    }
+    .logoWrap .titleBtn:hover{
+      border: none !important;
+      box-shadow: none !important;
     }
 
     #__adminLockOverlay{
@@ -479,11 +505,10 @@
 
 <body>
   <header>
-    <!-- ✅ 1번 슬롯: 로고 자리(이미지 자리) - 현재는 보이지 않게(자리만 확보) -->
-    <div class="titleWrap placeholder" aria-hidden="true">
-      <div class="titleBtn" title="(로고 자리: 현재 숨김)">
-        <!-- 나중에 로고 쓰려면 placeholder 클래스 제거 + 아래 src를 로고로 바꾸면 됨 -->
-        <img class="logoSlot" alt="LOGO" src="" />
+    <!-- ✅ (요구 1) 로고가 “보이게”: placeholder 제거 + logoWrap 적용 -->
+    <div class="titleWrap logoWrap" id="logoWrap">
+      <div class="titleBtn" title="LOGO">
+        <img class="logoSlot" id="logoImg" alt="LOGO" src="" />
       </div>
     </div>
 
@@ -1099,10 +1124,10 @@
 
         const style = {
           category: (master.category || "").trim() || (currentCategories()[0]?.name || "default"),
-          radiusPx: (typeof master.radiusPx === "number" && isFinite(master.radiusPx)) ? master.radiusPx : DEFAULT_MARKER_RADIUS_PX,
+          radiusPx: (typeof master.radiusPx === "number" && isFinite(master.radiusPx)) ? master.radiusPx : 10,
           colorOverride: (master.colorOverride || "").trim(),
-          labelWeight: (typeof master.labelWeight === "number" && isFinite(master.labelWeight)) ? master.labelWeight : DEFAULT_LABEL_WEIGHT,
-          labelColor: (typeof master.labelColor === "string" ? master.labelColor : DEFAULT_LABEL_COLOR),
+          labelWeight: (typeof master.labelWeight === "number" && isFinite(master.labelWeight)) ? master.labelWeight : 900,
+          labelColor: (typeof master.labelColor === "string" ? master.labelColor : "#e6edf3"),
         };
 
         for(const id of chain.ids){
@@ -1216,6 +1241,10 @@
       const gameTitleBtn = document.getElementById("gameTitleBtn");
       const gameTitleText = document.getElementById("gameTitleText");
       const gameDrop = document.getElementById("gameDrop");
+
+      /* ✅ 추가(요구 1): 로고 표시용 엘리먼트 */
+      const logoWrap = document.getElementById("logoWrap");
+      const logoImg = document.getElementById("logoImg");
 
       const markerModalBackdrop = document.getElementById("markerModalBackdrop");
       const closeMarkerModalBtn = document.getElementById("closeMarkerModalBtn");
@@ -2394,6 +2423,30 @@
         const chainNo = chain ? (chain.chainIndex + 1) : 1;
         insertAfterHint.textContent = `${(m.title||"").trim() || "(이름 없음)"} / chain ${chainNo}`;
       }
+
+      /* ✅ 추가(요구 1): 어드민에서 저장한 로고 URL을 읽어서 인덱스에서도 표시 */
+      function __applyLogoFromSaved(){
+        if(!logoWrap || !logoImg) return;
+
+        // 1) state.ui.logoUrl 또는 state.logoUrl(어드민에서 저장했을 가능성) 우선
+        const cand1 = (state?.ui?.logoUrl || "").trim();
+        const cand2 = (state?.logoUrl || "").trim();
+
+        // 2) 별도 키로 저장했을 가능성도 대비(키가 달라도 안전하게)
+        const cand3 = (localStorage.getItem("mm_logo_url") || "").trim();
+        const cand4 = (localStorage.getItem("imgmap_logo_url_v700") || "").trim();
+
+        const url = (cand1 || cand2 || cand3 || cand4).trim();
+
+        if(url && isValidUrl(url)){
+          logoWrap.style.display = "";
+          logoImg.src = new URL(url, location.href).toString();
+        }else{
+          // 로고가 없으면 자리만 남기지 않고 숨김(로고가 저장돼 있으면 자동으로 보임)
+          logoWrap.style.display = "none";
+        }
+      }
+
       function refreshAll(){
         refreshHeaderTitle();
         rebuildGameDrop();
@@ -2403,6 +2456,9 @@
         renderSelectedPanel();
         refreshHints();
         syncAdminOnlyVisibility();
+
+        /* ✅ 추가: 로고 반영 */
+        __applyLogoFromSaved();
       }
 
       function ensureSampleMarkersOnce(){
