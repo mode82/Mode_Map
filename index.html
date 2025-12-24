@@ -467,66 +467,6 @@
     .drop .item .gname{ font-weight:900; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .drop .item .gmeta{ font-size:12px; color: var(--muted); margin-top:4px; }
 
-    /* Admin Lock Overlay (only on admin82.html) */
-    #__adminLockOverlay{
-      position: fixed;
-      inset: 0;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      background: rgba(0,0,0,.78);
-      backdrop-filter: blur(6px);
-      z-index: 2147483647;
-    }
-    #__adminLockCard{
-      width: min(420px, calc(100vw - 32px));
-      background: rgba(20, 24, 36, .92);
-      border: 1px solid rgba(255,255,255,.14);
-      border-radius: 16px;
-      padding: 18px 18px 16px;
-      box-shadow: 0 20px 60px rgba(0,0,0,.5);
-      color: #fff;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-    }
-    #__adminLockCard h2{ margin: 0 0 8px; font-size: 18px; }
-    #__adminLockCard p{ margin: 0 0 14px; opacity: .85; font-size: 13px; line-height: 1.4; }
-    #__adminPw{
-      width: 100%;
-      padding: 10px 12px;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,.16);
-      background: rgba(0,0,0,.25);
-      color: #fff;
-      outline: none;
-    }
-    #__adminLockRow{ display:flex; gap:10px; margin-top:12px; }
-    #__adminUnlockBtn{
-      flex: 1;
-      padding: 10px 12px;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,.16);
-      background: rgba(124,196,255,.18);
-      color: #fff;
-      cursor: pointer;
-      font-weight: 700;
-    }
-    #__adminUnlockBtn:active{ transform: translateY(1px); }
-    #__adminLockMsg{ margin-top: 10px; font-size: 12px; opacity: .9; min-height: 16px; }
-    #__adminLogoutBtn{
-      position: fixed;
-      right: 12px;
-      bottom: 12px;
-      z-index: 2147483646;
-      padding: 8px 10px;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,.16);
-      background: rgba(255,80,80,.18);
-      color: #fff;
-      cursor: pointer;
-      font-size: 12px;
-      display: none;
-    }
-
     /* ==========================================================
        ✅ [ADD] 상단 카테고리 1~4 슬롯 UI
        ========================================================== */
@@ -557,8 +497,7 @@
     #logoSlot{
       padding: 0;
       justify-content: center;
-      border: 0 !important;           /* ✅ 테두리 제거 */
-      background: transparent !important;
+      border: 0; /* ✅ [PATCH] 요구사항1: 로고 슬롯 테두리 제거 */
     }
     #logoImg{
       width:100%;
@@ -883,20 +822,6 @@
     </div>
   </div>
 
-  <!-- Admin Lock UI -->
-  <div id="__adminLockOverlay">
-    <div id="__adminLockCard">
-      <h2>관리자 인증</h2>
-      <p>비밀번호를 입력하면 이 브라우저에서 24시간 동안 인증이 유지됩니다.</p>
-      <input id="__adminPw" type="password" inputmode="numeric" autocomplete="current-password" placeholder="관리자 비밀번호" />
-      <div id="__adminLockRow">
-        <button id="__adminUnlockBtn" type="button">확인</button>
-      </div>
-      <div id="__adminLockMsg"></div>
-    </div>
-  </div>
-  <button id="__adminLogoutBtn" type="button">관리자 로그아웃</button>
-
   <!-- ✅ iOS 폴리필: structuredClone 없으면 흰 화면 방지 -->
   <script>
     if (typeof structuredClone !== "function") {
@@ -987,47 +912,6 @@
         localStorage.removeItem(LOGO_KEY);
         loadLogo();
       });
-
-      // ==========================================================
-      // Admin Auth (24h) - only admin page
-      // ==========================================================
-      const ADMIN_PASSWORD = "0000000001";
-      const AUTH_KEY = "mm_admin_auth_v1";
-      const SESSION_MS = 24 * 60 * 60 * 1000;
-
-      const $lock = document.getElementById("__adminLockOverlay");
-      const $pw = document.getElementById("__adminPw");
-      const $unlock = document.getElementById("__adminUnlockBtn");
-      const $msg = document.getElementById("__adminLockMsg");
-      const $logout = document.getElementById("__adminLogoutBtn");
-
-      function getAuth(){
-        try{
-          const raw = localStorage.getItem(AUTH_KEY);
-          if(!raw) return null;
-          const obj = JSON.parse(raw);
-          if(!obj || typeof obj.exp !== "number") return null;
-          return obj;
-        }catch{
-          return null;
-        }
-      }
-      function isAuthed(){
-        const a = getAuth();
-        return !!(a && a.exp > Date.now());
-      }
-      function setAuthed(){
-        localStorage.setItem(AUTH_KEY, JSON.stringify({ exp: Date.now() + SESSION_MS }));
-      }
-      function clearAuthed(){
-        localStorage.removeItem(AUTH_KEY);
-      }
-      function showLock(show){
-        if(!IS_ADMIN_PAGE) return;
-        $lock.style.display = show ? "flex" : "none";
-        $logout.style.display = show ? "none" : "block";
-        if(show) setTimeout(()=> $pw.focus(), 50);
-      }
 
       // ==========================================================
       // Storage / DB
@@ -1522,7 +1406,7 @@
       }
 
       // ==========================================================
-      // Map image load per page (URL -> fallback IDB)
+      // Map image load per page (IDB -> fallback URL)
       // ==========================================================
       const mapImg = new Image();
       mapImg.crossOrigin = "anonymous";
@@ -1544,11 +1428,27 @@
 
         const key = currentMapImageKey();
 
-        // ✅ [FIX] 모바일에서 "예전 지도(IDB 캐시)"가 먼저 뜨는 문제 해결:
-        // URL(공유용) 존재 시 URL을 우선 사용하고, URL이 없거나 실패할 때만 IDB 사용
+        // 1) IDB first (device-local)
+        const blob = await idbGet(key).catch(()=>null);
+        if(blob){
+          mapObjectUrl = URL.createObjectURL(blob);
+          mapImg.onload = () => {
+            mapImgReady = true;
+            const mp = currentMap();
+            mp.width = mapImg.naturalWidth || mapImg.width;
+            mp.height = mapImg.naturalHeight || mapImg.height;
+            saveState();
+            resetView();
+            draw();
+          };
+          mapImg.onerror = () => { mapImgReady = false; draw(); };
+          mapImg.src = mapObjectUrl;
+          return;
+        }
+
+        // 2) Fallback: public URL (shared across devices)
         const mp = currentMap();
         const url = (mp.imageUrl || "").trim();
-
         if(url && isValidUrl(url)){
           const abs = new URL(url, location.href).toString();
           mapImg.onload = () => {
@@ -1559,44 +1459,8 @@
             resetView();
             draw();
           };
-          mapImg.onerror = async () => {
-            // URL 실패 시에만 IDB로 fallback
-            const blob = await idbGet(key).catch(()=>null);
-            if(blob){
-              mapObjectUrl = URL.createObjectURL(blob);
-              mapImg.onload = () => {
-                mapImgReady = true;
-                mp.width = mapImg.naturalWidth || mapImg.width;
-                mp.height = mapImg.naturalHeight || mapImg.height;
-                saveState();
-                resetView();
-                draw();
-              };
-              mapImg.onerror = () => { mapImgReady = false; draw(); };
-              mapImg.src = mapObjectUrl;
-            }else{
-              mapImgReady = false;
-              draw();
-            }
-          };
-          mapImg.src = abs + (abs.includes("?") ? "&" : "?") + "v=" + Date.now();
-          return;
-        }
-
-        // 2) IDB (device-local)
-        const blob = await idbGet(key).catch(()=>null);
-        if(blob){
-          mapObjectUrl = URL.createObjectURL(blob);
-          mapImg.onload = () => {
-            mapImgReady = true;
-            mp.width = mapImg.naturalWidth || mapImg.width;
-            mp.height = mapImg.naturalHeight || mapImg.height;
-            saveState();
-            resetView();
-            draw();
-          };
           mapImg.onerror = () => { mapImgReady = false; draw(); };
-          mapImg.src = mapObjectUrl;
+          mapImg.src = abs + (abs.includes("?") ? "&" : "?") + "v=" + Date.now();
           return;
         }
 
@@ -2837,6 +2701,8 @@
       let dragOffsetWorld = { x:0, y:0 };
       let didDrag = false;
 
+      canvas.addEventListener("contextmenu", (e) => e.preventDefault());
+
       canvas.addEventListener("mousedown", (evt) => {
         const { x:sx, y:sy } = getPointerPos(evt);
         didDrag = false;
@@ -2902,6 +2768,16 @@
           view.offsetY = viewStart.oy + dy;
           draw();
         }
+
+        // ✅ 유저모드에서 라벨 hover만 overlay
+        if(!state.ui.admin && !overlayPinned){
+          const mLabel = findMarkerLabelAtScreen(sx, sy);
+          if(mLabel){
+            showHoverOverlayForMarker(mLabel, evt.clientX, evt.clientY);
+          }else{
+            hideHoverOverlay();
+          }
+        }
       });
 
       window.addEventListener("mouseup", () => {
@@ -2913,6 +2789,20 @@
           draw();
         }
         isPanning = false;
+      });
+
+      canvas.addEventListener("click", (evt) => {
+        if(state.ui.admin) return;
+        const { x:sx, y:sy } = getPointerPos(evt);
+        const mLabel = findMarkerLabelAtScreen(sx, sy);
+        if(mLabel){
+          showPinnedOverlayForMarker(mLabel, evt.clientX, evt.clientY);
+        }else{
+          if(overlayPinned){
+            unpinOverlay();
+            draw();
+          }
+        }
       });
 
       canvas.addEventListener("dblclick", (evt) => {
@@ -3235,49 +3125,18 @@
       }
 
       // ==========================================================
-      // Admin auth wiring
+      // ✅ [INDEX] 관리자 인증/락 로직 제거 + 유저모드 고정
       // ==========================================================
-      function unlockAdmin(){
-        setAuthed();
-        showLock(false);
-        adminToggleWrap.style.display = "";
-        adminToggle.checked = true;
-        setAdminMode(true);
-      }
-
-      function lockAdmin(){
-        showLock(true);
+      function lockToUserMode(){
+        adminToggleWrap.style.display = "none";     // 토글 자체 숨김
         adminToggle.checked = false;
-        setAdminMode(false);
+        setAdminMode(false);                        // state.ui.admin = false
       }
 
-      if(!isAuthed()){
-        lockAdmin();
-      }else{
-        showLock(false);
-        adminToggle.checked = true;
-        setAdminMode(true);
-      }
-
-      $unlock.addEventListener("click", () => {
-        if(($pw.value || "") === ADMIN_PASSWORD) unlockAdmin();
-        else {
-          $msg.textContent = "비밀번호가 올바르지 않습니다.";
-          $pw.select();
-        }
-      });
-
-      $pw.addEventListener("keydown", (e) => {
-        if(e.key === "Enter") $unlock.click();
-      });
-
-      $logout.addEventListener("click", () => {
-        clearAuthed();
-        location.reload();
-      });
-
+      lockToUserMode();
       init();
     })();
   </script>
 </body>
 </html>
+
