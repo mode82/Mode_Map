@@ -36,6 +36,16 @@
 
     *{ box-sizing:border-box; }
 
+    /* ✅ [PATCH] 모바일에서 "페이지 자체"가 손가락 드래그로 좌우로 밀려 여백 생기는 현상 방지 */
+    html, body{
+      width:100%;
+      max-width:100%;
+      overflow-x:hidden;              /* 가로 스크롤/여백 방지 */
+      overscroll-behavior-x: none;    /* iOS/모바일 탄성 좌우 방지 */
+      overscroll-behavior-y: none;
+      touch-action: manipulation;     /* 기본은 UI 클릭/스크롤에 유리 */
+    }
+
     body{
       margin:0;
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
@@ -132,7 +142,9 @@
     .panel.right{ border-left:1px solid rgba(31,42,58,.85); }
 
     .center{ position:relative; overflow:hidden; }
-    #canvas{ width:100%; height:100%; display:block; background:#0b0f14; }
+    /* ✅ [PATCH] 모바일에서 지도 영역만 제스처(드래그/핀치)를 먹고, 페이지 자체는 좌우로 안 밀리도록 */
+    #centerStage{ touch-action:none; overscroll-behavior: none; }
+    #canvas{ width:100%; height:100%; display:block; background:#0b0f14; touch-action:none; }
 
     .section{
       border:1px solid rgba(31,42,58,.9);
@@ -2969,6 +2981,146 @@
         if(m) openMarkerModal(m.id);
       });
 
+      /* ==========================================================
+         ✅ [PATCH] 모바일(터치)에서 "메뉴는 고정 + 지도만 드래그/핀치" 되게
+         - 페이지 자체 좌우 밀림(우측 여백) 방지
+         - 한 손가락: 패닝
+         - 두 손가락: 핀치 줌 (중심 기준)
+         ========================================================== */
+      const activeTouches = new Map(); // pointerId -> {x,y,clientX,clientY}
+      let pinchStart = null; // { dist, mid:{x,y}, beforeWorld:{x,y}, scale, ox, oy }
+
+      function dist2(a,b){ const dx=a.x-b.x, dy=a.y-b.y; return Math.hypot(dx,dy); }
+      function midPt(a,b){ return { x:(a.x+b.x)/2, y:(a.y+b.y)/2, clientX:(a.clientX+b.clientX)/2, clientY:(a.clientY+b.clientY)/2 }; }
+
+      function updateTouchFromEvent(e){
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        activeTouches.set(e.pointerId, { x, y, clientX:e.clientX, clientY:e.clientY });
+      }
+
+      function beginPinchIfPossible(){
+        if(activeTouches.size !== 2) return;
+        const pts = [...activeTouches.values()];
+        const a = pts[0], b = pts[1];
+        const mid = midPt(a,b);
+        const before = screenToWorld(mid.x, mid.y);
+        pinchStart = {
+          dist: dist2(a,b),
+          mid,
+          beforeWorld: before,
+          scale: view.scale,
+          ox: view.offsetX,
+          oy: view.offsetY
+        };
+      }
+
+      function applyPinch(){
+        if(!pinchStart) return;
+        if(activeTouches.size !== 2) return;
+
+        const pts = [...activeTouches.values()];
+        const a = pts[0], b = pts[1];
+        const newDist = dist2(a,b);
+        if(newDist <= 0) return;
+
+        const factor = newDist / (pinchStart.dist || newDist);
+        view.scale = clamp(pinchStart.scale * factor, view.minScale, view.maxScale);
+
+        // 핀치 중심 기준으로 고정
+        const mid = midPt(a,b);
+        const before = pinchStart.beforeWorld; // pinchStart 시점의 world
+        const after = screenToWorld(mid.x, mid.y);
+
+        view.offsetX += (after.x - before.x) * view.scale;
+        view.offsetY += (after.y - before.y) * view.scale;
+
+        clampViewToBounds();
+        draw();
+      }
+
+      // centerStage에서 브라우저 기본 스크롤/좌우탄성 제거 (지도 제스처만)
+      centerStage.addEventListener("touchmove", (e) => { e.preventDefault(); }, { passive:false });
+
+      canvas.addEventListener("pointerdown", (e) => {
+        if(!IS_COARSE_POINTER) return;        // 모바일(터치)에서만 사용
+        if(e.pointerType !== "touch") return;
+
+        e.preventDefault();
+        canvas.setPointerCapture(e.pointerId);
+        updateTouchFromEvent(e);
+
+        // 1개 터치 시작: 기존 패닝 시작(지도만)
+        if(activeTouches.size === 1){
+          const t = [...activeTouches.values()][0];
+          isPanning = true;
+          didDrag = false;
+          panStart = { x:t.x, y:t.y };
+          viewStart = { ox:view.offsetX, oy:view.offsetY };
+        }
+
+        // 2개 터치 시작: 핀치 시작
+        if(activeTouches.size === 2){
+          isPanning = false;
+          pinchStart = null;
+          beginPinchIfPossible();
+        }
+      }, { passive:false });
+
+      canvas.addEventListener("pointermove", (e) => {
+        if(!IS_COARSE_POINTER) return;
+        if(e.pointerType !== "touch") return;
+        if(!activeTouches.has(e.pointerId)) return;
+
+        e.preventDefault();
+        updateTouchFromEvent(e);
+
+        if(activeTouches.size === 2){
+          // 핀치 줌
+          if(!pinchStart) beginPinchIfPossible();
+          applyPinch();
+          return;
+        }
+
+        if(activeTouches.size === 1 && isPanning){
+          const t = [...activeTouches.values()][0];
+          const dx = t.x - panStart.x;
+          const dy = t.y - panStart.y;
+          if(Math.abs(dx) > 2 || Math.abs(dy) > 2) didDrag = true;
+
+          view.offsetX = viewStart.ox + dx;
+          view.offsetY = viewStart.oy + dy;
+          clampViewToBounds();
+          draw();
+        }
+      }, { passive:false });
+
+      function endPointer(e){
+        if(!IS_COARSE_POINTER) return;
+        if(e.pointerType !== "touch") return;
+        if(!activeTouches.has(e.pointerId)) return;
+
+        e.preventDefault();
+        activeTouches.delete(e.pointerId);
+
+        if(activeTouches.size < 2) pinchStart = null;
+        if(activeTouches.size === 1){
+          // 2->1로 줄었으면 남은 손가락 기준 패닝 시작
+          const t = [...activeTouches.values()][0];
+          isPanning = true;
+          panStart = { x:t.x, y:t.y };
+          viewStart = { ox:view.offsetX, oy:view.offsetY };
+        }
+        if(activeTouches.size === 0){
+          isPanning = false;
+        }
+      }
+
+      canvas.addEventListener("pointerup", endPointer, { passive:false });
+      canvas.addEventListener("pointercancel", endPointer, { passive:false });
+      canvas.addEventListener("pointerleave", endPointer, { passive:false });
+
       // ==========================================================
       // Draw
       // ==========================================================
@@ -3077,8 +3229,6 @@
           ctx.strokeStyle = "#223042";
           ctx.lineWidth = 4 / view.scale;
           ctx.strokeRect(0,0,mp.width, mp.height);
-
-          /* ✅ [PATCH] 새로고침 시 지도 이미지 자리 안내 문구 제거 (관리자도 포함) */
         }
 
         const visible = getVisibleMarkers();
@@ -3317,4 +3467,3 @@
   </script>
 </body>
 </html>
-
