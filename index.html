@@ -831,6 +831,15 @@
 
   <script>
     (() => {
+        window.onerror = function (msg, src, line, col, err) {
+    alert(
+      "JS 오류 발생\n\n" +
+      msg + "\n" +
+      "line: " + line + "\n" +
+      "col: " + col
+    );
+  };
+
       // ==========================================================
       // Page mode detect
       // ==========================================================
@@ -3305,5 +3314,6 @@
   </script>
 </body>
 </html>
+
 
 
