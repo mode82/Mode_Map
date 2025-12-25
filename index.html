@@ -830,17 +830,17 @@
   </script>
 
   <script>
-        window.onerror = function (msg, src, line, col, err) {
-    alert(
-      "JS 오류 발생\n\n" +
-      msg + "\n" +
-      "line: " + line + "\n" +
-      "col: " + col
-    );
-  };
-    
+    /* ✅ [PATCH] 전체 스크립트 IIFE 래핑(끝의 })(); 와 매칭) */
+    (() => {
+      window.onerror = function (msg, src, line, col, err) {
+        alert(
+          "JS 오류 발생\n\n" +
+          msg + "\n" +
+          "line: " + line + "\n" +
+          "col: " + col
+        );
+      };
 
-      
       // ==========================================================
       // Page mode detect
       // ==========================================================
@@ -929,11 +929,18 @@
         state.ui.admin = false; // index는 유저 고정
         state.ui.dimmedMarkerIds = keepDim;
 
-        // timestamp도 반영 (saveState가 이후에 갱신하긴 하지만 비교 기준으로 유지)
+        // timestamp도 반영 (비교 기준 유지)
         state._updatedAt = remoteAt || Date.now();
         state._updatedAtISO = remote._updatedAtISO || new Date(state._updatedAt).toISOString();
 
-        saveState();
+        /* ✅ [PATCH] saveState()를 쓰면 _updatedAt이 현재시각으로 덮여서 "원격이 더 최신"이 영원히 안 됨
+           → 원격 반영 시에는 타임스탬프 유지 저장(로컬스토리지 직접 저장) */
+        try{
+          localStorage.setItem(LS_KEY, JSON.stringify(state));
+        }catch(e){
+          console.warn(e);
+        }
+
         refreshAll();
         await loadMapImageForCurrentPage();
         draw();
@@ -1526,51 +1533,11 @@
 
         const key = currentMapImageKey();
         const mp = currentMap();
-
-        const url = (mp.imageUrl || "").trim();  // ✅ 이 줄 추가
+        const url = (mp.imageUrl || "").trim();
 
         // ==========================================================
-        // ✅ [PATCH] (3) 인덱스(유저)에서는 "URL 우선" 로드
-        // - 모바일에서 예전(IDB) 지도가 보이는 문제 해결
-        // - URL이 설정되어 있으면 항상 URL을 먼저 로드
+        // ✅ [PATCH] URL 우선 로드(기기 공유/모바일 최신화) + 없으면 IDB 로드
         // ==========================================================
-       /*
-        if(!IS_ADMIN_PAGE && url && isValidUrl(url)){
-          const abs = new URL(url, location.href).toString();
-          mapImg.onload = () => {
-            mapImgReady = true;
-            mp.width = mapImg.naturalWidth || mapImg.width;
-            mp.height = mapImg.naturalHeight || mapImg.height;
-            saveState();
-            resetView();
-            draw();
-          };
-          mapImg.onerror = () => { mapImgReady = false; draw(); };
-          mapImg.src = abs + (abs.includes("?") ? "&" : "?") + "v=" + Date.now();
-          return;
-        }
-        */
-
-        // 1) IDB first (device-local)
-        /*
-        const blob = await idbGet(key).catch(()=>null);
-        if(blob){
-          mapObjectUrl = URL.createObjectURL(blob);
-          mapImg.onload = () => {
-            mapImgReady = true;
-            mp.width = mapImg.naturalWidth || mapImg.width;
-            mp.height = mapImg.naturalHeight || mapImg.height;
-            saveState();
-            resetView();
-            draw();
-          };
-          mapImg.onerror = () => { mapImgReady = false; draw(); };
-          mapImg.src = mapObjectUrl;
-          return;
-        }
-        */
-
-        // 2) Fallback: public URL (shared across devices)
         if(url && isValidUrl(url)){
           const abs = new URL(url, location.href).toString();
           mapImg.onload = () => {
@@ -1586,7 +1553,24 @@
           return;
         }
 
-        // 3) Nothing
+        // 1) IDB (device-local) fallback
+        const blob = await idbGet(key).catch(()=>null);
+        if(blob){
+          mapObjectUrl = URL.createObjectURL(blob);
+          mapImg.onload = () => {
+            mapImgReady = true;
+            mp.width = mapImg.naturalWidth || mapImg.width;
+            mp.height = mapImg.naturalHeight || mapImg.height;
+            saveState();
+            resetView();
+            draw();
+          };
+          mapImg.onerror = () => { mapImgReady = false; draw(); };
+          mapImg.src = mapObjectUrl;
+          return;
+        }
+
+        // 2) Nothing
         mapImgReady = false;
         draw();
       }
@@ -2788,8 +2772,12 @@
           const m = list[i];
           const p = worldToMarkerScreen(m);
           const rPx = (typeof m.radiusPx === "number" ? m.radiusPx : DEFAULT_MARKER_RADIUS_PX);
+
+          /* ✅ [PATCH] 모바일(스케일 따라 마커 커짐)일 때 히트테스트도 동일하게 스케일 */
+          const rScreen = (rPx * view.scale) / markerScaleDenom();
+
           const dx = sx - p.x, dy = sy - p.y;
-          if(dx*dx + dy*dy <= rPx*rPx) return m;
+          if(dx*dx + dy*dy <= rScreen*rScreen) return m;
         }
         return null;
       }
@@ -2801,15 +2789,21 @@
         const weight = (typeof m.labelWeight === "number" ? m.labelWeight : DEFAULT_LABEL_WEIGHT);
         const label = getMarkerLabel(m);
 
+        /* ✅ [PATCH] 라벨 히트영역도 줌 스케일 반영 */
+        const denom = markerScaleDenom();
+        const sizeScreen = (sizePx * view.scale) / denom;
+
         ctx.save();
-        ctx.font = `${weight} ${sizePx}px system-ui`;
+        ctx.font = `${weight} ${sizeScreen}px system-ui`;
         const w = ctx.measureText(label).width;
         ctx.restore();
 
-        const gap = 10;
-        const x = p.x + radiusPx + gap;
+        const gapScreen = (10 * view.scale) / denom;
+        const rScreen = (radiusPx * view.scale) / denom;
+
+        const x = p.x + rScreen + gapScreen;
         const yMid = p.y;
-        const h = sizePx * 1.2;
+        const h = sizeScreen * 1.2;
 
         return { x, y: yMid - h/2, w, h };
       }
@@ -3012,7 +3006,10 @@
 
         const ux = dx / len;
         const uy = dy / len;
-        const head = 10 / view.scale;
+
+        /* ✅ [PATCH] 화살표 머리도 마커와 동일한 스케일 정책(모바일: 줌 따라 커짐) */
+        const head = 10 / markerScaleDenom();
+
         const angle = Math.atan2(uy, ux);
         const a1 = angle + Math.PI * 0.85;
         const a2 = angle - Math.PI * 0.85;
@@ -3095,7 +3092,9 @@
         ctx.strokeStyle = "#ffffff";
         ctx.fillStyle = "#ffffff";
         ctx.globalAlpha = 0.85;
-        ctx.lineWidth = 2 / view.scale;
+
+        /* ✅ [PATCH] 선 두께도 모바일에서는 줌 따라 같이 스케일 */
+        ctx.lineWidth = 2 / markerScaleDenom();
 
         for(const l of currentLinks()){
           if(!visibleSet.has(l.fromId) || !visibleSet.has(l.toId)) continue;
@@ -3315,8 +3314,3 @@
   </script>
 </body>
 </html>
-
-
-
-
-
