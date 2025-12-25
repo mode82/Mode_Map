@@ -2,12 +2,13 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>MAPMODE (index)</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>MAPMODE - Index</title>
 
   <style>
     :root{
       color-scheme: dark;
+
       --bg:#070b12;
       --panel:#0b1220cc;
       --card:#0e1626cc;
@@ -16,9 +17,6 @@
       --text:#e7eef8;
       --muted:#9fb0c6;
       --accent:#7cc4ff;
-      --danger:#ff5d5d;
-      --ok:#39d98a;
-      --warn:#ffd60a;
 
       --r14:14px;
       --r16:16px;
@@ -26,1072 +24,861 @@
 
       --shadow: 0 18px 60px rgba(0,0,0,.45);
       --shadow2: 0 8px 24px rgba(0,0,0,.35);
-      --blur: 14px;
     }
+
     *{ box-sizing:border-box; }
+    html,body{ height:100%; }
     body{
       margin:0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-      background:
-        radial-gradient(1200px 800px at 15% 10%, rgba(124,196,255,.14), transparent 55%),
-        radial-gradient(900px 700px at 85% 15%, rgba(167,139,250,.14), transparent 55%),
-        radial-gradient(1000px 900px at 60% 90%, rgba(57,217,138,.10), transparent 60%),
-        linear-gradient(180deg, var(--bg), #050812 70%);
-      color: var(--text);
-    }
-    a{ color: var(--accent); text-decoration:none; }
-    a:hover{ text-decoration:underline; }
-
-    header{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      padding:10px 12px;
-      position:sticky;
-      top:0;
-      z-index:10;
-      background: rgba(6,10,18,.72);
-      border-bottom: 1px solid rgba(31,42,58,.9);
-      backdrop-filter: blur(var(--blur));
-      -webkit-backdrop-filter: blur(var(--blur));
+      background: radial-gradient(1200px 800px at 40% -10%, #0d1731 0%, #070b12 55%, #05070c 100%);
+      color:var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", "Segoe UI", Roboto, Arial, sans-serif;
+      overflow:hidden;
     }
 
-    button, input, select, textarea{
-      background: rgba(16,24,38,.65);
-      border: 1px solid rgba(39,52,74,.9);
-      color: var(--text);
-      border-radius: var(--r14);
-      padding:9px 11px;
-      font-size:14px;
-      outline:none;
-      transition: transform .08s ease, border-color .15s ease, box-shadow .15s ease, background .15s ease;
-    }
-    button{ cursor:pointer; font-weight:800; }
-    button:hover{ border-color: rgba(124,196,255,.55); box-shadow: 0 0 0 3px rgba(124,196,255,.12); }
-    button:active{ transform: translateY(1px); }
-
-    .pill{
-      display:inline-flex;
-      align-items:center;
-      gap:10px;
-      padding:8px 10px;
-      border:1px solid rgba(39,52,74,.9);
-      border-radius:999px;
-      background: rgba(14,22,38,.55);
-      box-shadow: 0 10px 30px rgba(0,0,0,.25);
-    }
-    .badge{
-      display:inline-block;
-      font-size:12px;
-      padding:4px 9px;
-      border-radius:999px;
-      border:1px solid rgba(39,52,74,.9);
-      background: rgba(8,12,20,.6);
-    }
-    .muted{ color: var(--muted); font-size:12px; }
-    .hr{ height:1px; background: rgba(31,42,58,.9); margin:12px 0; }
-
-    .wrap{
-      display:grid;
-      grid-template-columns: 380px 1fr 380px;
-      height: calc(100vh - 56px);
-    }
-    .panel{
-      background: rgba(8,12,20,.55);
-      backdrop-filter: blur(var(--blur));
-      -webkit-backdrop-filter: blur(var(--blur));
-      overflow:auto;
-      padding:14px;
-    }
-    .panel.left{ border-right:1px solid rgba(31,42,58,.85); }
-    .panel.right{ border-left:1px solid rgba(31,42,58,.85); }
-
-    .section{
-      border:1px solid rgba(31,42,58,.9);
-      border-radius: var(--r18);
-      padding:14px;
-      margin-bottom:12px;
-      background: linear-gradient(180deg, rgba(14,22,38,.72), rgba(10,16,28,.58));
-      box-shadow: var(--shadow2);
-    }
-    .section h3{
-      margin:0 0 10px;
-      font-size:13px;
-      letter-spacing:.3px;
-      color: rgba(231,238,248,.92);
-      display:flex;
-      align-items:center;
-      gap:8px;
-    }
-
-    .center{ position:relative; overflow:hidden; }
-    #canvas{
-      width:100%;
+    .app{
       height:100%;
-      display:block;
-      background:#0b0f14;
-
-      /* ✅ iOS/모바일 기본 동작 차단 (패닝 이벤트 안정화) */
-      user-select:none;
-      -webkit-user-select:none;
-      -webkit-touch-callout:none;
-      touch-action:none;
-
-      /* ✅ 커서: 원래대로(손 모양/잡기 모양 금지) */
-      cursor: default;
+      display:grid;
+      grid-template-columns: 340px 1fr;
+      grid-template-rows: 56px 1fr;
+      gap:0;
     }
 
-    .catGrid{ display:flex; flex-wrap:wrap; gap:8px; }
-    .catBtn{
-      padding:7px 10px;
-      border-radius:999px;
-      border:1px solid rgba(39,52,74,.9);
-      background: rgba(8,12,20,.55);
-      font-size:12px;
-      cursor:pointer;
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-    }
-    .catDot{
-      width:10px; height:10px;
-      border-radius:999px;
-      border:1px solid rgba(39,52,74,.9);
-      display:inline-block;
-    }
-    .catBtn.active{
-      border-color: rgba(124,196,255,.9);
-      box-shadow: 0 0 0 3px rgba(124,196,255,.14);
-    }
-
-    .pageBtn{
-      width:100%;
-      padding:12px 12px;
-      border-radius: var(--r16);
-      border: 2px solid rgba(124,196,255,.40);
-      background: rgba(10,18,30,.45);
-      box-shadow: 0 0 0 4px rgba(124,196,255,.06);
+    /* Top bar */
+    .topbar{
+      grid-column: 1 / -1;
+      height:56px;
       display:flex;
       align-items:center;
       justify-content:space-between;
-      gap:10px;
-      text-align:left;
+      padding: 10px 14px;
+      background: linear-gradient(180deg, rgba(14,22,38,.92), rgba(11,18,32,.65));
+      border-bottom:1px solid rgba(39,52,74,.55);
+      backdrop-filter: blur(10px);
     }
-    .pageBtn:hover{ border-color: rgba(124,196,255,.75); box-shadow: 0 0 0 4px rgba(124,196,255,.12); }
-    .pageBtn.active{ border-color: rgba(57,217,138,.85); box-shadow: 0 0 0 4px rgba(57,217,138,.12); }
-    .pageBtn .name{
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width: 320px;
+    }
+    .logo{
       font-weight:900;
+      letter-spacing:.5px;
+      font-size: 18px;
+      user-select:none;
+    }
+    .gameSelect{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      background: rgba(14,22,38,.6);
+      border: 1px solid rgba(39,52,74,.7);
+      border-radius: 12px;
+      padding: 6px 10px;
+    }
+    select{
+      background: transparent;
+      color: var(--text);
+      border: none;
+      outline: none;
+      font-size: 14px;
+      appearance: none;
+      padding-right: 14px;
+      cursor: default;
+    }
+
+    .actions{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .btn{
+      height:30px;
+      padding: 0 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(39,52,74,.75);
+      background: rgba(14,22,38,.55);
+      color: var(--text);
+      font-size: 13px;
+      cursor: default;
+      user-select:none;
+    }
+    .btn:hover{ border-color: rgba(124,196,255,.55); }
+    .btn.primary{
+      border-color: rgba(124,196,255,.8);
+      box-shadow: 0 0 0 2px rgba(124,196,255,.12) inset;
+    }
+
+    /* Left panel */
+    .sidebar{
+      grid-row: 2 / -1;
+      padding: 14px;
+      background: linear-gradient(180deg, rgba(11,18,32,.70), rgba(8,12,20,.55));
+      border-right:1px solid rgba(39,52,74,.55);
+      backdrop-filter: blur(10px);
+      overflow:auto;
+    }
+    .sectionTitle{
+      font-size: 13px;
+      color: var(--muted);
       letter-spacing:.2px;
-      white-space:nowrap;
+      margin: 4px 0 10px;
+    }
+    .pageList{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .pageBtn{
+      width:100%;
+      height:44px;
+      border-radius: 12px;
+      border: 1px solid rgba(39,52,74,.75);
+      background: rgba(14,22,38,.40);
+      color: var(--text);
+      font-size: 14px;            /* ✅ 어드민 느낌의 기본 폰트 크기 */
+      font-weight: 700;
+      display:flex;
+      align-items:center;
+      padding: 0 12px;
+      cursor: default;
+      user-select:none;
+      box-shadow: var(--shadow2);
+    }
+    .pageBtn.active{
+      border-color: rgba(57,217,138,.75);
+      box-shadow: 0 0 0 2px rgba(57,217,138,.12) inset;
+    }
+    .hint{
+      margin-top: 12px;
+      color: rgba(159,176,198,.95);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    /* Canvas area */
+    .main{
+      grid-row: 2 / -1;
+      position:relative;
       overflow:hidden;
-      text-overflow:ellipsis;
+      background: rgba(0,0,0,.15);
     }
-
-    .linkBox{
-      padding:12px 12px;
-      border:1px solid rgba(39,52,74,.9);
-      border-radius: var(--r16);
-      background: rgba(8,12,20,.55);
-      word-break:break-all;
-      box-shadow: 0 10px 22px rgba(0,0,0,.18);
-    }
-
-    .resetDanger{
-      width:100%;
-      border: 2px solid rgba(255,93,93,.92) !important;
-      background: rgba(26,10,12,.45) !important;
-      box-shadow: 0 0 0 4px rgba(255,93,93,.10);
-    }
-
-    #hoverOverlay{
+    .canvasWrap{
       position:absolute;
-      display:none;
-      z-index:50;
-      background: rgba(10,16,28,.78);
-      border: 1px solid rgba(124,196,255,.18);
-      border-radius: var(--r16);
-      padding:10px 12px;
-      max-width:min(420px, 84vw);
+      inset: 10px 10px 10px 10px;
+      border-radius: 16px;
+      border: 1px solid rgba(39,52,74,.55);
+      background: rgba(6,10,18,.35);
       box-shadow: var(--shadow);
-      backdrop-filter: blur(var(--blur));
-      -webkit-backdrop-filter: blur(var(--blur));
-      pointer-events:auto;
+      overflow:hidden;
     }
-    #hoverOverlay .memoLabel{ font-size:12px; color: var(--muted); margin-bottom:6px; font-weight:800; }
-    #hoverOverlay textarea{
-      width:100%;
-      resize:none;
-      line-height:1.35;
-      padding:10px 10px;
-      border-radius:12px;
-      margin-bottom:10px;
-      font-size:13px;
-    }
-    #hoverOverlay textarea[readonly]{ opacity:.95; }
-    #hoverOverlay .yt{ font-size:14px; font-weight:900; }
 
-    @media (max-width:1100px){
-      .wrap{ grid-template-columns: 1fr; height:auto; }
-      .panel.left{ border-right:none; border-bottom:1px solid rgba(31,42,58,.85); }
-      .panel.right{ border-left:none; border-top:1px solid rgba(31,42,58,.85); }
-      #canvas{ height:55vh; }
+    /* ✅ 모바일 핀치 줌/패닝을 위해 필수 (브라우저 기본 제스처 차단) */
+    canvas{
+      display:block;
+      width:100%;
+      height:100%;
+      cursor: default;            /* ✅ 손모양(포인터) 금지 */
+      touch-action: none;         /* ✅ 2손가락 확대/축소 직접 구현 */
+    }
+
+    .toast{
+      position:absolute;
+      left:50%;
+      bottom:16px;
+      transform: translateX(-50%);
+      padding: 8px 12px;
+      background: rgba(14,22,38,.72);
+      border:1px solid rgba(39,52,74,.7);
+      border-radius: 12px;
+      font-size: 12px;
+      color: rgba(231,238,248,.92);
+      box-shadow: var(--shadow2);
+      opacity:0;
+      pointer-events:none;
+      transition: opacity .18s ease;
+      white-space:nowrap;
+    }
+    .toast.show{ opacity:1; }
+
+    /* Mobile */
+    @media (max-width: 980px){
+      .app{
+        grid-template-columns: 300px 1fr;
+      }
+    }
+    @media (max-width: 780px){
+      .app{
+        grid-template-columns: 1fr;
+        grid-template-rows: 56px 170px 1fr;
+      }
+      .sidebar{
+        grid-column: 1 / -1;
+        grid-row: 2 / 3;
+        border-right:none;
+        border-bottom:1px solid rgba(39,52,74,.55);
+      }
+      .main{
+        grid-column: 1 / -1;
+        grid-row: 3 / -1;
+      }
     }
   </style>
 </head>
 
 <body>
-  <header>
-    <div class="pill">
-      <span class="badge">USER</span>
-      <span class="muted">index</span>
+  <div class="app">
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo">MAPMODE</div>
+        <div class="gameSelect" title="게임 선택">
+          <select id="gameSelect"></select>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn" id="btnZoomOut">-</button>
+        <button class="btn" id="btnZoomIn">+</button>
+        <button class="btn primary" id="btnReset">전체 초기화</button>
+      </div>
     </div>
-    <div class="pill" style="margin-left:10px;">
-      <span class="muted">게임</span>
-      <b id="gameTitleText">-</b>
-    </div>
-    <span class="pill" style="margin-left:auto;">
-      <span class="muted" id="syncInfo">sync: -</span>
-    </span>
-  </header>
 
-  <div class="wrap">
-    <aside class="panel left">
-      <div class="section">
-        <h3>페이지 <span class="badge" id="pageBadge" style="margin-left:auto;">-</span></h3>
-        <div id="pageList" style="display:flex; flex-direction:column; gap:10px;"></div>
+    <aside class="sidebar">
+      <div class="sectionTitle">페이지</div>
+      <div class="pageList" id="pageList"></div>
+      <div class="hint">
+        • 좌클릭 드래그로 지도 이동<br/>
+        • 마우스 휠로 확대/축소<br/>
+        • 모바일: 두 손가락 핀치로 확대/축소, 한 손가락 드래그로 이동
       </div>
     </aside>
 
-    <div class="center" id="centerStage">
-      <canvas id="canvas"></canvas>
-
-      <div id="hoverOverlay">
-        <div class="memoLabel">메모</div>
-        <textarea id="hoverMemo" rows="3" readonly></textarea>
-        <div class="yt" id="hoverYt">-</div>
+    <main class="main">
+      <div class="canvasWrap">
+        <canvas id="mapCanvas"></canvas>
       </div>
-    </div>
-
-    <aside class="panel right">
-      <div class="section">
-        <h3>카테고리</h3>
-        <div class="catGrid" id="categoryBar"></div>
-        <div class="muted" id="countInfo" style="margin-top:10px;">-</div>
-      </div>
-
-      <div class="section">
-        <button id="resetDimBtn" class="resetDanger">마커 초기화</button>
-      </div>
-
-      <div class="section">
-        <h3 id="selectedHeader">선택한 마커</h3>
-        <div class="hr"></div>
-        <div class="muted">링크</div>
-        <div id="youtubeBox" class="linkBox" style="margin-top:8px;">-</div>
-      </div>
-    </aside>
+      <div class="toast" id="toast"></div>
+    </main>
   </div>
 
   <script>
-    // =============================
-    // index 전용: state.json 경로 통일
-    // =============================
-    const REMOTE_STATE_URL = new URL("./data/state.json", location.href).toString();
-    const REMOTE_SYNC_INTERVAL_MS = 12000;
+  (() => {
+    "use strict";
 
-    // local state key (프로젝트 기존 키 유지)
-    const LS_KEY = "imgmap_multi_v700";
+    // ✅ GitHub Pages 기준 상태 파일 경로 통일 (요청하신 규칙)
+    const REMOTE_STATE_URL = new URL("./data/state.json", location.href);
 
-    // helpers
-    const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
-    const safeParse = (s,f)=>{ try{return JSON.parse(s);}catch{return f;} };
-    const escapeHtml = (s)=>String(s).replace(/[&<>"']/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
-    const isValidUrl = (u)=>{ try{ new URL(u, location.href); return true; }catch{ return false; } };
-    const nowISO = ()=> new Date().toISOString();
+    const $ = (s) => document.querySelector(s);
+    const canvas = $("#mapCanvas");
+    const ctx = canvas.getContext("2d", { alpha: true });
 
-    // =============================
-    // state
-    // =============================
-    const defaultState = {
-      ui:{ admin:false, selectedCategory:"", selectedMarkerId:"", dimmedMarkerIds:[] },
-      currentGameId:"",
-      currentPageId:"",
-      games:[],
-      _updatedAt: 0,
-      _updatedAtISO: ""
+    const gameSelect = $("#gameSelect");
+    const pageListEl = $("#pageList");
+    const toastEl = $("#toast");
+    const btnReset = $("#btnReset");
+    const btnZoomIn = $("#btnZoomIn");
+    const btnZoomOut = $("#btnZoomOut");
+
+    // ---------- Toast ----------
+    let toastTimer = null;
+    function toast(msg, ms=1200){
+      toastEl.textContent = msg;
+      toastEl.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(()=> toastEl.classList.remove("show"), ms);
+    }
+
+    // ---------- State (여러 스키마 호환) ----------
+    function normalizeState(raw){
+      // 기대: games -> pages -> markers
+      // 혹시 pages 바로 있거나 currentPage만 있는 경우도 최대한 흡수
+      const out = { games: [], ui: {} };
+
+      if (!raw || typeof raw !== "object") return out;
+
+      // games 형태
+      if (Array.isArray(raw.games)) {
+        out.games = raw.games.map(g => ({
+          name: g.name ?? g.title ?? "게임",
+          pages: normalizePages(g.pages ?? g.maps ?? [])
+        }));
+      }
+      // top-level pages 형태
+      else if (Array.isArray(raw.pages) || Array.isArray(raw.maps)) {
+        out.games = [{
+          name: raw.gameName ?? raw.title ?? "게임",
+          pages: normalizePages(raw.pages ?? raw.maps ?? [])
+        }];
+      }
+      // 완전 최소 형태
+      else {
+        out.games = [{
+          name: raw.gameName ?? "게임",
+          pages: normalizePages(raw.pages ?? [])
+        }];
+      }
+
+      out.ui = raw.ui ?? {};
+      return out;
+
+      function normalizePages(pages){
+        const arr = Array.isArray(pages) ? pages : [];
+        return arr.map(p => {
+          const imgUrl =
+            p.imageUrl ??
+            p.image?.url ??
+            p.mapImageUrl ??
+            p.map?.url ??
+            p.url ??
+            null;
+
+          return {
+            title: p.title ?? p.name ?? p.pageName ?? "페이지",
+            imageUrl: imgUrl,
+            markers: normalizeMarkers(p.markers ?? p.points ?? p.nodes ?? []),
+          };
+        });
+      }
+
+      function normalizeMarkers(markers){
+        const arr = Array.isArray(markers) ? markers : [];
+        return arr.map((m, idx) => {
+          const n =
+            m.n ?? m.no ?? m.num ?? m.number ?? m.seq ?? (idx + 1);
+
+          return {
+            id: m.id ?? `${idx}`,
+            x: Number(m.x ?? m.px ?? m.left ?? 0),
+            y: Number(m.y ?? m.py ?? m.top ?? 0),
+            label: String(m.label ?? m.text ?? m.name ?? ""),
+            number: Number(n) || 0,
+            color: m.color ?? m.fill ?? "auto",
+            group: m.group ?? m.type ?? "",
+            dim: !!m.dim, // 클릭 불투명(30%) 토글
+          };
+        });
+      }
+    }
+
+    async function loadState(){
+      // 1) 최신 state.json
+      try{
+        const r = await fetch(REMOTE_STATE_URL.toString(), { cache: "no-store" });
+        if (!r.ok) throw new Error("state.json fetch failed");
+        const raw = await r.json();
+        return normalizeState(raw);
+      }catch(e){
+        // 2) 임시 fallback: 최소 데모(깨진 화면 방지)
+        return normalizeState({
+          games:[{name:"아이온2", pages:[{title:"전체지도", imageUrl:null, markers:[] }]}]
+        });
+      }
+    }
+
+    // ---------- Viewport / Transform ----------
+    const view = {
+      // world: 이미지 좌표계(픽셀)
+      tx: 0, ty: 0,  // screen translate
+      scale: 1,
+      minScale: 0.08,
+      maxScale: 12,
     };
 
-    const state = (() => {
-      const loaded = safeParse(localStorage.getItem(LS_KEY)||"", null);
-      if(loaded && Array.isArray(loaded.games)) {
-        loaded.ui = loaded.ui || {};
-        loaded.ui.admin = false; // index 강제
-        loaded.ui.dimmedMarkerIds = Array.isArray(loaded.ui.dimmedMarkerIds) ? loaded.ui.dimmedMarkerIds : [];
-        return loaded;
-      }
-      return structuredClone(defaultState);
-    })();
+    function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
 
-    function saveState(){
-      state._updatedAt = Date.now();
-      state._updatedAtISO = nowISO();
-      try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){ console.warn(e); }
+    function screenToWorld(sx, sy){
+      const x = (sx - view.tx) / view.scale;
+      const y = (sy - view.ty) / view.scale;
+      return { x, y };
+    }
+    function worldToScreen(wx, wy){
+      const x = wx * view.scale + view.tx;
+      const y = wy * view.scale + view.ty;
+      return { x, y };
     }
 
-    function getGameById(id){ return (state.games||[]).find(g=>g.id===id) || null; }
-    function getCurrentGame(){
-      if(!Array.isArray(state.games) || state.games.length===0) return null;
-      if(!state.currentGameId) state.currentGameId = state.games[0].id;
-      return getGameById(state.currentGameId) || state.games[0];
-    }
-    function getPageById(game, pid){ return (game.pages||[]).find(p=>p.id===pid) || null; }
-    function getCurrentPage(){
-      const g = getCurrentGame();
-      if(!g) return null;
-      if(!state.currentPageId) state.currentPageId = g.pages?.[0]?.id || "";
-      return getPageById(g, state.currentPageId) || g.pages?.[0] || null;
-    }
-    function currentCategories(){ return getCurrentGame()?.categories || []; }
-    function currentMarkers(){ return getCurrentPage()?.markers || []; }
-    function currentLinks(){ return getCurrentPage()?.links || []; }
-    function currentMap(){ return getCurrentPage()?.map || null; }
-
-    function getCategoryColor(name){
-      const c = currentCategories().find(x=>x.name===name);
-      return c?.color || "#e6edf3";
-    }
-    function getMarkerColor(m){
-      const ov = (m.colorOverride||m.color||"").toString().trim();
-      return ov ? ov : getCategoryColor(m.category);
+    function zoomAt(factor, sx, sy){
+      const before = screenToWorld(sx, sy);
+      const ns = clamp(view.scale * factor, view.minScale, view.maxScale);
+      const realFactor = ns / view.scale;
+      view.scale = ns;
+      // keep point under cursor
+      view.tx = sx - before.x * view.scale;
+      view.ty = sy - before.y * view.scale;
+      return realFactor;
     }
 
-    // =============================
-    // DOM
-    // =============================
-    const canvas = document.getElementById("canvas");
-    const ctx = canvas.getContext("2d", { alpha:true });
-
-    const centerStage = document.getElementById("centerStage");
-    const gameTitleText = document.getElementById("gameTitleText");
-    const pageBadge = document.getElementById("pageBadge");
-    const pageList = document.getElementById("pageList");
-    const categoryBar = document.getElementById("categoryBar");
-    const countInfo = document.getElementById("countInfo");
-    const selectedHeader = document.getElementById("selectedHeader");
-    const youtubeBox = document.getElementById("youtubeBox");
-    const resetDimBtn = document.getElementById("resetDimBtn");
-    const syncInfo = document.getElementById("syncInfo");
-
-    const hoverOverlay = document.getElementById("hoverOverlay");
-    const hoverMemo = document.getElementById("hoverMemo");
-    const hoverYt = document.getElementById("hoverYt");
-
-    // =============================
-    // view (해상도 + 패닝)
-    // =============================
-    const view = { scale:1, minScale:0.03, maxScale:16, offsetX:0, offsetY:0 };
-    const DEFAULT_MARKER_RADIUS_PX = 12; // 원래 굵기/가독성 위해 기본값 약간 상향
-    const PAN_MARGIN_PX = 220; // ✅ "고정처럼 보이는" 문제를 막는 여유 마진
-
+    // ---------- Canvas resize (✅ 해상도 유지: DPR 적용) ----------
     function resizeCanvas(){
       const rect = canvas.getBoundingClientRect();
-      const dpr = window.devicePixelRatio || 1;
-
-      // CSS 크기 기준으로 실제 버퍼를 DPR로 확장
-      canvas.width = Math.max(1, Math.floor(rect.width * dpr));
-      canvas.height = Math.max(1, Math.floor(rect.height * dpr));
-
-      // 이후 모든 draw는 CSS px 좌표로
-      ctx.setTransform(dpr,0,0,dpr,0,0);
-
-      // 고품질 스무딩
+      const dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
+      canvas.width  = Math.round(rect.width * dpr);
+      canvas.height = Math.round(rect.height * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0); // draw in CSS pixels
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = "high";
-
-      clampViewToBounds();
-      draw();
+      render();
     }
     window.addEventListener("resize", resizeCanvas);
 
-    function clampViewToBounds(){
-      const rect = canvas.getBoundingClientRect();
-      const cw = rect.width, ch = rect.height;
-      const mp = currentMap();
-      if(!mp) return;
+    // ---------- Data / Selection ----------
+    let STATE = null;
+    let currentGameIndex = 0;
+    let currentPageIndex = 0;
 
-      const mw = (mp.width||1) * view.scale;
-      const mh = (mp.height||1) * view.scale;
-
-      // ✅ “완전 고정”이 아니라 마진 내에서 움직이게 허용
-      const margin = PAN_MARGIN_PX;
-
-      if(mw <= cw){
-        const centerX = (cw - mw) / 2;
-        view.offsetX = clamp(view.offsetX, centerX - margin, centerX + margin);
-      } else {
-        view.offsetX = clamp(view.offsetX, cw - mw - margin, margin);
-      }
-
-      if(mh <= ch){
-        const centerY = (ch - mh) / 2;
-        view.offsetY = clamp(view.offsetY, centerY - margin, centerY + margin);
-      } else {
-        view.offsetY = clamp(view.offsetY, ch - mh - margin, margin);
-      }
-    }
-
-    function resetView(){
-      const mp = currentMap();
-      if(!mp) return;
-      const rect = canvas.getBoundingClientRect();
-      const w = rect.width, h = rect.height;
-      const s = Math.min(w / (mp.width||1), h / (mp.height||1)) * 0.95;
-      view.scale = clamp(s, view.minScale, view.maxScale);
-      view.offsetX = (w - (mp.width||1) * view.scale) / 2;
-      view.offsetY = (h - (mp.height||1) * view.scale) / 2;
-      clampViewToBounds();
-    }
-
-    function worldToScreen(wx, wy){ return { x: wx * view.scale + view.offsetX, y: wy * view.scale + view.offsetY }; }
-    function screenToWorld(sx, sy){ return { x: (sx - view.offsetX) / view.scale, y: (sy - view.offsetY) / view.scale }; }
-
-    // =============================
-    // map image
-    // =============================
-    const mapImg = new Image();
+    let mapImg = new Image();
+    mapImg.decoding = "async";
     mapImg.crossOrigin = "anonymous";
-    let mapImgReady = false;
+    let mapReady = false;
 
-    async function loadMapImageForCurrentPage(){
-      const mp = currentMap();
-      mapImgReady = false;
-      if(!mp){
-        draw();
+    function setPage(gameIdx, pageIdx){
+      currentGameIndex = gameIdx;
+      currentPageIndex = pageIdx;
+
+      // UI
+      [...pageListEl.querySelectorAll(".pageBtn")].forEach((b, i) => {
+        b.classList.toggle("active", i === pageIdx);
+      });
+
+      // load image
+      const page = getCurrentPage();
+      mapReady = false;
+      if (!page || !page.imageUrl){
+        mapReady = false;
+        toast("지도 이미지가 없습니다. (state.json의 imageUrl 확인)");
+        render();
         return;
       }
-      let url = (mp.imageUrl||mp.url||"").toString().trim();
-      if(!url){
-        draw();
-        return;
-      }
-      const abs = new URL(url, location.href).toString();
+
+      mapImg = new Image();
+      mapImg.decoding = "async";
+      mapImg.crossOrigin = "anonymous";
       mapImg.onload = () => {
-        mapImgReady = true;
-        mp.width = mp.width || mapImg.naturalWidth || mapImg.width || 1;
-        mp.height = mp.height || mapImg.naturalHeight || mapImg.height || 1;
-        resetView();
-        draw();
+        mapReady = true;
+        fitToScreen();     // 페이지 전환 시 화면 맞춤
+        render();
       };
       mapImg.onerror = () => {
-        mapImgReady = false;
-        draw();
+        mapReady = false;
+        toast("지도 이미지 로드 실패 (경로/대소문자/캐시 확인)");
+        render();
       };
-
-      // 캐시 무시(해상도/갱신 문제 방지)
-      mapImg.src = abs + (abs.includes("?") ? "&" : "?") + "v=" + Date.now();
+      mapImg.src = page.imageUrl;
     }
 
-    // =============================
-    // UI build
-    // =============================
-    function rebuildCategoryBar(){
-      categoryBar.innerHTML = "";
-      categoryBar.appendChild(makeCatButton("전체","", "#223042"));
-      for(const c of currentCategories()){
-        categoryBar.appendChild(makeCatButton(c.name, c.name, c.color || "#e6edf3"));
-      }
+    function getCurrentGame(){
+      return STATE?.games?.[currentGameIndex] ?? null;
     }
-    function makeCatButton(label, value, color){
-      const btn = document.createElement("button");
-      btn.className = "catBtn" + (state.ui.selectedCategory===value ? " active" : "");
-      const dot = document.createElement("span");
-      dot.className="catDot";
-      dot.style.background = color;
-      btn.appendChild(dot);
-      const t = document.createElement("span");
-      t.textContent = label;
-      btn.appendChild(t);
-
-      btn.addEventListener("click", ()=>{
-        state.ui.selectedCategory = value;
-        saveState();
-        rebuildCategoryBar();
-        draw();
-      });
-      return btn;
-    }
-
-    function rebuildPageList(){
+    function getCurrentPage(){
       const g = getCurrentGame();
-      const p = getCurrentPage();
-      pageList.innerHTML = "";
-      if(!g || !p){
-        pageBadge.textContent = "state 없음";
-        gameTitleText.textContent = "-";
-        return;
+      return g?.pages?.[currentPageIndex] ?? null;
+    }
+
+    // ✅ 전체 맞춤 (처음/리셋 시)
+    function fitToScreen(){
+      if (!mapReady) return;
+      const w = canvas.getBoundingClientRect().width;
+      const h = canvas.getBoundingClientRect().height;
+
+      const pad = 28;
+      const sx = (w - pad*2) / mapImg.width;
+      const sy = (h - pad*2) / mapImg.height;
+      view.scale = clamp(Math.min(sx, sy), view.minScale, view.maxScale);
+
+      // center
+      const cx = w * 0.5;
+      const cy = h * 0.5;
+      view.tx = cx - (mapImg.width * 0.5) * view.scale;
+      view.ty = cy - (mapImg.height * 0.5) * view.scale;
+    }
+
+    // ---------- Marker drawing (✅ 숫자/폰트/선 복구) ----------
+    function autoColorFor(m){
+      // 관리자 페이지 느낌: 그룹/타입이 있으면 색을 나눔(없으면 빨강/파랑/노랑 순환)
+      if (m.color && m.color !== "auto") return m.color;
+      const n = Math.abs(Number(m.number) || 0);
+      const mod = n % 3;
+      if (mod === 1) return "#ff5d5d";  // red
+      if (mod === 2) return "#7cc4ff";  // blue
+      return "#ffd60a";                 // yellow
+    }
+
+    function drawLinePath(markers){
+      // ✅ 선이 사라진 문제: 숫자 순(또는 배열 순)으로 연결
+      // number가 유효하면 number 기준 정렬
+      const list = markers.slice();
+      const hasNumber = list.some(m => Number.isFinite(m.number));
+      if (hasNumber) list.sort((a,b) => (a.number||0) - (b.number||0));
+
+      ctx.save();
+      ctx.lineWidth = 2 / Math.max(0.9, view.scale); // 확대 시 굵기 과도 증가 방지
+      ctx.strokeStyle = "rgba(255,255,255,.90)";
+      ctx.shadowColor = "rgba(0,0,0,.35)";
+      ctx.shadowBlur = 6 / Math.max(1, view.scale);
+      ctx.beginPath();
+
+      let started = false;
+      for (const m of list){
+        if (!isFinite(m.x) || !isFinite(m.y)) continue;
+        const x = m.x, y = m.y;
+        if (!started){
+          ctx.moveTo(x, y);
+          started = true;
+        }else{
+          ctx.lineTo(x, y);
+        }
       }
+      if (started) ctx.stroke();
+      ctx.restore();
 
-      gameTitleText.textContent = g.name || "Map Demo";
-      pageBadge.textContent = `${g.name} / ${p.name}`;
-
-      for(const pg of (g.pages||[])){
-        const btn = document.createElement("button");
-        btn.className = "pageBtn" + (pg.id===p.id ? " active" : "");
-        btn.innerHTML = `<div class="name">${escapeHtml(pg.name||"Page")}</div>`;
-        btn.addEventListener("click", ()=>{
-          state.currentPageId = pg.id;
-          state.ui.selectedMarkerId = "";
-          state.ui.dimmedMarkerIds = [];
-          saveState();
-          rebuildPageList();
-          rebuildCategoryBar();
-          loadMapImageForCurrentPage();
-          draw();
-        });
-        pageList.appendChild(btn);
+      // 화살표는 간단히 마지막 방향에만 표시(필요 시 확장 가능)
+      if (list.length >= 2){
+        for (let i=1;i<list.length;i++){
+          const a = list[i-1], b = list[i];
+          drawArrow(a.x, a.y, b.x, b.y);
+        }
       }
     }
 
-    function renderSelectedPanel(){
-      const m = currentMarkers().find(x=>x.id===state.ui.selectedMarkerId);
-      if(!m){
-        selectedHeader.textContent = "선택한 마커";
-        youtubeBox.textContent = "-";
-        return;
+    function drawArrow(x1,y1,x2,y2){
+      const dx = x2-x1, dy = y2-y1;
+      const len = Math.hypot(dx,dy);
+      if (len < 1e-6) return;
+      const ux = dx/len, uy = dy/len;
+
+      const head = 10 / Math.max(0.9, view.scale);
+      const back = 16 / Math.max(0.9, view.scale);
+
+      const px = x2 - ux*back;
+      const py = y2 - uy*back;
+
+      const nx = -uy, ny = ux;
+
+      ctx.save();
+      ctx.fillStyle = "rgba(255,255,255,.92)";
+      ctx.shadowColor = "rgba(0,0,0,.35)";
+      ctx.shadowBlur = 6 / Math.max(1, view.scale);
+      ctx.beginPath();
+      ctx.moveTo(x2, y2);
+      ctx.lineTo(px + nx*head, py + ny*head);
+      ctx.lineTo(px - nx*head, py - ny*head);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawMarker(m){
+      const r = 14; // 월드 기준 반지름(줌에 따라 자연스럽게 커짐)
+      const fill = autoColorFor(m);
+
+      const isDim = !!m.dim;
+      const alpha = isDim ? 0.30 : 1.0;
+
+      // circle
+      ctx.save();
+      ctx.globalAlpha = alpha;
+
+      ctx.beginPath();
+      ctx.arc(m.x, m.y, r, 0, Math.PI*2);
+      ctx.fillStyle = fill;
+      ctx.fill();
+
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = "rgba(0,0,0,.85)";
+      ctx.stroke();
+
+      // number (✅ 사라진 숫자 복구)
+      const num = (m.number ?? 0);
+      ctx.fillStyle = "#06101d";
+      ctx.font = "900 14px ui-sans-serif, system-ui, -apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR'";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(String(num), m.x, m.y+0.5);
+      ctx.restore();
+
+      // label text (어드민 기준 느낌: 굵고 선명)
+      if (m.label){
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.font = "800 18px ui-sans-serif, system-ui, -apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR'";
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
+        ctx.fillStyle = "rgba(255,255,255,.95)";
+        // outline for readability
+        ctx.lineWidth = 5;
+        ctx.strokeStyle = "rgba(0,0,0,.45)";
+        ctx.strokeText(m.label, m.x + r + 10, m.y);
+        ctx.fillText(m.label, m.x + r + 10, m.y);
+        ctx.restore();
       }
-      const name = (m.title||m.name||"").toString().trim() || "(이름 없음)";
-      selectedHeader.textContent = `선택한 마커: ${name}`;
-
-      const url = (m.youtubeUrl||m.url||"").toString().trim();
-      const display = (m.youtubeLabel||m.title||m.name||"유튜브").toString().trim();
-      if(url && isValidUrl(url)){
-        youtubeBox.innerHTML = `<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(display)}</a>`;
-      }else{
-        youtubeBox.textContent = display || "-";
-      }
     }
 
-    // =============================
-    // marker numbering (✅ 숫자 복구)
-    // =============================
-    function getMarkerNumber(m, fallbackIndex){
-      const cand =
-        m.n ?? m.no ?? m.num ?? m.number ?? m.order ?? m.idx ?? m.index;
-      if(Number.isFinite(Number(cand))) return String(Number(cand));
-
-      // id가 "m12" / "12" 이런 형태면 숫자 추출
-      const id = (m.id ?? "").toString();
-      const match = id.match(/(\d+)/);
-      if(match) return match[1];
-
-      return String(fallbackIndex + 1);
-    }
-
-    // =============================
-    // hit test
-    // =============================
-    function getPointerPos(evt){
-      const rect = canvas.getBoundingClientRect();
-      return { x: evt.clientX - rect.left, y: evt.clientY - rect.top };
-    }
-    function markerWorldPos(m){
-      const mp = currentMap();
-      return { wx: (m.x||0) * (mp?.width||1), wy: (m.y||0) * (mp?.height||1) };
-    }
-    function findMarkerAtScreen(sx, sy, visibleMarkers){
-      const mp = currentMap();
-      if(!mp) return null;
-
-      for(let i=visibleMarkers.length-1;i>=0;i--){
-        const m = visibleMarkers[i];
-        const { wx, wy } = markerWorldPos(m);
-        const p = worldToScreen(wx, wy);
-        const baseR = (typeof m.radiusPx==="number" ? m.radiusPx : DEFAULT_MARKER_RADIUS_PX);
-        const r = baseR * view.scale;
-        const dx = sx - p.x, dy = sy - p.y;
-        if(dx*dx + dy*dy <= r*r) return m;
+    function hitTestMarker(worldX, worldY){
+      const page = getCurrentPage();
+      if (!page) return null;
+      const markers = page.markers || [];
+      // 반지름 14(world) 기준
+      for (let i=markers.length-1; i>=0; i--){
+        const m = markers[i];
+        const dx = worldX - m.x;
+        const dy = worldY - m.y;
+        if (Math.hypot(dx,dy) <= 16) return m;
       }
       return null;
     }
 
-    // =============================
-    // overlay
-    // =============================
-    let overlayPinned = false;
-    function hideHoverOverlay(force=false){
-      if(!force && overlayPinned) return;
-      hoverOverlay.style.display = "none";
-    }
-    function showOverlayForMarker(m, clientX, clientY, pinned=false){
-      overlayPinned = pinned;
-      hoverMemo.value = (m.memo||"").toString();
-
-      const url = (m.youtubeUrl||m.url||"").toString().trim();
-      const label = (m.youtubeLabel||m.title||m.name||"유튜브").toString().trim();
-      if(url && isValidUrl(url)){
-        hoverYt.innerHTML = `<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(label)}</a>`;
-      }else{
-        hoverYt.innerHTML = `<span class="muted">유튜브 없음</span>`;
-      }
-
-      const stageRect = centerStage.getBoundingClientRect();
-      let x = clientX - stageRect.left + 16;
-      let y = clientY - stageRect.top + 16;
-      hoverOverlay.style.left = x + "px";
-      hoverOverlay.style.top = y + "px";
-      hoverOverlay.style.display = "block";
-
-      const pad=10;
-      const r = hoverOverlay.getBoundingClientRect();
-      const maxX = stageRect.width - r.width - pad;
-      const maxY = stageRect.height - r.height - pad;
-      x = clamp(x, pad, Math.max(pad, maxX));
-      y = clamp(y, pad, Math.max(pad, maxY));
-      hoverOverlay.style.left = x + "px";
-      hoverOverlay.style.top = y + "px";
-    }
-
-    // =============================
-    // zoom
-    // =============================
-    canvas.addEventListener("wheel", (evt)=>{
-      evt.preventDefault();
-      const mp = currentMap();
-      if(!mp) return;
-
-      const { x:sx, y:sy } = getPointerPos(evt);
-      const before = screenToWorld(sx, sy);
-
-      const zoomFactor = Math.exp((-evt.deltaY) * 0.0015);
-      view.scale = clamp(view.scale * zoomFactor, view.minScale, view.maxScale);
-
-      const after = screenToWorld(sx, sy);
-      view.offsetX += (after.x - before.x) * view.scale;
-      view.offsetY += (after.y - before.y) * view.scale;
-
-      clampViewToBounds();
-      draw();
-    }, { passive:false });
-
-    // =============================
-    // ✅ 좌클릭 드래그 패닝 (확실히 동작)
-    // =============================
-    let dragActive = false;
-    let dragMoved = false;
-    let downScreen = {x:0,y:0};
-    let viewStart = {ox:0, oy:0};
-    let downMarkerId = "";
-    const DRAG_THRESHOLD = 3;
-
-    canvas.addEventListener("pointerdown", (evt)=>{
-      if(evt.button !== 0) return; // 좌클릭만
-      evt.preventDefault();
-
-      // ✅ 핵심: 캔버스가 드래그 이벤트를 끝까지 붙잡는다
-      canvas.setPointerCapture(evt.pointerId);
-
-      const {x:sx,y:sy} = getPointerPos(evt);
-      dragActive = true;
-      dragMoved = false;
-      downScreen = {x:sx,y:sy};
-      viewStart = {ox:view.offsetX, oy:view.offsetY};
-
-      // 현재 보이는 마커 리스트 준비
-      const cat = state.ui.selectedCategory || "";
-      const visibleMarkers = cat ? currentMarkers().filter(mm=>mm.category===cat) : currentMarkers();
-      const m = findMarkerAtScreen(sx, sy, visibleMarkers);
-      downMarkerId = m ? m.id : "";
-
-      if(m){
-        state.ui.selectedMarkerId = m.id;
-        renderSelectedPanel();
-      }
-    });
-
-    canvas.addEventListener("pointermove", (evt)=>{
-      if(!dragActive){
-        if(!overlayPinned){
-          const cat = state.ui.selectedCategory || "";
-          const visibleMarkers = cat ? currentMarkers().filter(mm=>mm.category===cat) : currentMarkers();
-          const {x:sx,y:sy} = getPointerPos(evt);
-          const m = findMarkerAtScreen(sx, sy, visibleMarkers);
-          if(m) showOverlayForMarker(m, evt.clientX, evt.clientY, false);
-          else hideHoverOverlay();
-        }
-        return;
-      }
-
-      evt.preventDefault();
-      const {x:sx,y:sy} = getPointerPos(evt);
-      const dx = sx - downScreen.x;
-      const dy = sy - downScreen.y;
-
-      if(!dragMoved && (Math.abs(dx)>DRAG_THRESHOLD || Math.abs(dy)>DRAG_THRESHOLD)){
-        dragMoved = true;
-        if(!overlayPinned) hideHoverOverlay(true);
-      }
-
-      // ✅ 패닝은 항상 수행
-      view.offsetX = viewStart.ox + dx;
-      view.offsetY = viewStart.oy + dy;
-      clampViewToBounds();
-      draw();
-    });
-
-    function endDrag(){
-      dragActive = false;
-      dragMoved = false;
-      downMarkerId = "";
-    }
-
-    canvas.addEventListener("pointerup", (evt)=>{
-      if(!dragActive) return;
-      evt.preventDefault();
-
-      // 클릭(드래그X)일 때만 불투명 토글
-      if(!dragMoved && downMarkerId){
-        const arr = Array.isArray(state.ui.dimmedMarkerIds) ? state.ui.dimmedMarkerIds : [];
-        const idx = arr.indexOf(downMarkerId);
-        if(idx>=0) arr.splice(idx,1);
-        else arr.push(downMarkerId);
-        state.ui.dimmedMarkerIds = arr;
-        saveState();
-        draw();
-      }
-      endDrag();
-    });
-
-    canvas.addEventListener("pointercancel", endDrag);
-    canvas.addEventListener("lostpointercapture", endDrag);
-
-    // 클릭으로 오버레이 고정/해제
-    canvas.addEventListener("click", (evt)=>{
-      if(dragActive || dragMoved) return;
-
-      const cat = state.ui.selectedCategory || "";
-      const visibleMarkers = cat ? currentMarkers().filter(mm=>mm.category===cat) : currentMarkers();
-      const {x:sx,y:sy} = getPointerPos(evt);
-      const m = findMarkerAtScreen(sx, sy, visibleMarkers);
-      if(m){
-        showOverlayForMarker(m, evt.clientX, evt.clientY, true);
-      }else{
-        overlayPinned = false;
-        hideHoverOverlay(true);
-      }
-    });
-
-    // reset dim
-    resetDimBtn.addEventListener("click", ()=>{
-      state.ui.dimmedMarkerIds = [];
-      saveState();
-      draw();
-    });
-
-    // =============================
-    // ✅ 링크(선) 렌더러: 다양한 포맷 지원 (사라지지 않게)
-    // =============================
-    function buildMarkerMap(){
-      const mp = currentMap();
-      const markers = currentMarkers();
-      const map = new Map();
-      for(let i=0;i<markers.length;i++){
-        const m = markers[i];
-        map.set(m.id, m);
-        // 일부 구현에서 숫자키로 참조하는 경우 대비
-        const n = getMarkerNumber(m,i);
-        map.set(n, m);
-      }
-      // id가 없는 경우 대비: index 키도 넣음
-      for(let i=0;i<markers.length;i++){
-        map.set(String(i), markers[i]);
-      }
-      return { mp, markers, idMap: map };
-    }
-
-    function normalizePointToWorld(pt, mp){
-      // pt가 {x,y} 형태일 때
-      const x = Number(pt?.x);
-      const y = Number(pt?.y);
-      if(!Number.isFinite(x) || !Number.isFinite(y)) return null;
-
-      // 0~1 정규화면 mp 크기로 환산, 아니면 절대좌표로 취급
-      const isNorm = (Math.abs(x) <= 1.000001 && Math.abs(y) <= 1.000001);
-      return isNorm ? { wx: x * mp.width, wy: y * mp.height } : { wx: x, wy: y };
-    }
-
-    function extractLinkSegments(pageLinks, mp, idMap){
-      const segments = [];
-
-      for(const ln of (pageLinks||[])){
-        if(!ln) continue;
-
-        // 1) ID 기반
-        const aKey = ln.a ?? ln.from ?? ln.src ?? ln.start ?? ln.s;
-        const bKey = ln.b ?? ln.to ?? ln.dst ?? ln.end ?? ln.t;
-        if(aKey != null && bKey != null){
-          const a = idMap.get(String(aKey)) || idMap.get(aKey);
-          const b = idMap.get(String(bKey)) || idMap.get(bKey);
-          if(a && b){
-            const ax = (a.x||0) * mp.width, ay = (a.y||0) * mp.height;
-            const bx = (b.x||0) * mp.width, by = (b.y||0) * mp.height;
-            segments.push([{wx:ax, wy:ay}, {wx:bx, wy:by}]);
-            continue;
-          }
-        }
-
-        // 2) points/pts/path 기반 (폴리라인)
-        const pts = ln.points || ln.pts || ln.path || ln.polyline || null;
-        if(Array.isArray(pts) && pts.length >= 2){
-          const wpts = [];
-          for(const p of pts){
-            const w = normalizePointToWorld(p, mp);
-            if(w) wpts.push(w);
-          }
-          if(wpts.length >= 2){
-            segments.push(wpts);
-            continue;
-          }
-        }
-
-        // 3) 좌표쌍 직접
-        const ax = ln.ax ?? ln.x1 ?? ln.xa;
-        const ay = ln.ay ?? ln.y1 ?? ln.ya;
-        const bx = ln.bx ?? ln.x2 ?? ln.xb;
-        const by = ln.by ?? ln.y2 ?? ln.yb;
-        if([ax,ay,bx,by].every(v=>Number.isFinite(Number(v)))){
-          const p1 = normalizePointToWorld({x:Number(ax), y:Number(ay)}, mp);
-          const p2 = normalizePointToWorld({x:Number(bx), y:Number(by)}, mp);
-          if(p1 && p2){
-            segments.push([p1,p2]);
-            continue;
-          }
-        }
-      }
-
-      return segments;
-    }
-
-    // =============================
-    // draw
-    // =============================
-    function drawBackground(){
+    // ---------- Render ----------
+    function clear(){
       const rect = canvas.getBoundingClientRect();
       ctx.clearRect(0,0,rect.width,rect.height);
-      ctx.fillStyle = "#070b12";
-      ctx.fillRect(0,0,rect.width,rect.height);
     }
 
-    function draw(){
-      const mp = currentMap();
-      drawBackground();
+    function render(){
+      clear();
+      const rect = canvas.getBoundingClientRect();
 
-      if(!mp){
-        countInfo.textContent = "state.json을 불러오지 못했거나 페이지가 없습니다.";
-        return;
-      }
-
-      // ===== 지도 + 오브젝트는 월드좌표로 렌더링 =====
+      // background
       ctx.save();
-      ctx.translate(view.offsetX, view.offsetY);
-      ctx.scale(view.scale, view.scale);
-
-      // 지도 이미지
-      if(mapImgReady){
-        ctx.drawImage(mapImg, 0, 0, mp.width, mp.height);
-      }else{
-        ctx.fillStyle = "#0d131c";
-        ctx.fillRect(0,0,mp.width, mp.height);
-      }
-
-      // 현재 카테고리 필터(마커만)
-      const cat = state.ui.selectedCategory || "";
-      const allMarkers = currentMarkers();
-      const visibleMarkers = cat ? allMarkers.filter(mm=>mm.category===cat) : allMarkers;
-
-      // ===== ✅ 선(링크): 필터와 무관하게 "항상" 그림 =====
-      const { idMap } = buildMarkerMap();
-      const links = currentLinks();
-      const segs = extractLinkSegments(links, mp, idMap);
-
-      // 링크가 비어있을 때도, “혹시 마커에 next/prev 방식”이 있으면 연결 (보정)
-      // (원본 구조를 모르는 상태에서 최대한 복구용)
-      if(segs.length === 0){
-        // 예: m.nextId / m.toId 같은 필드가 있으면 연결
-        for(const m of allMarkers){
-          const k = m.nextId ?? m.toId ?? m.linkTo ?? null;
-          if(k==null) continue;
-          const b = idMap.get(String(k)) || idMap.get(k);
-          if(!b) continue;
-          const ax = (m.x||0) * mp.width, ay = (m.y||0) * mp.height;
-          const bx = (b.x||0) * mp.width, by = (b.y||0) * mp.height;
-          segs.push([{wx:ax, wy:ay},{wx:bx, wy:by}]);
-        }
-      }
-
-      // 링크 스타일(원래 느낌 유지: 얇지 않게)
-      ctx.save();
-      ctx.globalAlpha = 0.95;
-      ctx.strokeStyle = "rgba(124,196,255,.75)";
-      ctx.lineWidth = 3 / view.scale;     // 월드에서 두께 일정하게 보이도록
-      ctx.lineCap = "round";
-      ctx.lineJoin = "round";
-      for(const poly of segs){
-        if(!poly || poly.length < 2) continue;
-        ctx.beginPath();
-        ctx.moveTo(poly[0].wx, poly[0].wy);
-        for(let i=1;i<poly.length;i++){
-          ctx.lineTo(poly[i].wx, poly[i].wy);
-        }
-        ctx.stroke();
-      }
+      ctx.fillStyle = "rgba(0,0,0,.08)";
+      ctx.fillRect(0,0,rect.width,rect.height);
       ctx.restore();
 
-      // ===== ✅ 마커: 원 + 숫자(중앙) + 텍스트 =====
-      const dimSet = new Set(Array.isArray(state.ui.dimmedMarkerIds) ? state.ui.dimmedMarkerIds : []);
-
-      for(let i=0;i<visibleMarkers.length;i++){
-        const m = visibleMarkers[i];
-        const wx = (m.x||0) * mp.width;
-        const wy = (m.y||0) * mp.height;
-
-        const baseR = (typeof m.radiusPx==="number" ? m.radiusPx : DEFAULT_MARKER_RADIUS_PX);
-        const r = baseR; // 월드 스케일 적용 전(현재 ctx가 scale됨)
-
-        const isDim = dimSet.has(m.id);
-        const alpha = isDim ? 0.30 : 1.0;
-
-        const fill = getMarkerColor(m);
-
-        // 원
+      if (!mapReady){
+        // placeholder
         ctx.save();
-        ctx.translate(wx, wy);
-        ctx.globalAlpha = alpha;
-
-        ctx.beginPath();
-        ctx.fillStyle = fill;
-        ctx.arc(0,0,r,0,Math.PI*2);
-        ctx.fill();
-
-        // 테두리(원래 두께 느낌)
-        ctx.strokeStyle = "rgba(0,0,0,.70)";
-        ctx.lineWidth = 3;
-        ctx.stroke();
-
-        // 숫자(원 중앙)
-        ctx.globalAlpha = 1.0;
-        const num = getMarkerNumber(m, i);
-        const numSize = (m.numSizePx ? Number(m.numSizePx) : 14);
-        ctx.font = `900 ${numSize}px system-ui`;
-        ctx.fillStyle = "#ffffff";
+        ctx.fillStyle = "rgba(231,238,248,.75)";
+        ctx.font = "700 14px ui-sans-serif, system-ui, -apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR'";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText(num, 0, 0);
-
-        // 라벨(오른쪽)
-        const label = (m.label ?? m.title ?? m.name ?? "").toString().trim();
-        if(label){
-          const labelSize = (m.labelSizePx ? Number(m.labelSizePx) : 16);
-          ctx.font = `900 ${labelSize}px system-ui`;
-          ctx.fillStyle = "rgba(231,238,248,.98)";
-          ctx.textAlign = "left";
-          ctx.textBaseline = "middle";
-          ctx.fillText(label, r + 10, 0);
-        }
-
+        ctx.fillText("지도 로딩 중... (또는 imageUrl 없음)", rect.width/2, rect.height/2);
         ctx.restore();
-      }
-
-      ctx.restore();
-
-      // 패널 정보
-      countInfo.textContent = `마커(표시/전체): ${visibleMarkers.length}/${allMarkers.length} · 링크: ${segs.length}`;
-      renderSelectedPanel();
-    }
-
-    // =============================
-    // remote sync (state.json)
-    // =============================
-    async function tryFetchRemoteState(){
-      try{
-        const url = REMOTE_STATE_URL + (REMOTE_STATE_URL.includes("?") ? "&" : "?") + "v=" + Date.now();
-        const res = await fetch(url, { cache:"no-store" });
-        if(!res.ok) return null;
-        const j = await res.json();
-        if(!j || !Array.isArray(j.games)) return null;
-        return j;
-      }catch{
-        return null;
-      }
-    }
-
-    function acceptRemoteState(remote){
-      remote.ui = remote.ui || {};
-      remote.ui.admin = false; // index 강제
-
-      // dim은 로컬 유지
-      const keepDim = Array.isArray(state.ui?.dimmedMarkerIds) ? [...state.ui.dimmedMarkerIds] : [];
-
-      state.games = remote.games;
-      state.currentGameId = remote.currentGameId || state.games[0]?.id || "";
-
-      const g = getCurrentGame();
-      state.currentPageId = remote.currentPageId || g?.pages?.[0]?.id || "";
-
-      state.ui.selectedCategory = state.ui.selectedCategory || "";
-      state.ui.selectedMarkerId = "";
-      state.ui.dimmedMarkerIds = keepDim;
-
-      state._updatedAt = Number(remote._updatedAt || Date.now());
-      state._updatedAtISO = remote._updatedAtISO || nowISO();
-
-      saveState();
-    }
-
-    async function syncFromRemoteIfNewer(){
-      const remote = await tryFetchRemoteState();
-      if(!remote){
-        syncInfo.textContent = "sync: offline";
         return;
       }
 
-      const remoteAt = Number(remote._updatedAt || 0);
-      const localAt = Number(state._updatedAt || 0);
+      // world transform
+      ctx.save();
+      ctx.translate(view.tx, view.ty);
+      ctx.scale(view.scale, view.scale);
 
-      // remote가 더 최신이면 반영
-      if(remoteAt && remoteAt > localAt){
-        acceptRemoteState(remote);
-        rebuildPageList();
-        rebuildCategoryBar();
-        await loadMapImageForCurrentPage();
-        draw();
-        syncInfo.textContent = "sync: updated";
-      }else{
-        syncInfo.textContent = "sync: ok";
+      // image
+      ctx.drawImage(mapImg, 0, 0);
+
+      const page = getCurrentPage();
+      const markers = (page?.markers || []);
+
+      // ✅ 선 먼저 그리고 -> 마커 (선이 가려지지 않게)
+      if (markers.length >= 2){
+        drawLinePath(markers);
+      }
+
+      // markers
+      for (const m of markers){
+        if (!isFinite(m.x) || !isFinite(m.y)) continue;
+        drawMarker(m);
+      }
+
+      ctx.restore();
+    }
+
+    // ---------- Input (✅ 좌클릭 드래그 패닝 / ✅ 모바일 핀치 줌 복구 / ✅ 커서 원복) ----------
+    let isPanning = false;
+    let lastSX = 0, lastSY = 0;
+
+    // pointer tracking for pinch
+    const pointers = new Map(); // id -> {x,y}
+    let pinchStartDist = 0;
+    let pinchStartScale = 1;
+    let pinchStartMid = {x:0,y:0};
+
+    function setCursor(mode){
+      // ✅ "손모양" 방지: pointer 커서 사용 금지
+      if (mode === "dragging") canvas.style.cursor = "grabbing";
+      else canvas.style.cursor = "default";
+    }
+
+    canvas.addEventListener("pointerdown", (e) => {
+      // ✅ 텍스트 선택/드래그 등 기본 동작 방지
+      e.preventDefault();
+
+      canvas.setPointerCapture(e.pointerId);
+      pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+      const rect = canvas.getBoundingClientRect();
+      const sx = e.clientX - rect.left;
+      const sy = e.clientY - rect.top;
+
+      // 2 finger pinch start
+      if (pointers.size === 2){
+        const pts = [...pointers.values()];
+        pinchStartDist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+        pinchStartScale = view.scale;
+        pinchStartMid = { x: (pts[0].x + pts[1].x)/2 - rect.left, y: (pts[0].y + pts[1].y)/2 - rect.top };
+        isPanning = false;
+        setCursor("default");
+        return;
+      }
+
+      // single pointer
+      lastSX = sx; lastSY = sy;
+
+      // ✅ 마커 클릭이면 불투명 토글(기존 요구사항 포함)
+      const w = screenToWorld(sx, sy);
+      const m = hitTestMarker(w.x, w.y);
+      if (m){
+        // 클릭: 해당 마커만 토글
+        m.dim = !m.dim;
+        render();
+        return;
+      }
+
+      // ✅ 좌클릭/터치 드래그로 패닝 시작
+      isPanning = true;
+      setCursor("dragging");
+    }, { passive: false });
+
+    canvas.addEventListener("pointermove", (e) => {
+      if (!pointers.has(e.pointerId)) return;
+      e.preventDefault();
+
+      const rect = canvas.getBoundingClientRect();
+      pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+      // pinch zoom
+      if (pointers.size === 2){
+        const pts = [...pointers.values()];
+        const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+        const mid = { x: (pts[0].x + pts[1].x)/2 - rect.left, y: (pts[0].y + pts[1].y)/2 - rect.top };
+        if (pinchStartDist > 0){
+          const factor = dist / pinchStartDist;
+          // scale around midpoint
+          const targetScale = clamp(pinchStartScale * factor, view.minScale, view.maxScale);
+          const realFactor = targetScale / view.scale;
+          zoomAt(realFactor, mid.x, mid.y);
+          render();
+        }
+        return;
+      }
+
+      // single pointer pan
+      if (!isPanning) return;
+
+      const sx = e.clientX - rect.left;
+      const sy = e.clientY - rect.top;
+      const dx = sx - lastSX;
+      const dy = sy - lastSY;
+
+      view.tx += dx;
+      view.ty += dy;
+
+      lastSX = sx; lastSY = sy;
+      render();
+    }, { passive: false });
+
+    function endPointer(e){
+      if (!pointers.has(e.pointerId)) return;
+      e.preventDefault();
+      pointers.delete(e.pointerId);
+
+      if (pointers.size < 2){
+        pinchStartDist = 0;
+      }
+      if (pointers.size === 0){
+        isPanning = false;
+        setCursor("default");
       }
     }
+    canvas.addEventListener("pointerup", endPointer, { passive:false });
+    canvas.addEventListener("pointercancel", endPointer, { passive:false });
 
-    // =============================
-    // init
-    // =============================
-    async function init(){
-      resizeCanvas();
+    // wheel zoom (desktop)
+    canvas.addEventListener("wheel", (e) => {
+      e.preventDefault();
+      const rect = canvas.getBoundingClientRect();
+      const sx = e.clientX - rect.left;
+      const sy = e.clientY - rect.top;
 
-      rebuildPageList();
-      rebuildCategoryBar();
+      const delta = Math.sign(e.deltaY);
+      const factor = delta > 0 ? 0.90 : 1.11;
+      zoomAt(factor, sx, sy);
+      render();
+    }, { passive:false });
 
-      await loadMapImageForCurrentPage();
-      resetView();
-      draw();
+    // Buttons
+    btnReset.addEventListener("click", () => {
+      // dim 초기화 + 화면 맞춤
+      const page = getCurrentPage();
+      if (page?.markers) page.markers.forEach(m => m.dim = false);
+      fitToScreen();
+      render();
+      toast("초기화 완료");
+    });
 
-      // 최초 1회 sync 후 반복
-      await syncFromRemoteIfNewer();
-      setInterval(syncFromRemoteIfNewer, REMOTE_SYNC_INTERVAL_MS);
+    btnZoomIn.addEventListener("click", () => {
+      const rect = canvas.getBoundingClientRect();
+      zoomAt(1.15, rect.width/2, rect.height/2);
+      render();
+    });
+    btnZoomOut.addEventListener("click", () => {
+      const rect = canvas.getBoundingClientRect();
+      zoomAt(0.87, rect.width/2, rect.height/2);
+      render();
+    });
 
-      document.addEventListener("visibilitychange", ()=>{
-        if(document.visibilityState==="visible") syncFromRemoteIfNewer();
+    // ---------- UI build ----------
+    function buildUI(){
+      // games
+      gameSelect.innerHTML = "";
+      STATE.games.forEach((g, i) => {
+        const opt = document.createElement("option");
+        opt.value = String(i);
+        opt.textContent = g.name ?? `게임 ${i+1}`;
+        gameSelect.appendChild(opt);
+      });
+      gameSelect.value = String(currentGameIndex);
+
+      gameSelect.addEventListener("change", () => {
+        currentGameIndex = Number(gameSelect.value) || 0;
+        currentPageIndex = 0;
+        buildPageList();
+        setPage(currentGameIndex, currentPageIndex);
+      });
+
+      buildPageList();
+    }
+
+    function buildPageList(){
+      pageListEl.innerHTML = "";
+      const g = getCurrentGame();
+      const pages = g?.pages ?? [];
+      pages.forEach((p, i) => {
+        const b = document.createElement("button");
+        b.className = "pageBtn";
+        b.textContent = p.title ?? `페이지 ${i+1}`;
+        b.addEventListener("click", () => {
+          currentPageIndex = i;
+          setPage(currentGameIndex, currentPageIndex);
+        });
+        pageListEl.appendChild(b);
       });
     }
-    init();
+
+    // ---------- Boot ----------
+    (async () => {
+      STATE = await loadState();
+      // 기본 선택 보정
+      if (!STATE.games.length) {
+        STATE.games = [{ name:"게임", pages:[{ title:"전체지도", imageUrl:null, markers:[] }] }];
+      }
+      currentGameIndex = clamp(currentGameIndex, 0, STATE.games.length-1);
+      currentPageIndex = 0;
+
+      buildUI();
+      resizeCanvas(); // 먼저 크기 잡고
+      setPage(currentGameIndex, currentPageIndex); // 이미지 로드 + fit
+    })();
+
+  })();
   </script>
 </body>
 </html>
