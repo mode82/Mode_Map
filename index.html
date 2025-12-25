@@ -40,10 +40,10 @@
     html, body{
       width:100%;
       max-width:100%;
-      overflow-x:hidden;              /* 가로 스크롤/여백 방지 */
-      overscroll-behavior-x: none;    /* iOS/모바일 탄성 좌우 방지 */
+      overflow-x:hidden;
+      overscroll-behavior-x: none;
       overscroll-behavior-y: none;
-      touch-action: manipulation;     /* 기본은 UI 클릭/스크롤에 유리 */
+      touch-action: manipulation;
     }
 
     body{
@@ -509,13 +509,13 @@
     #logoSlot{
       padding: 0;
       justify-content: center;
-      border: 0; /* ✅ [PATCH] 요구사항1: 로고 슬롯 테두리 제거 */
+      border: 0;
     }
     #logoImg{
       width:100%;
       height:100%;
       object-fit: contain;
-      display:none; /* 로고 없으면 표시 X (공간만 유지) */
+      display:none;
       padding:4px;
     }
     #logoUploadBtn{
@@ -526,7 +526,7 @@
       cursor:pointer;
       font-weight:900;
       color: rgba(231,238,248,.88);
-      display:none; /* 로고 없을 때도 관리자에서만 보이게 토글 */
+      display:none;
     }
     #logoUploadBtn:hover{
       box-shadow: 0 0 0 3px rgba(124,196,255,.10) inset;
@@ -562,7 +562,7 @@
       <div class="topSlot placeholder" id="cat4Slot" aria-hidden="true"></div>
     </div>
 
-    <!-- ✅ 관리자 모드 토글 -->
+    <!-- ✅ 관리자 모드 토글 (index에서는 숨김 처리됨: 아래 JS에서) -->
     <span class="pill" id="adminToggleWrap">
       <span class="badge" id="modeBadge">USER</span>
       <label class="muted" style="margin:0;">관리자</label>
@@ -591,7 +591,6 @@
           <span class="name">+ 페이지 추가</span>
         </button>
 
-        <!-- ✅ [PATCH] 안내 문구는 관리자에서만 보이게 -->
         <div class="muted adminOnly" style="margin:10px 0 8px; line-height:1.4;">
           • 페이지 버튼 클릭 → 같은 게임 안에서 지도 페이지 이동<br/>
           • <b>폰/다른 기기</b>에서도 지도 보이게 하려면: 관리자에서 <b>URL</b> 버튼으로 지도 이미지 URL 설정
@@ -849,12 +848,12 @@
       const IS_ADMIN_PAGE = /admin82\.html$/i.test(location.pathname);
       const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-      // ✅ [PATCH] 모바일(터치)에서는 마커도 줌 비율에 맞춰 같이 스케일
+      // ✅ 모바일(터치)에서는 마커도 줌 비율에 맞춰 같이 스케일
       const IS_COARSE_POINTER = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
       const SCALE_MARKERS_WITH_ZOOM = IS_COARSE_POINTER; // 모바일에서만 true
 
       // ==========================================================
-      // ✅ [PATCH] (3) 모바일에서 PC와 동일한 최신 상태를 보기 위한 원격 state.json 동기화
+      // ✅ (index) 원격 state.json 동기화
       // ==========================================================
       const REMOTE_STATE_URL = "./state.json";
       const REMOTE_SYNC_INTERVAL_MS = 15000;
@@ -871,132 +870,6 @@
           return null;
         }
       }
-
-      function sanitizeLoadedStateLikeInit(s){
-        if(!s.ui) s.ui = { admin:false, selectedCategory:"", selectedMarkerId:"", lastCreatedMarkerId:"", activePaintColor:"", createCategory:"", createGroupId:0, createColorOverride:"", insertAfterMarkerId:"", dimmedMarkerIds:[] };
-        if(!Array.isArray(s.ui.dimmedMarkerIds)) s.ui.dimmedMarkerIds = [];
-        if(!Array.isArray(s.games) || s.games.length === 0) return false;
-
-        for(const g of s.games){
-          if(!g.id) g.id = uid();
-          if(typeof g.name !== "string") g.name = "Game";
-          if(!Array.isArray(g.categories) || g.categories.length === 0) g.categories = structuredClone(DEFAULT_CATEGORIES);
-          if(!Array.isArray(g.pages) || g.pages.length === 0){
-            g.pages = [{ id: uid(), name:"1번마을", map:{imageKey:"", imageUrl:"", width:2200, height:1400}, markers:[], links:[] }];
-          }
-          for(const p of g.pages){
-            if(!p.id) p.id = uid();
-            if(typeof p.name !== "string") p.name = "Page";
-            if(!p.map) p.map = { imageKey:"", imageUrl:"", width:2200, height:1400 };
-            if(typeof p.map.imageKey !== "string") p.map.imageKey = "";
-            if(typeof p.map.imageUrl !== "string") p.map.imageUrl = "";
-            if(typeof p.map.width !== "number" || !isFinite(p.map.width)) p.map.width = 2200;
-            if(typeof p.map.height !== "number" || !isFinite(p.map.height)) p.map.height = 1400;
-            if(!Array.isArray(p.markers)) p.markers = [];
-            if(!Array.isArray(p.links)) p.links = [];
-          }
-        }
-        return true;
-      }
-
-      async function syncStateFromRemoteIfNewer(){
-        if(IS_ADMIN_PAGE) return;
-
-        const remote = await tryFetchRemoteState();
-        if(!remote) return;
-
-        const remoteAt = Number(remote._updatedAt || 0);
-        const localAt = Number(state._updatedAt || 0);
-
-        if(remoteAt && remoteAt <= localAt) return;
-
-        const keepDim = Array.isArray(state.ui?.dimmedMarkerIds) ? [...state.ui.dimmedMarkerIds] : [];
-
-        if(!sanitizeLoadedStateLikeInit(remote)) return;
-
-        state.games = remote.games;
-        state.currentGameId = remote.currentGameId || (remote.games[0]?.id || state.currentGameId);
-        state.currentPageId = remote.currentPageId || (remote.games[0]?.pages?.[0]?.id || state.currentPageId);
-
-        state.ui = remote.ui || state.ui;
-        state.ui.admin = false;
-        state.ui.dimmedMarkerIds = keepDim;
-
-        state._updatedAt = remoteAt || Date.now();
-        state._updatedAtISO = remote._updatedAtISO || new Date(state._updatedAt).toISOString();
-
-        saveState();
-        refreshAll();
-        await loadMapImageForCurrentPage();
-        draw();
-      }
-
-      // ==========================================================
-      // ✅ [PATCH] 로고 저장/로드 (URL 방식)
-      // ==========================================================
-      const LOGO_KEY = "mm_logo_url_v1";
-      const $logoImg = document.getElementById("logoImg");
-      const $logoUploadBtn = document.getElementById("logoUploadBtn");
-      const $logoSlot = document.getElementById("logoSlot");
-
-      function normalizeUrlMaybe(u){
-        const v = String(u || "").trim();
-        if(!v) return "";
-        try { return new URL(v, location.href).toString(); } catch { return v; }
-      }
-
-      function loadLogo(){
-        try{
-          const raw = (localStorage.getItem(LOGO_KEY) || "").trim();
-          const url = normalizeUrlMaybe(raw);
-          if(url){
-            $logoImg.src = url;
-            $logoImg.style.display = "block";
-          }else{
-            $logoImg.removeAttribute("src");
-            $logoImg.style.display = "none";
-          }
-        }catch{
-          $logoImg.style.display = "none";
-        }
-      }
-
-      function promptLogoUrl(){
-        if(!IS_ADMIN_PAGE) return;
-        if(!state?.ui?.admin) return;
-
-        const cur = (localStorage.getItem(LOGO_KEY) || "").trim();
-        const v = prompt(
-          "로고 이미지 URL을 입력하세요.\n예) ./assets/logo.png 또는 https://.../logo.png\n(빈 값으로 저장하면 로고가 제거됩니다)",
-          cur || "./assets/logo.png"
-        );
-        if(v === null) return;
-
-        const next = String(v).trim();
-        if(!next){
-          localStorage.removeItem(LOGO_KEY);
-        }else{
-          localStorage.setItem(LOGO_KEY, next);
-        }
-        loadLogo();
-      }
-
-      $logoUploadBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        promptLogoUrl();
-      });
-
-      $logoSlot.addEventListener("click", () => {
-        promptLogoUrl();
-      });
-
-      $logoSlot.addEventListener("dblclick", () => {
-        if(!IS_ADMIN_PAGE) return;
-        if(!state?.ui?.admin) return;
-        if(!confirm("로고를 제거할까요?")) return;
-        localStorage.removeItem(LOGO_KEY);
-        loadLogo();
-      });
 
       // ==========================================================
       // Storage / DB
@@ -1057,16 +930,6 @@
 
       function safeParse(json, fallback){
         try { return JSON.parse(json); } catch { return fallback; }
-      }
-
-      function saveState(){
-        state._updatedAt = Date.now();
-        state._updatedAtISO = new Date().toISOString();
-        try{
-          localStorage.setItem(LS_KEY, JSON.stringify(state));
-        }catch(e){
-          console.warn(e);
-        }
       }
 
       function escapeHtml(s){
@@ -1182,6 +1045,131 @@
         }
       }
 
+      function saveState(){
+        state._updatedAt = Date.now();
+        state._updatedAtISO = new Date().toISOString();
+        try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){ console.warn(e); }
+      }
+
+      function sanitizeLoadedStateLikeInit(s){
+        if(!s.ui) s.ui = structuredClone(defaultState.ui);
+        if(!Array.isArray(s.ui.dimmedMarkerIds)) s.ui.dimmedMarkerIds = [];
+        if(!Array.isArray(s.games) || s.games.length === 0) return false;
+
+        for(const g of s.games){
+          if(!g.id) g.id = uid();
+          if(typeof g.name !== "string") g.name = "Game";
+          if(!Array.isArray(g.categories) || g.categories.length === 0) g.categories = structuredClone(DEFAULT_CATEGORIES);
+          if(!Array.isArray(g.pages) || g.pages.length === 0){
+            g.pages = [{ id: uid(), name:"1번마을", map:{imageKey:"", imageUrl:"", width:2200, height:1400}, markers:[], links:[] }];
+          }
+          for(const p of g.pages){
+            if(!p.id) p.id = uid();
+            if(typeof p.name !== "string") p.name = "Page";
+            if(!p.map) p.map = { imageKey:"", imageUrl:"", width:2200, height:1400 };
+            if(typeof p.map.imageKey !== "string") p.map.imageKey = "";
+            if(typeof p.map.imageUrl !== "string") p.map.imageUrl = "";
+            if(typeof p.map.width !== "number" || !isFinite(p.map.width)) p.map.width = 2200;
+            if(typeof p.map.height !== "number" || !isFinite(p.map.height)) p.map.height = 1400;
+            if(!Array.isArray(p.markers)) p.markers = [];
+            if(!Array.isArray(p.links)) p.links = [];
+          }
+        }
+        return true;
+      }
+
+      async function syncStateFromRemoteIfNewer(){
+        if(IS_ADMIN_PAGE) return;
+
+        const remote = await tryFetchRemoteState();
+        if(!remote) return;
+
+        const remoteAt = Number(remote._updatedAt || 0);
+        const localAt = Number(state._updatedAt || 0);
+        if(remoteAt && remoteAt <= localAt) return;
+
+        const keepDim = Array.isArray(state.ui?.dimmedMarkerIds) ? [...state.ui.dimmedMarkerIds] : [];
+
+        if(!sanitizeLoadedStateLikeInit(remote)) return;
+
+        state.games = remote.games;
+        state.currentGameId = remote.currentGameId || (remote.games[0]?.id || state.currentGameId);
+        state.currentPageId = remote.currentPageId || (remote.games[0]?.pages?.[0]?.id || state.currentPageId);
+
+        state.ui = remote.ui || state.ui;
+        state.ui.admin = false;
+        state.ui.dimmedMarkerIds = keepDim;
+
+        state._updatedAt = remoteAt || Date.now();
+        state._updatedAtISO = remote._updatedAtISO || new Date(state._updatedAt).toISOString();
+
+        saveState();
+        refreshAll();
+        await loadMapImageForCurrentPage();
+        draw();
+      }
+
+      // ==========================================================
+      // ✅ 로고 저장/로드 (URL 방식)
+      // ==========================================================
+      const LOGO_KEY = "mm_logo_url_v1";
+      const $logoImg = document.getElementById("logoImg");
+      const $logoUploadBtn = document.getElementById("logoUploadBtn");
+      const $logoSlot = document.getElementById("logoSlot");
+
+      function normalizeUrlMaybe(u){
+        const v = String(u || "").trim();
+        if(!v) return "";
+        try { return new URL(v, location.href).toString(); } catch { return v; }
+      }
+
+      function loadLogo(){
+        try{
+          const raw = (localStorage.getItem(LOGO_KEY) || "").trim();
+          const url = normalizeUrlMaybe(raw);
+          if(url){
+            $logoImg.src = url;
+            $logoImg.style.display = "block";
+          }else{
+            $logoImg.removeAttribute("src");
+            $logoImg.style.display = "none";
+          }
+        }catch{
+          $logoImg.style.display = "none";
+        }
+      }
+
+      function promptLogoUrl(){
+        if(!IS_ADMIN_PAGE) return;
+        if(!state?.ui?.admin) return;
+
+        const cur = (localStorage.getItem(LOGO_KEY) || "").trim();
+        const v = prompt(
+          "로고 이미지 URL을 입력하세요.\n예) ./assets/logo.png 또는 https://.../logo.png\n(빈 값으로 저장하면 로고가 제거됩니다)",
+          cur || "./assets/logo.png"
+        );
+        if(v === null) return;
+
+        const next = String(v).trim();
+        if(!next) localStorage.removeItem(LOGO_KEY);
+        else localStorage.setItem(LOGO_KEY, next);
+
+        loadLogo();
+      }
+
+      $logoUploadBtn.addEventListener("click", (e) => { e.stopPropagation(); promptLogoUrl(); });
+      $logoSlot.addEventListener("click", () => { promptLogoUrl(); });
+      $logoSlot.addEventListener("dblclick", () => {
+        if(!IS_ADMIN_PAGE) return;
+        if(!state?.ui?.admin) return;
+        if(!confirm("로고를 제거할까요?")) return;
+        localStorage.removeItem(LOGO_KEY);
+        loadLogo();
+      });
+
+      // ==========================================================
+      // Current getters
+      // ==========================================================
       function getGameById(id){ return state.games.find(g => g.id === id) || null; }
 
       function getCurrentGame(){
@@ -1244,7 +1232,7 @@
       }
 
       // ==========================================================
-      // Chain rule helpers (page-local)
+      // Chain helpers
       // ==========================================================
       function getCategoryColor(name){
         const c = currentCategories().find(x => x.name === name);
@@ -1340,7 +1328,7 @@
         for(const g of groups) applyAllChainsInGroup(g);
       }
 
-      // Links rebuild (page-local)
+      // Links rebuild
       function rebuildLinks(){
         const markers = currentMarkers();
         const byGroup = new Map();
@@ -1489,7 +1477,7 @@
       }
 
       // ==========================================================
-      // Map image load per page (IDB -> fallback URL)
+      // Map image load per page
       // ==========================================================
       const mapImg = new Image();
       mapImg.crossOrigin = "anonymous";
@@ -1512,6 +1500,7 @@
         const key = currentMapImageKey();
         const mp = currentMap();
 
+        // ✅ index에서는 URL 우선
         const url = (mp.imageUrl || "").trim();
         if(!IS_ADMIN_PAGE && url && isValidUrl(url)){
           const abs = new URL(url, location.href).toString();
@@ -1528,6 +1517,7 @@
           return;
         }
 
+        // 1) IDB
         const blob = await idbGet(key).catch(()=>null);
         if(blob){
           mapObjectUrl = URL.createObjectURL(blob);
@@ -1544,6 +1534,7 @@
           return;
         }
 
+        // 2) URL fallback
         if(url && isValidUrl(url)){
           const abs = new URL(url, location.href).toString();
           mapImg.onload = () => {
@@ -1576,17 +1567,11 @@
         const mw = mp.width * view.scale;
         const mh = mp.height * view.scale;
 
-        if(mw <= cw){
-          view.offsetX = (cw - mw) / 2;
-        }else{
-          view.offsetX = clamp(view.offsetX, cw - mw, 0);
-        }
+        if(mw <= cw) view.offsetX = (cw - mw) / 2;
+        else view.offsetX = clamp(view.offsetX, cw - mw, 0);
 
-        if(mh <= ch){
-          view.offsetY = (ch - mh) / 2;
-        }else{
-          view.offsetY = clamp(view.offsetY, ch - mh, 0);
-        }
+        if(mh <= ch) view.offsetY = (ch - mh) / 2;
+        else view.offsetY = clamp(view.offsetY, ch - mh, 0);
       }
 
       function resizeCanvas(){
@@ -1620,7 +1605,7 @@
       }
 
       // ==========================================================
-      // Mode
+      // Mode (index는 강제 USER)
       // ==========================================================
       function setAdminMode(on){
         state.ui.admin = !!on;
@@ -1636,17 +1621,10 @@
         refreshAll();
       }
 
-      // ✅ index에서는 관리자 토글 숨김(원래 admin82에서만 쓰는 구조를 유지)
-      if(!IS_ADMIN_PAGE){
-        state.ui.admin = false;
-        adminToggleWrap.style.display = "none";
-      }else{
-        adminToggleWrap.style.display = "";
-        adminToggle.addEventListener("change", () => setAdminMode(adminToggle.checked));
-      }
+      adminToggle.addEventListener("change", () => setAdminMode(adminToggle.checked));
 
       // ==========================================================
-      // Header buttons (admin only visible)
+      // Header buttons
       // ==========================================================
       uploadBtn.addEventListener("click", () => fileInput.click());
       fileInput.addEventListener("change", async (e) => {
@@ -1725,6 +1703,7 @@
         const gcur = getCurrentGame();
         gameDrop.innerHTML = "";
 
+        // index에서는 admin=false라 +게임추가 UI는 자동 미노출(기존 구조 유지)
         if(state.ui.admin){
           const add = document.createElement("div");
           add.className = "item";
@@ -1786,11 +1765,6 @@
         }
       }
 
-      function refreshHeaderTitle(){
-        const g = getCurrentGame();
-        gameTitleText.textContent = g.name || "Map Demo";
-      }
-
       // ==========================================================
       // Page list
       // ==========================================================
@@ -1818,6 +1792,7 @@
 
           btn.addEventListener("click", () => setCurrentPage(p.id));
 
+          // index에서는 admin=false라 아래 버튼은 자동 미노출(기존 구조 유지)
           if(state.ui.admin){
             const urlBtn = document.createElement("button");
             urlBtn.className = "iconBtn";
@@ -1838,7 +1813,49 @@
               if(p.id === getCurrentPage().id) loadMapImageForCurrentPage();
               rebuildPageList();
             });
+
+            const rename = document.createElement("button");
+            rename.className = "iconBtn";
+            rename.type = "button";
+            rename.textContent = "✎";
+            rename.title = "페이지 이름 편집";
+            rename.addEventListener("click", (e) => {
+              e.stopPropagation();
+              const v = prompt("페이지 이름 변경", p.name || "페이지");
+              if(!v) return;
+              p.name = String(v).trim();
+              saveState();
+              rebuildPageList();
+              refreshHeaderTitle();
+            });
+
+            const del = document.createElement("button");
+            del.className = "iconBtn danger";
+            del.type = "button";
+            del.textContent = "🗑";
+            del.title = "페이지 삭제";
+            del.addEventListener("click", async (e) => {
+              e.stopPropagation();
+              if(!confirm(`페이지 "${p.name}" 을 삭제할까요?\n(이미지 blob은 DB에 남을 수 있습니다)`)) return;
+              try{
+                const key = `mapimg_${g.id}_${p.id}`;
+                await idbDel(key);
+              }catch(e2){}
+              g.pages = g.pages.filter(x => x.id !== p.id);
+              if(g.pages.length === 0){
+                g.pages.push({ id: uid(), name:"1번마을", map:{ imageKey:"", imageUrl:"", width:2200, height:1400 }, markers:[], links:[] });
+              }
+              if(state.currentPageId === p.id){
+                state.currentPageId = g.pages[0].id;
+              }
+              saveState();
+              refreshAll();
+              loadMapImageForCurrentPage();
+            });
+
             actions.appendChild(urlBtn);
+            actions.appendChild(rename);
+            actions.appendChild(del);
           }
 
           btn.appendChild(left);
@@ -2091,7 +2108,7 @@
       });
 
       // ==========================================================
-      // Marker modal (index에서는 실사용 안 하지만 코드 유지)
+      // Marker modal (index에서는 admin=false라 실제로 열릴 일 없음, 구조 유지)
       // ==========================================================
       function buildFontColorQuick(){
         modalFontColorQuick.innerHTML = "";
@@ -2190,7 +2207,7 @@
       markerModalBackdrop.addEventListener("click", (e) => { if(e.target === markerModalBackdrop) closeMarkerModal(); });
 
       // ==========================================================
-      // Category Modal (index에서는 버튼 숨김이지만 코드 유지)
+      // Category Modal (index에서는 admin=false라 실사용 X, 구조 유지)
       // ==========================================================
       editCategoriesBtn.addEventListener("click", () => openCatModal());
 
@@ -2356,9 +2373,10 @@
       // Admin hints
       // ==========================================================
       function refreshHints(){
-        createCategoryHint.textContent = state.ui.createCategory || "-";
+        if(createCategoryHint) createCategoryHint.textContent = state.ui.createCategory || "-";
 
         const id = (state.ui.insertAfterMarkerId || "").trim();
+        if(!insertAfterHint) return;
         if(!id){
           insertAfterHint.textContent = "없음";
           return;
@@ -2378,6 +2396,137 @@
       }
 
       // ==========================================================
+      // Create markers (index에서는 admin=false라 우클릭 생성 안 됨, 구조 유지)
+      // ==========================================================
+      function getDefaultCreateColorOverride(){
+        const a = (state.ui.createColorOverride || "").trim();
+        if(a) return a;
+        const b = (state.ui.activePaintColor || "").trim();
+        if(b) return b;
+        return "";
+      }
+
+      function computeCreatedAtForInsertion(groupId, insertAfterMarkerId){
+        const afterId = (insertAfterMarkerId || "").trim();
+        if(!afterId) return nowISO();
+
+        const after = currentMarkers().find(x => x.id === afterId);
+        if(!after) return nowISO();
+        if(Number(after.groupId||0) !== Number(groupId||0)) return nowISO();
+
+        const list = currentMarkers()
+          .filter(x => Number(x.groupId||0) === Number(groupId||0))
+          .sort((a,b) => (a.createdAt||"").localeCompare(b.createdAt||""));
+
+        const idx = list.findIndex(x => x.id === afterId);
+        if(idx < 0) return nowISO();
+
+        const afterMs = msFromIso(after.createdAt || nowISO());
+        const next = list[idx+1] || null;
+        if(!next) return nowISO();
+
+        const nextMs = msFromIso(next.createdAt || nowISO());
+        if(nextMs - afterMs >= 2) return isoFromMs(afterMs + 1);
+
+        for(let k=idx+1; k<list.length; k++){
+          const mk = list[k];
+          const t = msFromIso(mk.createdAt || nowISO());
+          mk.createdAt = isoFromMs(t + 1);
+        }
+        return isoFromMs(afterMs + 1);
+      }
+
+      function getChainMasterForCreate(groupId){
+        const gid = Number(groupId||0);
+
+        const afterId = (state.ui.insertAfterMarkerId || "").trim();
+        if(afterId){
+          const ch = findChainByMarkerId(afterId);
+          if(ch){
+            const master = currentMarkers().find(x => x.id === ch.masterId);
+            if(master) return { chain: ch, master };
+          }
+        }
+
+        const lastId = (state.ui.lastCreatedMarkerId || "").trim();
+        if(lastId){
+          const last = currentMarkers().find(x => x.id === lastId);
+          if(last && Number(last.groupId||0) === gid){
+            const ch = findChainByMarkerId(last.id);
+            if(ch){
+              const master = currentMarkers().find(x => x.id === ch.masterId);
+              if(master) return { chain: ch, master };
+            }
+          }
+        }
+
+        const chains = computeChainsForGroup(gid);
+        const first = chains[0] || null;
+        if(first){
+          const master = currentMarkers().find(x => x.id === first.masterId);
+          if(master) return { chain:first, master };
+        }
+
+        return { chain:null, master:null };
+      }
+
+      function createMarkerAtWorld(wx, wy){
+        if(!state.ui.admin) return;
+
+        const mp = currentMap();
+        const xr = clamp01(wx / mp.width);
+        const yr = clamp01(wy / mp.height);
+
+        ensureCreateDefaults();
+
+        const groupId = Number(state.ui.createGroupId || 0);
+        const createdAt = computeCreatedAtForInsertion(groupId, state.ui.insertAfterMarkerId);
+
+        const { chain, master } = getChainMasterForCreate(groupId);
+
+        const baseCat = (master?.category || "").trim() || (state.ui.createCategory || "").trim() || (currentCategories()[0]?.name || "default");
+        const baseRadius = (typeof master?.radiusPx === "number" ? master.radiusPx : DEFAULT_MARKER_RADIUS_PX);
+        const baseColorOverride = (master?.colorOverride || getDefaultCreateColorOverride()).trim();
+        const baseWeight = (typeof master?.labelWeight === "number" ? master.labelWeight : DEFAULT_LABEL_WEIGHT);
+        const baseLabelColor = (typeof master?.labelColor === "string" ? master.labelColor : DEFAULT_LABEL_COLOR);
+
+        const m = {
+          id: uid(),
+          x: xr, y: yr,
+          category: baseCat,
+          title: "",
+          youtubeUrl: "",
+          youtubeLabel: "",
+          createdAt,
+          colorOverride: baseColorOverride,
+          radiusPx: baseRadius,
+          labelSizePx: calcLabelSizeFromRadius(baseRadius),
+          labelWeight: baseWeight,
+          labelColor: baseLabelColor,
+          groupId,
+          chainStart: false,
+          memo: ""
+        };
+
+        currentMarkers().push(m);
+
+        if((state.ui.insertAfterMarkerId || "").trim()){
+          state.ui.insertAfterMarkerId = m.id;
+          refreshHints();
+        }
+
+        state.ui.lastCreatedMarkerId = m.id;
+        state.ui.selectedMarkerId = m.id;
+
+        applyAllChainsInGroup(groupId);
+        rebuildLinks();
+        saveState();
+        renderSelectedPanel();
+        rebuildPageList();
+        draw();
+      }
+
+      // ==========================================================
       // User: dim reset
       // ==========================================================
       resetDimBtn.addEventListener("click", () => {
@@ -2388,7 +2537,7 @@
       });
 
       // ==========================================================
-      // Input helpers
+      // Input (pan/zoom/drag/hover)
       // ==========================================================
       function getPointerPos(evt){
         const rect = canvas.getBoundingClientRect();
@@ -2444,9 +2593,6 @@
         return null;
       }
 
-      // ==========================================================
-      // Wheel zoom (PC)
-      // ==========================================================
       canvas.addEventListener("contextmenu", (e) => e.preventDefault());
 
       canvas.addEventListener("wheel", (evt) => {
@@ -2467,25 +2613,32 @@
         draw();
       }, { passive:false });
 
-      // ==========================================================
-      // Mouse drag (PC) : pan only in user
-      // ==========================================================
       let isPanning = false;
       let panStart = { x:0, y:0 };
       let viewStart = { ox:0, oy:0 };
+
+      let draggingMarkerId = "";
+      let dragOffsetWorld = { x:0, y:0 };
       let didDrag = false;
 
       canvas.addEventListener("mousedown", (evt) => {
         const { x:sx, y:sy } = getPointerPos(evt);
         didDrag = false;
 
+        if(evt.button === 2){
+          if(state.ui.admin){
+            const w = screenToWorld(sx, sy);
+            createMarkerAtWorld(w.x, w.y);
+          }
+          return;
+        }
         if(evt.button !== 0) return;
 
         const m = findMarkerAtScreen(sx, sy);
         if(m){
           state.ui.selectedMarkerId = m.id;
 
-          // ✅ 유저모드: dim 토글만, 지도 드래그는 별개(마커 클릭으로 이동 못 하게)
+          // ✅ 유저모드: dim 토글(누적), 재클릭 시 해당 마커만 해제
           if(!state.ui.admin){
             const arr = Array.isArray(state.ui.dimmedMarkerIds) ? state.ui.dimmedMarkerIds : [];
             const idx = arr.indexOf(m.id);
@@ -2499,9 +2652,17 @@
             return;
           }
 
-          // (index에서는 admin 숨김이므로 사실상 여기 안 탐)
+          // admin 드래그 (index에서는 사용 안 됨)
           saveState();
           renderSelectedPanel();
+          draggingMarkerId = m.id;
+
+          const w = screenToWorld(sx, sy);
+          const mp = currentMap();
+          const mwx = m.x * mp.width;
+          const mwy = m.y * mp.height;
+          dragOffsetWorld = { x: mwx - w.x, y: mwy - w.y };
+
           draw();
           return;
         }
@@ -2514,6 +2675,25 @@
       canvas.addEventListener("mousemove", (evt) => {
         const { x:sx, y:sy } = getPointerPos(evt);
 
+        if(draggingMarkerId && state.ui.admin){
+          const m = currentMarkers().find(x => x.id === draggingMarkerId);
+          if(!m) return;
+
+          const w = screenToWorld(sx, sy);
+          const mp = currentMap();
+          const mwx = w.x + dragOffsetWorld.x;
+          const mwy = w.y + dragOffsetWorld.y;
+
+          const nx = clamp01(mwx / mp.width);
+          const ny = clamp01(mwy / mp.height);
+
+          if(Math.abs(nx - m.x) > 0.0001 || Math.abs(ny - m.y) > 0.0001) didDrag = true;
+          m.x = nx;
+          m.y = ny;
+          draw();
+          return;
+        }
+
         if(isPanning){
           const dx = sx - panStart.x;
           const dy = sy - panStart.y;
@@ -2524,7 +2704,7 @@
           draw();
         }
 
-        // ✅ 유저모드에서 라벨 hover만 overlay
+        // ✅ 유저모드 라벨 hover overlay
         if(!state.ui.admin && !overlayPinned){
           const mLabel = findMarkerLabelAtScreen(sx, sy);
           if(mLabel){
@@ -2536,6 +2716,13 @@
       });
 
       window.addEventListener("mouseup", () => {
+        if(draggingMarkerId){
+          saveState();
+          draggingMarkerId = "";
+          renderSelectedPanel();
+          rebuildPageList();
+          draw();
+        }
         isPanning = false;
       });
 
@@ -2562,9 +2749,9 @@
       });
 
       /* ==========================================================
-         ✅ [PATCH] 모바일(터치)에서 "메뉴는 고정 + 지도만 드래그/핀치" 되게
+         ✅ 모바일(터치)에서 "메뉴 고정 + 지도만 드래그/핀치"
          ========================================================== */
-      const activeTouches = new Map();
+      const activeTouches = new Map(); // pointerId -> {x,y,clientX,clientY}
       let pinchStart = null;
 
       function dist2(a,b){ const dx=a.x-b.x, dy=a.y-b.y; return Math.hypot(dx,dy); }
@@ -2585,7 +2772,6 @@
         const before = screenToWorld(mid.x, mid.y);
         pinchStart = {
           dist: dist2(a,b),
-          mid,
           beforeWorld: before,
           scale: view.scale,
           ox: view.offsetX,
@@ -2616,6 +2802,7 @@
         draw();
       }
 
+      // centerStage에서 브라우저 기본 스크롤/좌우탄성 제거
       centerStage.addEventListener("touchmove", (e) => { e.preventDefault(); }, { passive:false });
 
       canvas.addEventListener("pointerdown", (e) => {
@@ -2784,7 +2971,6 @@
 
         const numMap = buildNumberMap();
         const mp = currentMap();
-
         const dimSet = new Set(Array.isArray(state.ui.dimmedMarkerIds) ? state.ui.dimmedMarkerIds : []);
 
         ctx.save();
@@ -2852,7 +3038,6 @@
           ctx.globalAlpha = alpha;
           ctx.translate(wx, wy);
 
-          // circle
           ctx.beginPath();
           ctx.fillStyle = color;
           ctx.arc(0,0,r,0,Math.PI*2);
@@ -2862,33 +3047,29 @@
           ctx.strokeStyle = isSelected ? "#ffd43b" : "#0b0f14";
           ctx.stroke();
 
-          // number
-          const n = numMap.get(m.id) || 0;
-          if(n){
-            const numSize = clamp(Math.round((r * denom) * 1.05), 10, 48) / denom;
-            ctx.font = `900 ${numSize}px system-ui`;
+          const num = numMap.get(m.id);
+          if(num != null){
+            ctx.save();
+            ctx.fillStyle = "#000000";
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
-            ctx.fillStyle = "#0b0f14";
-            ctx.fillText(String(n), 0, 0);
+            const fs = Math.max((radiusPx * 0.95) / denom, 9 / denom);
+            ctx.font = `900 ${fs}px system-ui`;
+            ctx.fillText(String(num), 0, 0);
+            ctx.restore();
           }
 
-          // label
-          const label = getMarkerLabel(m);
           const sizePx = (typeof m.labelSizePx === "number" ? m.labelSizePx : calcLabelSizeFromRadius(radiusPx));
-          const sizeWorld = sizePx / denom;
           const weight = (typeof m.labelWeight === "number" ? m.labelWeight : DEFAULT_LABEL_WEIGHT);
-          const labelColor = (m.labelColor || DEFAULT_LABEL_COLOR);
 
-          const gapWorld = 10 / denom;
-          const lx = r + gapWorld;
-          const ly = 0;
-
-          ctx.font = `${weight} ${sizeWorld}px system-ui`;
-          ctx.textAlign = "left";
+          const lcolor = (typeof m.labelColor === "string" && /^#([0-9a-fA-F]{6})$/.test(m.labelColor)) ? m.labelColor : DEFAULT_LABEL_COLOR;
+          ctx.fillStyle = lcolor;
+          ctx.font = `${weight} ${sizePx / denom}px system-ui`;
           ctx.textBaseline = "middle";
-          ctx.fillStyle = labelColor;
-          ctx.fillText(label, lx, ly);
+          ctx.textAlign = "left";
+
+          const gap = 10 / denom;
+          ctx.fillText(getMarkerLabel(m), r + gap, 0);
 
           ctx.restore();
         }
@@ -2897,47 +3078,154 @@
       }
 
       // ==========================================================
-      // Refresh
+      // Refresh helpers
       // ==========================================================
+      function refreshHeaderTitle(){
+        const g = getCurrentGame();
+        gameTitleText.textContent = g.name || "Map Demo";
+      }
+
       function refreshAll(){
         refreshHeaderTitle();
-        rebuildCategoryBar();
+        rebuildGameDrop();
         rebuildPageList();
-        renderSelectedPanel();
+        rebuildCategoryBar();
         rebuildPalette();
+        renderSelectedPanel();
         refreshHints();
         syncAdminOnlyVisibility();
       }
 
       // ==========================================================
-      // Init
+      // Init sample markers (only once)
       // ==========================================================
-      loadLogo();
+      function ensureSampleMarkersOnce(){
+        const p = getCurrentPage();
+        if(p.markers.length > 0) return;
 
-      // index는 user 고정
-      if(!IS_ADMIN_PAGE){
-        state.ui.admin = false;
+        p.markers = [
+          {
+            id: uid(), x:0.35, y:0.42, category:"boss",
+            title:"보스",
+            youtubeUrl:"https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+            youtubeLabel:"보스 영상",
+            createdAt: nowISO(),
+            colorOverride:"",
+            radiusPx: DEFAULT_MARKER_RADIUS_PX,
+            labelSizePx: calcLabelSizeFromRadius(DEFAULT_MARKER_RADIUS_PX),
+            labelWeight: DEFAULT_LABEL_WEIGHT,
+            labelColor: DEFAULT_LABEL_COLOR,
+            groupId: 0,
+            chainStart: true,
+            memo: ""
+          },
+          {
+            id: uid(), x:0.58, y:0.55, category:"boss",
+            title:"채집",
+            youtubeUrl:"",
+            youtubeLabel:"",
+            createdAt: nowISO(),
+            colorOverride:"",
+            radiusPx: DEFAULT_MARKER_RADIUS_PX,
+            labelSizePx: calcLabelSizeFromRadius(DEFAULT_MARKER_RADIUS_PX),
+            labelWeight: DEFAULT_LABEL_WEIGHT,
+            labelColor: DEFAULT_LABEL_COLOR,
+            groupId: 0,
+            chainStart: false,
+            memo: ""
+          },
+          {
+            id: uid(), x:0.22, y:0.63, category:"boss",
+            title:"퀘스트",
+            youtubeUrl:"",
+            youtubeLabel:"",
+            createdAt: nowISO(),
+            colorOverride:"",
+            radiusPx: DEFAULT_MARKER_RADIUS_PX,
+            labelSizePx: calcLabelSizeFromRadius(DEFAULT_MARKER_RADIUS_PX),
+            labelWeight: DEFAULT_LABEL_WEIGHT,
+            labelColor: DEFAULT_LABEL_COLOR,
+            groupId: 0,
+            chainStart: false,
+            memo: ""
+          },
+        ];
+
+        normalizeAllChainsCurrentPage();
+        rebuildLinks();
+        saveState();
       }
-      modeBadge.textContent = state.ui.admin ? "ADMIN" : "USER";
-      modeBadge.className = "badge " + (state.ui.admin ? "ok" : "");
-      adminToggle.checked = !!state.ui.admin;
 
-      ensureCreateDefaults();
-      refreshAll();
-      resizeCanvas();
-      loadMapImageForCurrentPage().then(() => {
+      // ==========================================================
+      // Final init (✅ 당신 코드에서 잘린 부분 포함해 끝까지 완성)
+      // ==========================================================
+      async function init(){
+        getCurrentGame();
+        getCurrentPage();
+        ensureCreateDefaults();
+        ensureSampleMarkersOnce();
+
+        // ✅ 데이터 방어(잘린 구간 이어서 완성)
+        for(const g of state.games){
+          if(!Array.isArray(g.categories) || g.categories.length === 0) g.categories = structuredClone(DEFAULT_CATEGORIES);
+          if(!Array.isArray(g.pages) || g.pages.length === 0){
+            g.pages = [{ id: uid(), name:"1번마을", map:{imageKey:"", imageUrl:"", width:2200, height:1400}, markers:[], links:[] }];
+          }
+          for(const p of g.pages){
+            if(!p.map) p.map = { imageKey:"", imageUrl:"", width:2200, height:1400 };
+            if(!Array.isArray(p.markers)) p.markers = [];
+            if(!Array.isArray(p.links)) p.links = [];
+            for(const m of p.markers){
+              if(typeof m.id !== "string") m.id = uid();
+              if(typeof m.x !== "number" || !isFinite(m.x)) m.x = 0.5;
+              if(typeof m.y !== "number" || !isFinite(m.y)) m.y = 0.5;
+              if(typeof m.category !== "string") m.category = (g.categories[0]?.name || "boss");
+              if(typeof m.title !== "string") m.title = "";
+              if(typeof m.youtubeUrl !== "string") m.youtubeUrl = "";
+              if(typeof m.youtubeLabel !== "string") m.youtubeLabel = "";
+              if(typeof m.createdAt !== "string") m.createdAt = nowISO();
+              if(typeof m.colorOverride !== "string") m.colorOverride = "";
+              if(typeof m.radiusPx !== "number" || !isFinite(m.radiusPx)) m.radiusPx = DEFAULT_MARKER_RADIUS_PX;
+              if(typeof m.labelSizePx !== "number" || !isFinite(m.labelSizePx)) m.labelSizePx = calcLabelSizeFromRadius(m.radiusPx);
+              if(typeof m.labelWeight !== "number" || !isFinite(m.labelWeight)) m.labelWeight = DEFAULT_LABEL_WEIGHT;
+              if(typeof m.labelColor !== "string") m.labelColor = DEFAULT_LABEL_COLOR;
+              if(typeof m.groupId !== "number" || !isFinite(m.groupId)) m.groupId = 0;
+              if(typeof m.chainStart !== "boolean") m.chainStart = false;
+              if(typeof m.memo !== "string") m.memo = "";
+            }
+            for(const l of p.links){
+              if(typeof l.id !== "string") l.id = uid();
+              if(typeof l.fromId !== "string") l.fromId = "";
+              if(typeof l.toId !== "string") l.toId = "";
+            }
+          }
+        }
+
+        // ✅ index에서는 관리자 강제 OFF + 토글 숨김
+        if(!IS_ADMIN_PAGE){
+          state.ui.admin = false;
+          adminToggle.checked = false;
+          adminToggleWrap.style.display = "none";
+        }else{
+          adminToggle.checked = !!state.ui.admin;
+          adminToggleWrap.style.display = "";
+        }
+
+        loadLogo();
+        refreshAll();
+        resizeCanvas();
         resetView();
+        await loadMapImageForCurrentPage();
         draw();
-      });
 
-      // ✅ 원격 동기화(유저 페이지)
-      if(!IS_ADMIN_PAGE){
-        syncStateFromRemoteIfNewer();
-        setInterval(syncStateFromRemoteIfNewer, REMOTE_SYNC_INTERVAL_MS);
+        // ✅ index 원격 sync: 최초 1회 + 주기
+        if(!IS_ADMIN_PAGE){
+          await syncStateFromRemoteIfNewer();
+          setInterval(syncStateFromRemoteIfNewer, REMOTE_SYNC_INTERVAL_MS);
+        }
       }
 
-      // 첫 렌더
-      requestAnimationFrame(() => draw());
+      init();
     })();
   </script>
 </body>
