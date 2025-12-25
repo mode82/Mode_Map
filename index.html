@@ -27,9 +27,6 @@
       --shadow: 0 18px 60px rgba(0,0,0,.45);
       --shadow2: 0 8px 24px rgba(0,0,0,.35);
       --blur: 14px;
-
-      --topSlotW: 150px;
-      --topSlotH: 38px;
     }
     *{ box-sizing:border-box; }
     body{
@@ -72,7 +69,6 @@
     button{ cursor:pointer; font-weight:800; }
     button:hover{ border-color: rgba(124,196,255,.55); box-shadow: 0 0 0 3px rgba(124,196,255,.12); }
     button:active{ transform: translateY(1px); }
-    button:disabled{ opacity:.45; cursor:not-allowed; transform:none; box-shadow:none; }
 
     .pill{
       display:inline-flex;
@@ -93,7 +89,7 @@
       background: rgba(8,12,20,.6);
     }
     .muted{ color: var(--muted); font-size:12px; }
-    .k{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size:12px; }
+    .hr{ height:1px; background: rgba(31,42,58,.9); margin:12px 0; }
 
     .wrap{
       display:grid;
@@ -109,23 +105,6 @@
     }
     .panel.left{ border-right:1px solid rgba(31,42,58,.85); }
     .panel.right{ border-left:1px solid rgba(31,42,58,.85); }
-
-    .center{ position:relative; overflow:hidden; }
-    #canvas{
-      width:100%;
-      height:100%;
-      display:block;
-      background:#0b0f14;
-
-      /* ✅ 드래그/확대 기본 동작 차단 */
-      user-select:none;
-      -webkit-user-select:none;
-      -webkit-touch-callout:none;
-      touch-action:none;
-
-      cursor:grab;
-    }
-    #canvas:active{ cursor:grabbing; }
 
     .section{
       border:1px solid rgba(31,42,58,.9);
@@ -144,7 +123,23 @@
       align-items:center;
       gap:8px;
     }
-    .hr{ height:1px; background: rgba(31,42,58,.9); margin:12px 0; }
+
+    .center{ position:relative; overflow:hidden; }
+    #canvas{
+      width:100%;
+      height:100%;
+      display:block;
+      background:#0b0f14;
+
+      /* ✅ iOS/모바일 기본 동작 차단 (패닝 이벤트 안정화) */
+      user-select:none;
+      -webkit-user-select:none;
+      -webkit-touch-callout:none;
+      touch-action:none;
+
+      /* ✅ 커서: 원래대로(손 모양/잡기 모양 금지) */
+      cursor: default;
+    }
 
     .catGrid{ display:flex; flex-wrap:wrap; gap:8px; }
     .catBtn{
@@ -235,23 +230,6 @@
     #hoverOverlay textarea[readonly]{ opacity:.95; }
     #hoverOverlay .yt{ font-size:14px; font-weight:900; }
 
-    .topSlots{ display:flex; align-items:center; gap:10px; }
-    .topSlot{
-      width: var(--topSlotW);
-      height: var(--topSlotH);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      border-radius: 14px;
-      border:1px solid rgba(39,52,74,.9);
-      background: rgba(14,22,38,.55);
-      overflow:hidden;
-      position:relative;
-      flex: 0 0 auto;
-    }
-    #logoSlot{ padding:0; border:0; }
-    #logoImg{ width:100%; height:100%; object-fit:contain; display:block; padding:4px; }
-
     @media (max-width:1100px){
       .wrap{ grid-template-columns: 1fr; height:auto; }
       .panel.left{ border-right:none; border-bottom:1px solid rgba(31,42,58,.85); }
@@ -263,21 +241,16 @@
 
 <body>
   <header>
-    <div class="topSlots">
-      <div class="topSlot" id="logoSlot" title="로고">
-        <img id="logoImg" alt="logo" />
-      </div>
-
-      <div class="topSlot" title="현재 게임">
-        <div style="width:100%; display:flex; align-items:center; justify-content:center; font-weight:900;">
-          <span id="gameTitleText">Map Demo</span>
-        </div>
-      </div>
-    </div>
-
-    <span class="pill" style="margin-left:auto;">
+    <div class="pill">
       <span class="badge">USER</span>
       <span class="muted">index</span>
+    </div>
+    <div class="pill" style="margin-left:10px;">
+      <span class="muted">게임</span>
+      <b id="gameTitleText">-</b>
+    </div>
+    <span class="pill" style="margin-left:auto;">
+      <span class="muted" id="syncInfo">sync: -</span>
     </span>
   </header>
 
@@ -308,11 +281,6 @@
 
       <div class="section">
         <button id="resetDimBtn" class="resetDanger">마커 초기화</button>
-        <div class="muted" style="margin-top:10px; line-height:1.4;">
-          • 마커 클릭: 불투명 토글<br/>
-          • 좌클릭 드래그: 지도 이동(패닝)<br/>
-          • 휠: 확대/축소
-        </div>
       </div>
 
       <div class="section">
@@ -325,15 +293,13 @@
   </div>
 
   <script>
-    // ====== index 전용: state.json 경로 통일 ======
+    // =============================
+    // index 전용: state.json 경로 통일
+    // =============================
     const REMOTE_STATE_URL = new URL("./data/state.json", location.href).toString();
-    const REMOTE_SYNC_INTERVAL_MS = 15000;
+    const REMOTE_SYNC_INTERVAL_MS = 12000;
 
-    // 로고(원하면 state.json과 별도로 localStorage에서 유지 가능)
-    const DEFAULT_LOGO_URL = new URL("./assets/logo/MAPMODELOGO2.png", location.href).toString();
-    const LOGO_KEY = "mm_logo_url_v1";
-
-    // local state key
+    // local state key (프로젝트 기존 키 유지)
     const LS_KEY = "imgmap_multi_v700";
 
     // helpers
@@ -341,45 +307,34 @@
     const safeParse = (s,f)=>{ try{return JSON.parse(s);}catch{return f;} };
     const escapeHtml = (s)=>String(s).replace(/[&<>"']/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
     const isValidUrl = (u)=>{ try{ new URL(u, location.href); return true; }catch{ return false; } };
+    const nowISO = ()=> new Date().toISOString();
 
-    // ====== state load ======
-    const defaultState = { ui:{ admin:false, selectedCategory:"", selectedMarkerId:"", dimmedMarkerIds:[] }, currentGameId:"", currentPageId:"", games:[] };
+    // =============================
+    // state
+    // =============================
+    const defaultState = {
+      ui:{ admin:false, selectedCategory:"", selectedMarkerId:"", dimmedMarkerIds:[] },
+      currentGameId:"",
+      currentPageId:"",
+      games:[],
+      _updatedAt: 0,
+      _updatedAtISO: ""
+    };
+
     const state = (() => {
       const loaded = safeParse(localStorage.getItem(LS_KEY)||"", null);
-      if(loaded && Array.isArray(loaded.games)) return loaded;
+      if(loaded && Array.isArray(loaded.games)) {
+        loaded.ui = loaded.ui || {};
+        loaded.ui.admin = false; // index 강제
+        loaded.ui.dimmedMarkerIds = Array.isArray(loaded.ui.dimmedMarkerIds) ? loaded.ui.dimmedMarkerIds : [];
+        return loaded;
+      }
       return structuredClone(defaultState);
     })();
 
-    // ====== DOM ======
-    const canvas = document.getElementById("canvas");
-    const ctx = canvas.getContext("2d");
-    const centerStage = document.getElementById("centerStage");
-
-    const $logoImg = document.getElementById("logoImg");
-    const gameTitleText = document.getElementById("gameTitleText");
-
-    const pageBadge = document.getElementById("pageBadge");
-    const pageList = document.getElementById("pageList");
-
-    const categoryBar = document.getElementById("categoryBar");
-    const countInfo = document.getElementById("countInfo");
-
-    const selectedHeader = document.getElementById("selectedHeader");
-    const youtubeBox = document.getElementById("youtubeBox");
-
-    const hoverOverlay = document.getElementById("hoverOverlay");
-    const hoverMemo = document.getElementById("hoverMemo");
-    const hoverYt = document.getElementById("hoverYt");
-
-    const resetDimBtn = document.getElementById("resetDimBtn");
-
-    // ====== view ======
-    const view = { scale:1, minScale:0.05, maxScale:10, offsetX:0, offsetY:0 };
-    const DEFAULT_MARKER_RADIUS_PX = 10;
-
     function saveState(){
       state._updatedAt = Date.now();
-      state._updatedAtISO = new Date().toISOString();
+      state._updatedAtISO = nowISO();
       try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){ console.warn(e); }
     }
 
@@ -393,8 +348,8 @@
     function getCurrentPage(){
       const g = getCurrentGame();
       if(!g) return null;
-      if(!state.currentPageId) state.currentPageId = g.pages[0]?.id || "";
-      return getPageById(g, state.currentPageId) || g.pages[0] || null;
+      if(!state.currentPageId) state.currentPageId = g.pages?.[0]?.id || "";
+      return getPageById(g, state.currentPageId) || g.pages?.[0] || null;
     }
     function currentCategories(){ return getCurrentGame()?.categories || []; }
     function currentMarkers(){ return getCurrentPage()?.markers || []; }
@@ -406,82 +361,88 @@
       return c?.color || "#e6edf3";
     }
     function getMarkerColor(m){
-      const ov = (m.colorOverride||"").trim();
+      const ov = (m.colorOverride||m.color||"").toString().trim();
       return ov ? ov : getCategoryColor(m.category);
     }
-    function getMarkerLabel(m){
-      const t = (m.title||"").trim();
-      return t ? t : ((m.category||"").trim() || "marker");
-    }
-    function getUserYoutubeDisplay(m){
-      return (m.youtubeLabel||"").trim() || (m.title||"").trim() || "유튜브";
-    }
 
-    // ====== logo ======
-    function loadLogo(){
-      let raw = "";
-      try{ raw = (localStorage.getItem(LOGO_KEY)||"").trim(); }catch{}
-      const url = raw || DEFAULT_LOGO_URL;
-      $logoImg.src = url;
-    }
+    // =============================
+    // DOM
+    // =============================
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d", { alpha:true });
 
-    // ====== map image ======
-    const mapImg = new Image();
-    mapImg.crossOrigin = "anonymous";
-    let mapImgReady = false;
+    const centerStage = document.getElementById("centerStage");
+    const gameTitleText = document.getElementById("gameTitleText");
+    const pageBadge = document.getElementById("pageBadge");
+    const pageList = document.getElementById("pageList");
+    const categoryBar = document.getElementById("categoryBar");
+    const countInfo = document.getElementById("countInfo");
+    const selectedHeader = document.getElementById("selectedHeader");
+    const youtubeBox = document.getElementById("youtubeBox");
+    const resetDimBtn = document.getElementById("resetDimBtn");
+    const syncInfo = document.getElementById("syncInfo");
 
-    async function loadMapImageForCurrentPage(){
-      const mp = currentMap();
-      if(!mp){ mapImgReady=false; draw(); return; }
-      let url = (mp.imageUrl||"").trim();
-      if(!url){
-        // fallback: 저장된 게 없으면 그냥 빈 배경으로
-        mapImgReady=false;
-        draw();
-        return;
-      }
-      const abs = new URL(url, location.href).toString();
-      mapImg.onload = () => {
-        mapImgReady = true;
-        mp.width = mapImg.naturalWidth || mp.width || mapImg.width;
-        mp.height = mapImg.naturalHeight || mp.height || mapImg.height;
-        resetView();
-        draw();
-      };
-      mapImg.onerror = () => { mapImgReady=false; draw(); };
-      mapImg.src = abs + (abs.includes("?") ? "&" : "?") + "v=" + Date.now();
-    }
+    const hoverOverlay = document.getElementById("hoverOverlay");
+    const hoverMemo = document.getElementById("hoverMemo");
+    const hoverYt = document.getElementById("hoverYt");
 
-    function clampViewToBounds(){
-      const rect = canvas.getBoundingClientRect();
-      const cw = rect.width, ch = rect.height;
-      const mp = currentMap();
-      if(!mp){ return; }
-
-      const mw = (mp.width||1) * view.scale;
-      const mh = (mp.height||1) * view.scale;
-
-      if(mw <= cw) view.offsetX = (cw - mw) / 2;
-      else view.offsetX = clamp(view.offsetX, cw - mw, 0);
-
-      if(mh <= ch) view.offsetY = (ch - mh) / 2;
-      else view.offsetY = clamp(view.offsetY, ch - mh, 0);
-    }
+    // =============================
+    // view (해상도 + 패닝)
+    // =============================
+    const view = { scale:1, minScale:0.03, maxScale:16, offsetX:0, offsetY:0 };
+    const DEFAULT_MARKER_RADIUS_PX = 12; // 원래 굵기/가독성 위해 기본값 약간 상향
+    const PAN_MARGIN_PX = 220; // ✅ "고정처럼 보이는" 문제를 막는 여유 마진
 
     function resizeCanvas(){
       const rect = canvas.getBoundingClientRect();
       const dpr = window.devicePixelRatio || 1;
-      canvas.width = Math.floor(rect.width * dpr);
-      canvas.height = Math.floor(rect.height * dpr);
+
+      // CSS 크기 기준으로 실제 버퍼를 DPR로 확장
+      canvas.width = Math.max(1, Math.floor(rect.width * dpr));
+      canvas.height = Math.max(1, Math.floor(rect.height * dpr));
+
+      // 이후 모든 draw는 CSS px 좌표로
       ctx.setTransform(dpr,0,0,dpr,0,0);
+
+      // 고품질 스무딩
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+
       clampViewToBounds();
       draw();
     }
     window.addEventListener("resize", resizeCanvas);
 
+    function clampViewToBounds(){
+      const rect = canvas.getBoundingClientRect();
+      const cw = rect.width, ch = rect.height;
+      const mp = currentMap();
+      if(!mp) return;
+
+      const mw = (mp.width||1) * view.scale;
+      const mh = (mp.height||1) * view.scale;
+
+      // ✅ “완전 고정”이 아니라 마진 내에서 움직이게 허용
+      const margin = PAN_MARGIN_PX;
+
+      if(mw <= cw){
+        const centerX = (cw - mw) / 2;
+        view.offsetX = clamp(view.offsetX, centerX - margin, centerX + margin);
+      } else {
+        view.offsetX = clamp(view.offsetX, cw - mw - margin, margin);
+      }
+
+      if(mh <= ch){
+        const centerY = (ch - mh) / 2;
+        view.offsetY = clamp(view.offsetY, centerY - margin, centerY + margin);
+      } else {
+        view.offsetY = clamp(view.offsetY, ch - mh - margin, margin);
+      }
+    }
+
     function resetView(){
       const mp = currentMap();
-      if(!mp){ return; }
+      if(!mp) return;
       const rect = canvas.getBoundingClientRect();
       const w = rect.width, h = rect.height;
       const s = Math.min(w / (mp.width||1), h / (mp.height||1)) * 0.95;
@@ -494,7 +455,45 @@
     function worldToScreen(wx, wy){ return { x: wx * view.scale + view.offsetX, y: wy * view.scale + view.offsetY }; }
     function screenToWorld(sx, sy){ return { x: (sx - view.offsetX) / view.scale, y: (sy - view.offsetY) / view.scale }; }
 
-    // ====== UI build ======
+    // =============================
+    // map image
+    // =============================
+    const mapImg = new Image();
+    mapImg.crossOrigin = "anonymous";
+    let mapImgReady = false;
+
+    async function loadMapImageForCurrentPage(){
+      const mp = currentMap();
+      mapImgReady = false;
+      if(!mp){
+        draw();
+        return;
+      }
+      let url = (mp.imageUrl||mp.url||"").toString().trim();
+      if(!url){
+        draw();
+        return;
+      }
+      const abs = new URL(url, location.href).toString();
+      mapImg.onload = () => {
+        mapImgReady = true;
+        mp.width = mp.width || mapImg.naturalWidth || mapImg.width || 1;
+        mp.height = mp.height || mapImg.naturalHeight || mapImg.height || 1;
+        resetView();
+        draw();
+      };
+      mapImg.onerror = () => {
+        mapImgReady = false;
+        draw();
+      };
+
+      // 캐시 무시(해상도/갱신 문제 방지)
+      mapImg.src = abs + (abs.includes("?") ? "&" : "?") + "v=" + Date.now();
+    }
+
+    // =============================
+    // UI build
+    // =============================
     function rebuildCategoryBar(){
       categoryBar.innerHTML = "";
       categoryBar.appendChild(makeCatButton("전체","", "#223042"));
@@ -521,16 +520,19 @@
       });
       return btn;
     }
+
     function rebuildPageList(){
       const g = getCurrentGame();
       const p = getCurrentPage();
       pageList.innerHTML = "";
       if(!g || !p){
         pageBadge.textContent = "state 없음";
+        gameTitleText.textContent = "-";
         return;
       }
-      pageBadge.textContent = `${g.name} / ${p.name}`;
+
       gameTitleText.textContent = g.name || "Map Demo";
+      pageBadge.textContent = `${g.name} / ${p.name}`;
 
       for(const pg of (g.pages||[])){
         const btn = document.createElement("button");
@@ -557,10 +559,11 @@
         youtubeBox.textContent = "-";
         return;
       }
-      const name = (m.title||"").trim() || "(이름 없음)";
+      const name = (m.title||m.name||"").toString().trim() || "(이름 없음)";
       selectedHeader.textContent = `선택한 마커: ${name}`;
-      const url = (m.youtubeUrl||"").trim();
-      const display = getUserYoutubeDisplay(m);
+
+      const url = (m.youtubeUrl||m.url||"").toString().trim();
+      const display = (m.youtubeLabel||m.title||m.name||"유튜브").toString().trim();
       if(url && isValidUrl(url)){
         youtubeBox.innerHTML = `<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(display)}</a>`;
       }else{
@@ -568,7 +571,25 @@
       }
     }
 
-    // ====== hit test ======
+    // =============================
+    // marker numbering (✅ 숫자 복구)
+    // =============================
+    function getMarkerNumber(m, fallbackIndex){
+      const cand =
+        m.n ?? m.no ?? m.num ?? m.number ?? m.order ?? m.idx ?? m.index;
+      if(Number.isFinite(Number(cand))) return String(Number(cand));
+
+      // id가 "m12" / "12" 이런 형태면 숫자 추출
+      const id = (m.id ?? "").toString();
+      const match = id.match(/(\d+)/);
+      if(match) return match[1];
+
+      return String(fallbackIndex + 1);
+    }
+
+    // =============================
+    // hit test
+    // =============================
     function getPointerPos(evt){
       const rect = canvas.getBoundingClientRect();
       return { x: evt.clientX - rect.left, y: evt.clientY - rect.top };
@@ -577,25 +598,25 @@
       const mp = currentMap();
       return { wx: (m.x||0) * (mp?.width||1), wy: (m.y||0) * (mp?.height||1) };
     }
-    function findMarkerAtScreen(sx, sy){
+    function findMarkerAtScreen(sx, sy, visibleMarkers){
       const mp = currentMap();
       if(!mp) return null;
 
-      const cat = state.ui.selectedCategory || "";
-      const list = cat ? currentMarkers().filter(mm=>mm.category===cat) : currentMarkers();
-
-      for(let i=list.length-1;i>=0;i--){
-        const m = list[i];
+      for(let i=visibleMarkers.length-1;i>=0;i--){
+        const m = visibleMarkers[i];
         const { wx, wy } = markerWorldPos(m);
         const p = worldToScreen(wx, wy);
-        const r = (typeof m.radiusPx==="number" ? m.radiusPx : DEFAULT_MARKER_RADIUS_PX) * view.scale;
+        const baseR = (typeof m.radiusPx==="number" ? m.radiusPx : DEFAULT_MARKER_RADIUS_PX);
+        const r = baseR * view.scale;
         const dx = sx - p.x, dy = sy - p.y;
         if(dx*dx + dy*dy <= r*r) return m;
       }
       return null;
     }
 
-    // ====== overlay ======
+    // =============================
+    // overlay
+    // =============================
     let overlayPinned = false;
     function hideHoverOverlay(force=false){
       if(!force && overlayPinned) return;
@@ -603,10 +624,12 @@
     }
     function showOverlayForMarker(m, clientX, clientY, pinned=false){
       overlayPinned = pinned;
-      hoverMemo.value = m.memo || "";
-      const url = (m.youtubeUrl||"").trim();
+      hoverMemo.value = (m.memo||"").toString();
+
+      const url = (m.youtubeUrl||m.url||"").toString().trim();
+      const label = (m.youtubeLabel||m.title||m.name||"유튜브").toString().trim();
       if(url && isValidUrl(url)){
-        hoverYt.innerHTML = `<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(getUserYoutubeDisplay(m))}</a>`;
+        hoverYt.innerHTML = `<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(label)}</a>`;
       }else{
         hoverYt.innerHTML = `<span class="muted">유튜브 없음</span>`;
       }
@@ -618,7 +641,6 @@
       hoverOverlay.style.top = y + "px";
       hoverOverlay.style.display = "block";
 
-      // clamp to stage
       const pad=10;
       const r = hoverOverlay.getBoundingClientRect();
       const maxX = stageRect.width - r.width - pad;
@@ -629,7 +651,9 @@
       hoverOverlay.style.top = y + "px";
     }
 
-    // ====== zoom ======
+    // =============================
+    // zoom
+    // =============================
     canvas.addEventListener("wheel", (evt)=>{
       evt.preventDefault();
       const mp = currentMap();
@@ -649,7 +673,9 @@
       draw();
     }, { passive:false });
 
-    // ====== ✅ 드래그 패닝: Pointer Events + Capture (핵심) ======
+    // =============================
+    // ✅ 좌클릭 드래그 패닝 (확실히 동작)
+    // =============================
     let dragActive = false;
     let dragMoved = false;
     let downScreen = {x:0,y:0};
@@ -660,7 +686,9 @@
     canvas.addEventListener("pointerdown", (evt)=>{
       if(evt.button !== 0) return; // 좌클릭만
       evt.preventDefault();
-      canvas.setPointerCapture(evt.pointerId); // ✅ 드래그 중 이벤트 놓치지 않음
+
+      // ✅ 핵심: 캔버스가 드래그 이벤트를 끝까지 붙잡는다
+      canvas.setPointerCapture(evt.pointerId);
 
       const {x:sx,y:sy} = getPointerPos(evt);
       dragActive = true;
@@ -668,10 +696,12 @@
       downScreen = {x:sx,y:sy};
       viewStart = {ox:view.offsetX, oy:view.offsetY};
 
-      const m = findMarkerAtScreen(sx, sy);
+      // 현재 보이는 마커 리스트 준비
+      const cat = state.ui.selectedCategory || "";
+      const visibleMarkers = cat ? currentMarkers().filter(mm=>mm.category===cat) : currentMarkers();
+      const m = findMarkerAtScreen(sx, sy, visibleMarkers);
       downMarkerId = m ? m.id : "";
 
-      // 선택 패널은 down 시점에 갱신(기존 동작 유지)
       if(m){
         state.ui.selectedMarkerId = m.id;
         renderSelectedPanel();
@@ -679,11 +709,12 @@
     });
 
     canvas.addEventListener("pointermove", (evt)=>{
-      if(!dragActive) {
-        // hover (드래그 아닐 때)
+      if(!dragActive){
         if(!overlayPinned){
+          const cat = state.ui.selectedCategory || "";
+          const visibleMarkers = cat ? currentMarkers().filter(mm=>mm.category===cat) : currentMarkers();
           const {x:sx,y:sy} = getPointerPos(evt);
-          const m = findMarkerAtScreen(sx, sy);
+          const m = findMarkerAtScreen(sx, sy, visibleMarkers);
           if(m) showOverlayForMarker(m, evt.clientX, evt.clientY, false);
           else hideHoverOverlay();
         }
@@ -700,7 +731,7 @@
         if(!overlayPinned) hideHoverOverlay(true);
       }
 
-      // ✅ moved 여부와 상관없이 "누른 채 이동"이면 항상 패닝
+      // ✅ 패닝은 항상 수행
       view.offsetX = viewStart.ox + dx;
       view.offsetY = viewStart.oy + dy;
       clampViewToBounds();
@@ -717,7 +748,7 @@
       if(!dragActive) return;
       evt.preventDefault();
 
-      // 클릭(드래그X)인 경우에만 마커 불투명 토글
+      // 클릭(드래그X)일 때만 불투명 토글
       if(!dragMoved && downMarkerId){
         const arr = Array.isArray(state.ui.dimmedMarkerIds) ? state.ui.dimmedMarkerIds : [];
         const idx = arr.indexOf(downMarkerId);
@@ -727,7 +758,6 @@
         saveState();
         draw();
       }
-
       endDrag();
     });
 
@@ -736,10 +766,12 @@
 
     // 클릭으로 오버레이 고정/해제
     canvas.addEventListener("click", (evt)=>{
-      // dragMoved 직후 click은 브라우저마다 섞여 나올 수 있어 방지
       if(dragActive || dragMoved) return;
+
+      const cat = state.ui.selectedCategory || "";
+      const visibleMarkers = cat ? currentMarkers().filter(mm=>mm.category===cat) : currentMarkers();
       const {x:sx,y:sy} = getPointerPos(evt);
-      const m = findMarkerAtScreen(sx, sy);
+      const m = findMarkerAtScreen(sx, sy, visibleMarkers);
       if(m){
         showOverlayForMarker(m, evt.clientX, evt.clientY, true);
       }else{
@@ -748,14 +780,100 @@
       }
     });
 
-    // ====== reset dim ======
+    // reset dim
     resetDimBtn.addEventListener("click", ()=>{
       state.ui.dimmedMarkerIds = [];
       saveState();
       draw();
     });
 
-    // ====== draw ======
+    // =============================
+    // ✅ 링크(선) 렌더러: 다양한 포맷 지원 (사라지지 않게)
+    // =============================
+    function buildMarkerMap(){
+      const mp = currentMap();
+      const markers = currentMarkers();
+      const map = new Map();
+      for(let i=0;i<markers.length;i++){
+        const m = markers[i];
+        map.set(m.id, m);
+        // 일부 구현에서 숫자키로 참조하는 경우 대비
+        const n = getMarkerNumber(m,i);
+        map.set(n, m);
+      }
+      // id가 없는 경우 대비: index 키도 넣음
+      for(let i=0;i<markers.length;i++){
+        map.set(String(i), markers[i]);
+      }
+      return { mp, markers, idMap: map };
+    }
+
+    function normalizePointToWorld(pt, mp){
+      // pt가 {x,y} 형태일 때
+      const x = Number(pt?.x);
+      const y = Number(pt?.y);
+      if(!Number.isFinite(x) || !Number.isFinite(y)) return null;
+
+      // 0~1 정규화면 mp 크기로 환산, 아니면 절대좌표로 취급
+      const isNorm = (Math.abs(x) <= 1.000001 && Math.abs(y) <= 1.000001);
+      return isNorm ? { wx: x * mp.width, wy: y * mp.height } : { wx: x, wy: y };
+    }
+
+    function extractLinkSegments(pageLinks, mp, idMap){
+      const segments = [];
+
+      for(const ln of (pageLinks||[])){
+        if(!ln) continue;
+
+        // 1) ID 기반
+        const aKey = ln.a ?? ln.from ?? ln.src ?? ln.start ?? ln.s;
+        const bKey = ln.b ?? ln.to ?? ln.dst ?? ln.end ?? ln.t;
+        if(aKey != null && bKey != null){
+          const a = idMap.get(String(aKey)) || idMap.get(aKey);
+          const b = idMap.get(String(bKey)) || idMap.get(bKey);
+          if(a && b){
+            const ax = (a.x||0) * mp.width, ay = (a.y||0) * mp.height;
+            const bx = (b.x||0) * mp.width, by = (b.y||0) * mp.height;
+            segments.push([{wx:ax, wy:ay}, {wx:bx, wy:by}]);
+            continue;
+          }
+        }
+
+        // 2) points/pts/path 기반 (폴리라인)
+        const pts = ln.points || ln.pts || ln.path || ln.polyline || null;
+        if(Array.isArray(pts) && pts.length >= 2){
+          const wpts = [];
+          for(const p of pts){
+            const w = normalizePointToWorld(p, mp);
+            if(w) wpts.push(w);
+          }
+          if(wpts.length >= 2){
+            segments.push(wpts);
+            continue;
+          }
+        }
+
+        // 3) 좌표쌍 직접
+        const ax = ln.ax ?? ln.x1 ?? ln.xa;
+        const ay = ln.ay ?? ln.y1 ?? ln.ya;
+        const bx = ln.bx ?? ln.x2 ?? ln.xb;
+        const by = ln.by ?? ln.y2 ?? ln.yb;
+        if([ax,ay,bx,by].every(v=>Number.isFinite(Number(v)))){
+          const p1 = normalizePointToWorld({x:Number(ax), y:Number(ay)}, mp);
+          const p2 = normalizePointToWorld({x:Number(bx), y:Number(by)}, mp);
+          if(p1 && p2){
+            segments.push([p1,p2]);
+            continue;
+          }
+        }
+      }
+
+      return segments;
+    }
+
+    // =============================
+    // draw
+    // =============================
     function drawBackground(){
       const rect = canvas.getBoundingClientRect();
       ctx.clearRect(0,0,rect.width,rect.height);
@@ -765,20 +883,19 @@
 
     function draw(){
       const mp = currentMap();
-      const rect = canvas.getBoundingClientRect();
-      const w = rect.width, h = rect.height;
-
       drawBackground();
+
       if(!mp){
         countInfo.textContent = "state.json을 불러오지 못했거나 페이지가 없습니다.";
         return;
       }
 
-      // 지도
+      // ===== 지도 + 오브젝트는 월드좌표로 렌더링 =====
       ctx.save();
       ctx.translate(view.offsetX, view.offsetY);
       ctx.scale(view.scale, view.scale);
 
+      // 지도 이미지
       if(mapImgReady){
         ctx.drawImage(mapImg, 0, 0, mp.width, mp.height);
       }else{
@@ -786,75 +903,114 @@
         ctx.fillRect(0,0,mp.width, mp.height);
       }
 
+      // 현재 카테고리 필터(마커만)
       const cat = state.ui.selectedCategory || "";
-      const visibleMarkers = cat ? currentMarkers().filter(mm=>mm.category===cat) : currentMarkers();
+      const allMarkers = currentMarkers();
+      const visibleMarkers = cat ? allMarkers.filter(mm=>mm.category===cat) : allMarkers;
 
-      // ✅ 선(links): "항상" 그린다 (필터로 지워지지 않게)
-      // (단, 링크 양 끝 마커가 존재할 때만)
-      const idToMarker = new Map(currentMarkers().map(m=>[m.id,m]));
+      // ===== ✅ 선(링크): 필터와 무관하게 "항상" 그림 =====
+      const { idMap } = buildMarkerMap();
       const links = currentLinks();
+      const segs = extractLinkSegments(links, mp, idMap);
 
+      // 링크가 비어있을 때도, “혹시 마커에 next/prev 방식”이 있으면 연결 (보정)
+      // (원본 구조를 모르는 상태에서 최대한 복구용)
+      if(segs.length === 0){
+        // 예: m.nextId / m.toId 같은 필드가 있으면 연결
+        for(const m of allMarkers){
+          const k = m.nextId ?? m.toId ?? m.linkTo ?? null;
+          if(k==null) continue;
+          const b = idMap.get(String(k)) || idMap.get(k);
+          if(!b) continue;
+          const ax = (m.x||0) * mp.width, ay = (m.y||0) * mp.height;
+          const bx = (b.x||0) * mp.width, by = (b.y||0) * mp.height;
+          segs.push([{wx:ax, wy:ay},{wx:bx, wy:by}]);
+        }
+      }
+
+      // 링크 스타일(원래 느낌 유지: 얇지 않게)
       ctx.save();
       ctx.globalAlpha = 0.95;
-      ctx.lineWidth = 2 / view.scale;
       ctx.strokeStyle = "rgba(124,196,255,.75)";
-      for(const ln of links){
-        const a = idToMarker.get(ln.a || ln.from || ln.src);
-        const b = idToMarker.get(ln.b || ln.to || ln.dst);
-        if(!a || !b) continue;
-        const ax = (a.x||0) * mp.width, ay = (a.y||0) * mp.height;
-        const bx = (b.x||0) * mp.width, by = (b.y||0) * mp.height;
+      ctx.lineWidth = 3 / view.scale;     // 월드에서 두께 일정하게 보이도록
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      for(const poly of segs){
+        if(!poly || poly.length < 2) continue;
         ctx.beginPath();
-        ctx.moveTo(ax, ay);
-        ctx.lineTo(bx, by);
+        ctx.moveTo(poly[0].wx, poly[0].wy);
+        for(let i=1;i<poly.length;i++){
+          ctx.lineTo(poly[i].wx, poly[i].wy);
+        }
         ctx.stroke();
       }
       ctx.restore();
 
-      // 마커
+      // ===== ✅ 마커: 원 + 숫자(중앙) + 텍스트 =====
       const dimSet = new Set(Array.isArray(state.ui.dimmedMarkerIds) ? state.ui.dimmedMarkerIds : []);
-      for(const m of visibleMarkers){
+
+      for(let i=0;i<visibleMarkers.length;i++){
+        const m = visibleMarkers[i];
         const wx = (m.x||0) * mp.width;
         const wy = (m.y||0) * mp.height;
-        const rPx = (typeof m.radiusPx==="number" ? m.radiusPx : DEFAULT_MARKER_RADIUS_PX);
-        const r = rPx / view.scale;
+
+        const baseR = (typeof m.radiusPx==="number" ? m.radiusPx : DEFAULT_MARKER_RADIUS_PX);
+        const r = baseR; // 월드 스케일 적용 전(현재 ctx가 scale됨)
 
         const isDim = dimSet.has(m.id);
         const alpha = isDim ? 0.30 : 1.0;
 
-        // circle
+        const fill = getMarkerColor(m);
+
+        // 원
         ctx.save();
         ctx.translate(wx, wy);
         ctx.globalAlpha = alpha;
 
         ctx.beginPath();
-        ctx.fillStyle = getMarkerColor(m);
+        ctx.fillStyle = fill;
         ctx.arc(0,0,r,0,Math.PI*2);
         ctx.fill();
-        ctx.strokeStyle = "#0b0f14";
-        ctx.lineWidth = 2 / view.scale;
+
+        // 테두리(원래 두께 느낌)
+        ctx.strokeStyle = "rgba(0,0,0,.70)";
+        ctx.lineWidth = 3;
         ctx.stroke();
 
-        // label (항상 진하게)
+        // 숫자(원 중앙)
         ctx.globalAlpha = 1.0;
-        const label = getMarkerLabel(m);
-        const fs = (m.labelSizePx ? m.labelSizePx : 16) / view.scale;
-        ctx.font = `900 ${fs}px system-ui`;
-        ctx.fillStyle = "#e6edf3";
+        const num = getMarkerNumber(m, i);
+        const numSize = (m.numSizePx ? Number(m.numSizePx) : 14);
+        ctx.font = `900 ${numSize}px system-ui`;
+        ctx.fillStyle = "#ffffff";
+        ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.textAlign = "left";
-        ctx.fillText(label, r + (10 / view.scale), 0);
+        ctx.fillText(num, 0, 0);
+
+        // 라벨(오른쪽)
+        const label = (m.label ?? m.title ?? m.name ?? "").toString().trim();
+        if(label){
+          const labelSize = (m.labelSizePx ? Number(m.labelSizePx) : 16);
+          ctx.font = `900 ${labelSize}px system-ui`;
+          ctx.fillStyle = "rgba(231,238,248,.98)";
+          ctx.textAlign = "left";
+          ctx.textBaseline = "middle";
+          ctx.fillText(label, r + 10, 0);
+        }
 
         ctx.restore();
       }
 
       ctx.restore();
 
-      countInfo.textContent = `표시 마커: ${visibleMarkers.length} / 전체: ${currentMarkers().length} · 링크: ${currentLinks().length}`;
+      // 패널 정보
+      countInfo.textContent = `마커(표시/전체): ${visibleMarkers.length}/${allMarkers.length} · 링크: ${segs.length}`;
       renderSelectedPanel();
     }
 
-    // ====== remote sync ======
+    // =============================
+    // remote sync (state.json)
+    // =============================
     async function tryFetchRemoteState(){
       try{
         const url = REMOTE_STATE_URL + (REMOTE_STATE_URL.includes("?") ? "&" : "?") + "v=" + Date.now();
@@ -863,20 +1019,21 @@
         const j = await res.json();
         if(!j || !Array.isArray(j.games)) return null;
         return j;
-      }catch{ return null; }
+      }catch{
+        return null;
+      }
     }
 
     function acceptRemoteState(remote){
-      // index는 무조건 user
       remote.ui = remote.ui || {};
-      remote.ui.admin = false;
+      remote.ui.admin = false; // index 강제
 
-      // dim은 로컬 유지(원하면 여기서 remote로 덮어도 됨)
+      // dim은 로컬 유지
       const keepDim = Array.isArray(state.ui?.dimmedMarkerIds) ? [...state.ui.dimmedMarkerIds] : [];
 
-      // state 덮기
       state.games = remote.games;
       state.currentGameId = remote.currentGameId || state.games[0]?.id || "";
+
       const g = getCurrentGame();
       state.currentPageId = remote.currentPageId || g?.pages?.[0]?.id || "";
 
@@ -885,40 +1042,48 @@
       state.ui.dimmedMarkerIds = keepDim;
 
       state._updatedAt = Number(remote._updatedAt || Date.now());
-      state._updatedAtISO = remote._updatedAtISO || new Date(state._updatedAt).toISOString();
+      state._updatedAtISO = remote._updatedAtISO || nowISO();
 
       saveState();
     }
 
     async function syncFromRemoteIfNewer(){
       const remote = await tryFetchRemoteState();
-      if(!remote) return;
+      if(!remote){
+        syncInfo.textContent = "sync: offline";
+        return;
+      }
 
       const remoteAt = Number(remote._updatedAt || 0);
       const localAt = Number(state._updatedAt || 0);
-      if(remoteAt && remoteAt <= localAt) return;
 
-      acceptRemoteState(remote);
-      rebuildPageList();
-      rebuildCategoryBar();
-      await loadMapImageForCurrentPage();
-      draw();
+      // remote가 더 최신이면 반영
+      if(remoteAt && remoteAt > localAt){
+        acceptRemoteState(remote);
+        rebuildPageList();
+        rebuildCategoryBar();
+        await loadMapImageForCurrentPage();
+        draw();
+        syncInfo.textContent = "sync: updated";
+      }else{
+        syncInfo.textContent = "sync: ok";
+      }
     }
 
-    // ====== init ======
+    // =============================
+    // init
+    // =============================
     async function init(){
-      loadLogo();
-
       resizeCanvas();
 
-      // 최초 로컬 렌더
       rebuildPageList();
       rebuildCategoryBar();
+
       await loadMapImageForCurrentPage();
       resetView();
       draw();
 
-      // remote sync
+      // 최초 1회 sync 후 반복
       await syncFromRemoteIfNewer();
       setInterval(syncFromRemoteIfNewer, REMOTE_SYNC_INTERVAL_MS);
 
