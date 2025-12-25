@@ -1517,12 +1517,14 @@
         const key = currentMapImageKey();
         const mp = currentMap();
 
+        const url = (mp.imageUrl || "").trim();  // ✅ 이 줄 추가
+
         // ==========================================================
         // ✅ [PATCH] (3) 인덱스(유저)에서는 "URL 우선" 로드
         // - 모바일에서 예전(IDB) 지도가 보이는 문제 해결
         // - URL이 설정되어 있으면 항상 URL을 먼저 로드
         // ==========================================================
-        const url = (mp.imageUrl || "").trim();
+       /*
         if(!IS_ADMIN_PAGE && url && isValidUrl(url)){
           const abs = new URL(url, location.href).toString();
           mapImg.onload = () => {
@@ -1537,6 +1539,7 @@
           mapImg.src = abs + (abs.includes("?") ? "&" : "?") + "v=" + Date.now();
           return;
         }
+        */
 
         // 1) IDB first (device-local)
         /*
@@ -3302,4 +3305,5 @@
   </script>
 </body>
 </html>
+
 
