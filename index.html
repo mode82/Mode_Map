@@ -958,7 +958,6 @@
       function loadLogo(){
         try{
           let raw = (localStorage.getItem(LOGO_KEY) || "").trim();
-          // ✅ 기본 로고가 있으면 기본값으로 표시 (단, 사용자가 저장값을 넣으면 그걸 우선)
           if(!raw) raw = DEFAULT_LOGO_URL;
           const url = normalizeUrlMaybe(raw);
 
@@ -1160,7 +1159,6 @@
             name: "Map Demo",
             categories: structuredClone(DEFAULT_CATEGORIES),
             pages: [
-              // ✅ 기본 지도 URL을 repo 구조로 고정
               { id: uid(), name: "1번마을", map: { imageKey:"", imageUrl: DEFAULT_MAP_IMAGE_URL, width:2200, height:1400 }, markers: [], links: [] }
             ]
           }
@@ -1187,7 +1185,7 @@
           if(!p.map) p.map = { imageKey:"", imageUrl:DEFAULT_MAP_IMAGE_URL, width:2200, height:1400 };
           if(typeof p.map.imageKey !== "string") p.map.imageKey = "";
           if(typeof p.map.imageUrl !== "string") p.map.imageUrl = DEFAULT_MAP_IMAGE_URL;
-          if(!p.map.imageUrl.trim()) p.map.imageUrl = DEFAULT_MAP_IMAGE_URL; // ✅ 빈값이면 기본지도
+          if(!p.map.imageUrl.trim()) p.map.imageUrl = DEFAULT_MAP_IMAGE_URL;
           if(typeof p.map.width !== "number" || !isFinite(p.map.width)) p.map.width = 2200;
           if(typeof p.map.height !== "number" || !isFinite(p.map.height)) p.map.height = 1400;
           if(!Array.isArray(p.markers)) p.markers = [];
@@ -1525,8 +1523,6 @@
         const key = currentMapImageKey();
         const mp = currentMap();
 
-        // ✅ index(유저)에서는 "무조건 URL" (기기별 IDB 차이로 인한 모바일 미표시 방지)
-        // ✅ admin은 URL 있으면 URL 우선, 없으면 IDB fallback 유지
         let url = (mp.imageUrl || "").trim();
         if(!url) url = DEFAULT_MAP_IMAGE_URL;
 
@@ -1543,7 +1539,6 @@
           mapImg.onerror = async () => {
             mapImgReady = false;
 
-            // ✅ admin에서만 IDB fallback 시도
             if(IS_ADMIN_PAGE){
               const blob = await idbGet(key).catch(()=>null);
               if(blob){
@@ -1567,7 +1562,6 @@
           return;
         }
 
-        // URL 자체가 이상하면 admin에서만 IDB
         if(IS_ADMIN_PAGE){
           const blob = await idbGet(key).catch(()=>null);
           if(blob){
@@ -1678,9 +1672,6 @@
         const key = currentMapImageKey();
         try{
           await idbPut(key, f);
-
-          // ✅ admin에서 업로드하면 현재 페이지 map.imageUrl이 비어있을 때는 유지(원하면 URL 버튼으로 지정)
-          //    업로드 직후 보이게는 IDB로 보여주되, 다른 기기 공유는 URL로 해야 함(기존 안내 문구 유지)
           await loadMapImageForCurrentPage();
         }catch(err){
           console.warn("image save failed:", err);
@@ -1856,7 +1847,6 @@
         pageList.innerHTML = "";
 
         for(const p of g.pages){
-          // ✅ 페이지마다 기본 URL이 비어있으면 repo 기본 지도 URL로 채움
           if(!p.map) p.map = { imageKey:"", imageUrl: DEFAULT_MAP_IMAGE_URL, width:2200, height:1400 };
           if(typeof p.map.imageUrl !== "string" || !p.map.imageUrl.trim()){
             p.map.imageUrl = DEFAULT_MAP_IMAGE_URL;
@@ -2852,9 +2842,8 @@
       }, { passive:false });
 
       // -----------------------------
-      // ✅ [FIX] 유저(index)에서도 "마우스 누른채 이동"이 되도록:
-      // - 클릭: 마커 dim 토글
-      // - 드래그(조금이라도 움직이면): 지도 이동(팬)
+      // ✅ [FIX] 유저(index)에서도 "마우스 누른채 이동"이 되도록
+      // + ✅ 드래그 직후 click 튐 방지 플래그 추가
       // -----------------------------
       let isPanning = false;
       let panStart = { x:0, y:0 };
@@ -2871,10 +2860,12 @@
       let userDownScreen = { x:0, y:0 };
       const USER_DRAG_THRESHOLD = 3; // px
 
+      // ✅ [ADD] 드래그 직후 click 이벤트 방지
+      let userJustDragged = false;
+
       canvas.addEventListener("mousedown", (evt) => {
         const { x:sx, y:sy } = getPointerPos(evt);
 
-        // 우클릭(관리자만 마커 생성)
         if(evt.button === 2){
           if(state.ui.admin){
             const w = screenToWorld(sx, sy);
@@ -2884,35 +2875,26 @@
         }
         if(evt.button !== 0) return;
 
-        // -----------------------------
-        // USER MODE
-        // -----------------------------
         if(!state.ui.admin){
-          // 유저는 "어디서 눌러도 드래그하면 지도 이동"이 되게
           userDragActive = true;
           userDragMoved = false;
+          userJustDragged = false;
           userDownScreen = { x:sx, y:sy };
 
           const m = findMarkerAtScreen(sx, sy);
           userDownMarkerId = m ? m.id : "";
 
-          // 팬 준비
           isPanning = true;
           panStart = { x:sx, y:sy };
           viewStart = { ox:view.offsetX, oy:view.offsetY };
 
-          // 선택만 미리(표시 패널)
           if(m){
             state.ui.selectedMarkerId = m.id;
             renderSelectedPanel();
           }
-          // (중요) 여기서 dim 토글은 하지 않음. mouseup에서 "드래그 아니면" 토글.
           return;
         }
 
-        // -----------------------------
-        // ADMIN MODE
-        // -----------------------------
         const m = findMarkerAtScreen(sx, sy);
         if(m){
           state.ui.selectedMarkerId = m.id;
@@ -2931,7 +2913,6 @@
           return;
         }
 
-        // 빈 곳 드래그 = 지도 이동
         isPanning = true;
         panStart = { x:sx, y:sy };
         viewStart = { ox:view.offsetX, oy:view.offsetY };
@@ -2940,7 +2921,6 @@
       canvas.addEventListener("mousemove", (evt) => {
         const { x:sx, y:sy } = getPointerPos(evt);
 
-        // ADMIN: marker dragging
         if(draggingMarkerId && state.ui.admin){
           const m = currentMarkers().find(x => x.id === draggingMarkerId);
           if(!m) return;
@@ -2959,13 +2939,11 @@
           return;
         }
 
-        // USER: 드래그 판단 + 지도 팬
         if(userDragActive && !state.ui.admin){
           const dx = sx - userDownScreen.x;
           const dy = sy - userDownScreen.y;
           if(!userDragMoved && (Math.abs(dx) > USER_DRAG_THRESHOLD || Math.abs(dy) > USER_DRAG_THRESHOLD)){
             userDragMoved = true;
-            // 드래그 시작하면 overlay는 숨김(불편 방지)
             if(!overlayPinned) hideHoverOverlay(true);
           }
 
@@ -2979,7 +2957,6 @@
           }
         }
 
-        // ADMIN: 빈 곳 팬
         if(isPanning && state.ui.admin){
           const dx = sx - panStart.x;
           const dy = sy - panStart.y;
@@ -2989,7 +2966,6 @@
           draw();
         }
 
-        // Hover overlay (user mode, not pinned, not dragging)
         if(!state.ui.admin && !overlayPinned && !userDragMoved){
           const mLabel = findMarkerLabelAtScreen(sx, sy);
           if(mLabel){
@@ -3001,7 +2977,6 @@
       });
 
       window.addEventListener("mouseup", () => {
-        // ADMIN: finish marker drag
         if(draggingMarkerId){
           saveState();
           draggingMarkerId = "";
@@ -3010,10 +2985,14 @@
           draw();
         }
 
-        // USER: mouseup에서 클릭/드래그 분기
         if(userDragActive && !state.ui.admin){
+          if(userDragMoved){
+            // ✅ [ADD] 드래그였다면 직후 click 방지
+            userJustDragged = true;
+            setTimeout(() => { userJustDragged = false; }, 0);
+          }
+
           if(!userDragMoved && userDownMarkerId){
-            // ✅ 클릭(드래그 아님) = dim 토글
             const id = userDownMarkerId;
             const arr = Array.isArray(state.ui.dimmedMarkerIds) ? state.ui.dimmedMarkerIds : [];
             const idx = arr.indexOf(id);
@@ -3036,8 +3015,8 @@
       canvas.addEventListener("click", (evt) => {
         if(state.ui.admin) return;
 
-        // ✅ 드래그 직후 click으로 overlay가 튀는 것 방지
-        if(userDragMoved) return;
+        // ✅ [FIX] 드래그 직후 click 튐 방지
+        if(userJustDragged) return;
 
         const { x:sx, y:sy } = getPointerPos(evt);
         const mLabel = findMarkerLabelAtScreen(sx, sy);
@@ -3200,6 +3179,10 @@
         }
         ctx.restore();
 
+        // ==========================================================
+        // ✅ [FIX] dim(불투명) 적용을 "마커 원(+숫자)"에만 하고,
+        // 라벨 텍스트는 항상 100% 불투명으로 그리기
+        // ==========================================================
         for(const m of visible){
           const wx = m.x * mp.width;
           const wy = m.y * mp.height;
@@ -3215,8 +3198,10 @@
           const alpha = isDimmed ? 0.30 : 1.0;
 
           ctx.save();
-          ctx.globalAlpha = alpha;
           ctx.translate(wx, wy);
+
+          // --- 1) 마커 원/테두리/숫자 = dim 적용 ---
+          ctx.globalAlpha = alpha;
 
           ctx.beginPath();
           ctx.fillStyle = color;
@@ -3238,6 +3223,9 @@
             ctx.fillText(String(num), 0, 0);
             ctx.restore();
           }
+
+          // --- 2) 라벨 텍스트 = 항상 100% 불투명 ---
+          ctx.globalAlpha = 1.0;
 
           const sizePx = (typeof m.labelSizePx === "number" ? m.labelSizePx : calcLabelSizeFromRadius(radiusPx));
           const weight = (typeof m.labelWeight === "number" ? m.labelWeight : DEFAULT_LABEL_WEIGHT);
@@ -3343,7 +3331,6 @@
         getCurrentGame();
         getCurrentPage();
 
-        // ✅ 현재 페이지 map.imageUrl이 비어있으면 repo 기본 지도 URL 강제
         const mp = currentMap();
         if(!mp.imageUrl || !String(mp.imageUrl).trim()){
           mp.imageUrl = DEFAULT_MAP_IMAGE_URL;
