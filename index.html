@@ -830,7 +830,7 @@
   </script>
 
   <script>
-    /* ✅ [PATCH] 전체 스크립트 IIFE 래핑(끝의 })(); 와 매칭) */
+    /* ✅ [PATCH] 전체 스크립트 IIFE 래핑 */
     (() => {
       window.onerror = function (msg, src, line, col, err) {
         alert(
@@ -847,17 +847,21 @@
       const IS_ADMIN_PAGE = /admin82\.html$/i.test(location.pathname);
       const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-      // ✅ [PATCH] 모바일(터치)에서는 마커도 줌 비율에 맞춰 같이 스케일
+      // ✅ 모바일(터치)에서는 마커도 줌 비율에 맞춰 같이 스케일
       const IS_COARSE_POINTER = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
       const SCALE_MARKERS_WITH_ZOOM = IS_COARSE_POINTER; // 모바일에서만 true
 
       // ==========================================================
-      // ✅ [PATCH] (3) 모바일에서 PC와 동일한 최신 상태를 보기 위한 원격 state.json 동기화
-      // - 같은 폴더에 state.json 이 존재(깃허브에 업로드)하면 자동으로 최신 상태를 가져와 반영
-      // - 캐시 방지: ?v=timestamp
-      // - 유저가 불투명 처리한 dim 상태는 유지(로컬 우선)
+      // ✅ [FIX] 깃허브 구조 고정: 기본 지도/로고 경로
+      // - Mode_Map/assets/maps/aion2map.jpg
+      // - Mode_Map/assets/logo/MAPMODELOGO2.png
       // ==========================================================
-      // ✅ [FIX] 상태 파일 경로를 ./data/state.json 로 통일 + new URL 방식 적용
+      const DEFAULT_MAP_IMAGE_URL = new URL("./assets/maps/aion2map.jpg", location.href).toString();
+      const DEFAULT_LOGO_URL = new URL("./assets/logo/MAPMODELOGO2.png", location.href).toString();
+
+      // ==========================================================
+      // ✅ [PATCH] 모바일에서 PC와 동일한 최신 상태를 보기 위한 원격 state.json 동기화
+      // ==========================================================
       const REMOTE_STATE_URL = new URL("./data/state.json", location.href).toString();
       const REMOTE_SYNC_INTERVAL_MS = 15000;
 
@@ -875,7 +879,6 @@
       }
 
       function sanitizeLoadedStateLikeInit(s){
-        // 최소한의 안전장치 (기존 init 로직과 동일한 형태 유지)
         if(!s.ui) s.ui = { admin:false, selectedCategory:"", selectedMarkerId:"", lastCreatedMarkerId:"", activePaintColor:"", createCategory:"", createGroupId:0, createColorOverride:"", insertAfterMarkerId:"", dimmedMarkerIds:[] };
         if(!Array.isArray(s.ui.dimmedMarkerIds)) s.ui.dimmedMarkerIds = [];
         if(!Array.isArray(s.games) || s.games.length === 0) return false;
@@ -885,14 +888,15 @@
           if(typeof g.name !== "string") g.name = "Game";
           if(!Array.isArray(g.categories) || g.categories.length === 0) g.categories = structuredClone(DEFAULT_CATEGORIES);
           if(!Array.isArray(g.pages) || g.pages.length === 0){
-            g.pages = [{ id: uid(), name:"1번마을", map:{imageKey:"", imageUrl:"", width:2200, height:1400}, markers:[], links:[] }];
+            g.pages = [{ id: uid(), name:"1번마을", map:{imageKey:"", imageUrl:DEFAULT_MAP_IMAGE_URL, width:2200, height:1400}, markers:[], links:[] }];
           }
           for(const p of g.pages){
             if(!p.id) p.id = uid();
             if(typeof p.name !== "string") p.name = "Page";
-            if(!p.map) p.map = { imageKey:"", imageUrl:"", width:2200, height:1400 };
+            if(!p.map) p.map = { imageKey:"", imageUrl:DEFAULT_MAP_IMAGE_URL, width:2200, height:1400 };
             if(typeof p.map.imageKey !== "string") p.map.imageKey = "";
-            if(typeof p.map.imageUrl !== "string") p.map.imageUrl = "";
+            if(typeof p.map.imageUrl !== "string") p.map.imageUrl = DEFAULT_MAP_IMAGE_URL;
+            if(!p.map.imageUrl.trim()) p.map.imageUrl = DEFAULT_MAP_IMAGE_URL;
             if(typeof p.map.width !== "number" || !isFinite(p.map.width)) p.map.width = 2200;
             if(typeof p.map.height !== "number" || !isFinite(p.map.height)) p.map.height = 1400;
             if(!Array.isArray(p.markers)) p.markers = [];
@@ -903,7 +907,6 @@
       }
 
       async function syncStateFromRemoteIfNewer(){
-        // index(유저)에서만 주기 동기화 (admin 페이지는 기존 로컬 편집 흐름 유지)
         if(IS_ADMIN_PAGE) return;
 
         const remote = await tryFetchRemoteState();
@@ -911,14 +914,9 @@
 
         const remoteAt = Number(remote._updatedAt || 0);
         const localAt = Number(state._updatedAt || 0);
-
-        // remote가 더 최신이면 반영
         if(remoteAt && remoteAt <= localAt) return;
 
-        // ✅ 유저 dim(불투명) 상태는 유지
         const keepDim = Array.isArray(state.ui?.dimmedMarkerIds) ? [...state.ui.dimmedMarkerIds] : [];
-
-        // remote를 state에 덮어쓰기 (state는 const지만 내부는 변경 가능)
         if(!sanitizeLoadedStateLikeInit(remote)) return;
 
         state.games = remote.games;
@@ -926,15 +924,12 @@
         state.currentPageId = remote.currentPageId || (remote.games[0]?.pages?.[0]?.id || state.currentPageId);
 
         state.ui = remote.ui || state.ui;
-        state.ui.admin = false; // index는 유저 고정
+        state.ui.admin = false;
         state.ui.dimmedMarkerIds = keepDim;
 
-        // timestamp도 반영 (비교 기준 유지)
         state._updatedAt = remoteAt || Date.now();
         state._updatedAtISO = remote._updatedAtISO || new Date(state._updatedAt).toISOString();
 
-        /* ✅ [PATCH] saveState()를 쓰면 _updatedAt이 현재시각으로 덮여서 "원격이 더 최신"이 영원히 안 됨
-           → 원격 반영 시에는 타임스탬프 유지 저장(로컬스토리지 직접 저장) */
         try{
           localStorage.setItem(LS_KEY, JSON.stringify(state));
         }catch(e){
@@ -947,7 +942,7 @@
       }
 
       // ==========================================================
-      // ✅ [PATCH] 로고 저장/로드 (URL 방식)
+      // ✅ 로고 저장/로드 (URL 방식) + 기본 로고 적용
       // ==========================================================
       const LOGO_KEY = "mm_logo_url_v1";
       const $logoImg = document.getElementById("logoImg");
@@ -962,8 +957,11 @@
 
       function loadLogo(){
         try{
-          const raw = (localStorage.getItem(LOGO_KEY) || "").trim();
+          let raw = (localStorage.getItem(LOGO_KEY) || "").trim();
+          // ✅ 기본 로고가 있으면 기본값으로 표시 (단, 사용자가 저장값을 넣으면 그걸 우선)
+          if(!raw) raw = DEFAULT_LOGO_URL;
           const url = normalizeUrlMaybe(raw);
+
           if(url){
             $logoImg.src = url;
             $logoImg.style.display = "block";
@@ -977,14 +975,13 @@
       }
 
       function promptLogoUrl(){
-        // 관리자+관리자모드에서만
         if(!IS_ADMIN_PAGE) return;
         if(!state?.ui?.admin) return;
 
         const cur = (localStorage.getItem(LOGO_KEY) || "").trim();
         const v = prompt(
-          "로고 이미지 URL을 입력하세요.\n예) ./assets/logo.png 또는 https://.../logo.png\n(빈 값으로 저장하면 로고가 제거됩니다)",
-          cur || "./assets/logo.png"
+          "로고 이미지 URL을 입력하세요.\n예) ./assets/logo/MAPMODELOGO2.png 또는 https://.../logo.png\n(빈 값으로 저장하면 로고가 제거됩니다)",
+          cur || "./assets/logo/MAPMODELOGO2.png"
         );
         if(v === null) return;
 
@@ -997,19 +994,13 @@
         loadLogo();
       }
 
-      // 버튼 클릭
       $logoUploadBtn.addEventListener("click", (e) => {
         e.stopPropagation();
         promptLogoUrl();
       });
-
-      // 슬롯 클릭(버튼이 안 보이는 경우도 대비)
-      $logoSlot.addEventListener("click", (e) => {
-        // 로고가 보이는 상태에서 유저 클릭 실수 방지: 관리자+관리자모드일 때만 동작
+      $logoSlot.addEventListener("click", () => {
         promptLogoUrl();
       });
-
-      // 더블클릭: 제거
       $logoSlot.addEventListener("dblclick", () => {
         if(!IS_ADMIN_PAGE) return;
         if(!state?.ui?.admin) return;
@@ -1169,7 +1160,8 @@
             name: "Map Demo",
             categories: structuredClone(DEFAULT_CATEGORIES),
             pages: [
-              { id: uid(), name: "1번마을", map: { imageKey:"", imageUrl:"", width:2200, height:1400 }, markers: [], links: [] }
+              // ✅ 기본 지도 URL을 repo 구조로 고정
+              { id: uid(), name: "1번마을", map: { imageKey:"", imageUrl: DEFAULT_MAP_IMAGE_URL, width:2200, height:1400 }, markers: [], links: [] }
             ]
           }
         ]
@@ -1187,14 +1179,15 @@
         if(typeof g.name !== "string") g.name = "Game";
         if(!Array.isArray(g.categories) || g.categories.length === 0) g.categories = structuredClone(DEFAULT_CATEGORIES);
         if(!Array.isArray(g.pages) || g.pages.length === 0){
-          g.pages = [{ id: uid(), name:"1번마을", map:{imageKey:"", imageUrl:"", width:2200, height:1400}, markers:[], links:[] }];
+          g.pages = [{ id: uid(), name:"1번마을", map:{imageKey:"", imageUrl:DEFAULT_MAP_IMAGE_URL, width:2200, height:1400}, markers:[], links:[] }];
         }
         for(const p of g.pages){
           if(!p.id) p.id = uid();
           if(typeof p.name !== "string") p.name = "Page";
-          if(!p.map) p.map = { imageKey:"", imageUrl:"", width:2200, height:1400 };
+          if(!p.map) p.map = { imageKey:"", imageUrl:DEFAULT_MAP_IMAGE_URL, width:2200, height:1400 };
           if(typeof p.map.imageKey !== "string") p.map.imageKey = "";
-          if(typeof p.map.imageUrl !== "string") p.map.imageUrl = "";
+          if(typeof p.map.imageUrl !== "string") p.map.imageUrl = DEFAULT_MAP_IMAGE_URL;
+          if(!p.map.imageUrl.trim()) p.map.imageUrl = DEFAULT_MAP_IMAGE_URL; // ✅ 빈값이면 기본지도
           if(typeof p.map.width !== "number" || !isFinite(p.map.width)) p.map.width = 2200;
           if(typeof p.map.height !== "number" || !isFinite(p.map.height)) p.map.height = 1400;
           if(!Array.isArray(p.markers)) p.markers = [];
@@ -1505,13 +1498,11 @@
         document.querySelectorAll(".adminOnly").forEach(el => {
           el.style.display = state.ui.admin ? "" : "none";
         });
-
-        // 로고 버튼은 관리자+admin82에서만
         $logoUploadBtn.style.display = (state.ui.admin && IS_ADMIN_PAGE) ? "" : "none";
       }
 
       // ==========================================================
-      // Map image load per page (IDB -> fallback URL)
+      // Map image load per page (URL 우선 / index는 URL 전용)
       // ==========================================================
       const mapImg = new Image();
       mapImg.crossOrigin = "anonymous";
@@ -1533,11 +1524,12 @@
 
         const key = currentMapImageKey();
         const mp = currentMap();
-        const url = (mp.imageUrl || "").trim();
 
-        // ==========================================================
-        // ✅ [PATCH] URL 우선 로드(기기 공유/모바일 최신화) + 없으면 IDB 로드
-        // ==========================================================
+        // ✅ index(유저)에서는 "무조건 URL" (기기별 IDB 차이로 인한 모바일 미표시 방지)
+        // ✅ admin은 URL 있으면 URL 우선, 없으면 IDB fallback 유지
+        let url = (mp.imageUrl || "").trim();
+        if(!url) url = DEFAULT_MAP_IMAGE_URL;
+
         if(url && isValidUrl(url)){
           const abs = new URL(url, location.href).toString();
           mapImg.onload = () => {
@@ -1548,29 +1540,52 @@
             resetView();
             draw();
           };
-          mapImg.onerror = () => { mapImgReady = false; draw(); };
+          mapImg.onerror = async () => {
+            mapImgReady = false;
+
+            // ✅ admin에서만 IDB fallback 시도
+            if(IS_ADMIN_PAGE){
+              const blob = await idbGet(key).catch(()=>null);
+              if(blob){
+                mapObjectUrl = URL.createObjectURL(blob);
+                mapImg.onload = () => {
+                  mapImgReady = true;
+                  mp.width = mapImg.naturalWidth || mapImg.width;
+                  mp.height = mapImg.naturalHeight || mapImg.height;
+                  saveState();
+                  resetView();
+                  draw();
+                };
+                mapImg.onerror = () => { mapImgReady = false; draw(); };
+                mapImg.src = mapObjectUrl;
+                return;
+              }
+            }
+            draw();
+          };
           mapImg.src = abs + (abs.includes("?") ? "&" : "?") + "v=" + Date.now();
           return;
         }
 
-        // 1) IDB (device-local) fallback
-        const blob = await idbGet(key).catch(()=>null);
-        if(blob){
-          mapObjectUrl = URL.createObjectURL(blob);
-          mapImg.onload = () => {
-            mapImgReady = true;
-            mp.width = mapImg.naturalWidth || mapImg.width;
-            mp.height = mapImg.naturalHeight || mapImg.height;
-            saveState();
-            resetView();
-            draw();
-          };
-          mapImg.onerror = () => { mapImgReady = false; draw(); };
-          mapImg.src = mapObjectUrl;
-          return;
+        // URL 자체가 이상하면 admin에서만 IDB
+        if(IS_ADMIN_PAGE){
+          const blob = await idbGet(key).catch(()=>null);
+          if(blob){
+            mapObjectUrl = URL.createObjectURL(blob);
+            mapImg.onload = () => {
+              mapImgReady = true;
+              mp.width = mapImg.naturalWidth || mapImg.width;
+              mp.height = mapImg.naturalHeight || mapImg.height;
+              saveState();
+              resetView();
+              draw();
+            };
+            mapImg.onerror = () => { mapImgReady = false; draw(); };
+            mapImg.src = mapObjectUrl;
+            return;
+          }
         }
 
-        // 2) Nothing
         mapImgReady = false;
         draw();
       }
@@ -1579,13 +1594,8 @@
       // View
       // ==========================================================
       const view = { scale:1, minScale:0.05, maxScale:10, offsetX:0, offsetY:0 };
-
       const markerScaleDenom = () => (SCALE_MARKERS_WITH_ZOOM ? 1 : view.scale);
 
-      // ==========================================================
-      // ✅ [PATCH] (2) 모바일에서 드래그로 화면 밖(여백)으로 넘어가지 않도록 오프셋 클램프
-      // - 가로/세로 모두 안전하게 제한 (세로 화면에서 특히 문제 방지)
-      // ==========================================================
       function clampViewToBounds(){
         const rect = canvas.getBoundingClientRect();
         const cw = rect.width, ch = rect.height;
@@ -1593,14 +1603,12 @@
         const mw = mp.width * view.scale;
         const mh = mp.height * view.scale;
 
-        // X
         if(mw <= cw){
           view.offsetX = (cw - mw) / 2;
         }else{
           view.offsetX = clamp(view.offsetX, cw - mw, 0);
         }
 
-        // Y
         if(mh <= ch){
           view.offsetY = (ch - mh) / 2;
         }else{
@@ -1614,7 +1622,7 @@
         canvas.width = Math.floor(rect.width * dpr);
         canvas.height = Math.floor(rect.height * dpr);
         ctx.setTransform(dpr,0,0,dpr,0,0);
-        clampViewToBounds(); // ✅ [PATCH]
+        clampViewToBounds();
         draw();
       }
       window.addEventListener("resize", resizeCanvas);
@@ -1635,7 +1643,7 @@
         view.scale = clamp(s, view.minScale, view.maxScale);
         view.offsetX = (w - mw * view.scale) / 2;
         view.offsetY = (h - mh * view.scale) / 2;
-        clampViewToBounds(); // ✅ [PATCH]
+        clampViewToBounds();
       }
 
       // ==========================================================
@@ -1670,6 +1678,9 @@
         const key = currentMapImageKey();
         try{
           await idbPut(key, f);
+
+          // ✅ admin에서 업로드하면 현재 페이지 map.imageUrl이 비어있을 때는 유지(원하면 URL 버튼으로 지정)
+          //    업로드 직후 보이게는 IDB로 보여주되, 다른 기기 공유는 URL로 해야 함(기존 안내 문구 유지)
           await loadMapImageForCurrentPage();
         }catch(err){
           console.warn("image save failed:", err);
@@ -1757,7 +1768,7 @@
               id: uid(),
               name: String(name).trim(),
               categories: structuredClone(DEFAULT_CATEGORIES),
-              pages: [{ id: uid(), name:"1번마을", map:{ imageKey:"", imageUrl:"", width:2200, height:1400 }, markers:[], links:[] }]
+              pages: [{ id: uid(), name:"1번마을", map:{ imageKey:"", imageUrl:DEFAULT_MAP_IMAGE_URL, width:2200, height:1400 }, markers:[], links:[] }]
             };
             state.games.push(ng);
             setCurrentGame(ng.id);
@@ -1845,6 +1856,12 @@
         pageList.innerHTML = "";
 
         for(const p of g.pages){
+          // ✅ 페이지마다 기본 URL이 비어있으면 repo 기본 지도 URL로 채움
+          if(!p.map) p.map = { imageKey:"", imageUrl: DEFAULT_MAP_IMAGE_URL, width:2200, height:1400 };
+          if(typeof p.map.imageUrl !== "string" || !p.map.imageUrl.trim()){
+            p.map.imageUrl = DEFAULT_MAP_IMAGE_URL;
+          }
+
           const btn = document.createElement("button");
           btn.className = "pageBtn" + (p.id === curPage.id ? " active" : "");
           btn.type = "button";
@@ -1872,12 +1889,12 @@
               e.stopPropagation();
               const cur = (p.map?.imageUrl || "").trim();
               const v = prompt(
-                "지도 이미지 URL을 입력하세요.\n예) ./assets/maps/map1.png\n(이 URL이 설정되면 다른 기기에서도 지도가 보입니다)",
-                cur || "./assets/maps/map1.png"
+                "지도 이미지 URL을 입력하세요.\n예) ./assets/maps/aion2map.jpg\n(이 URL이 설정되면 다른 기기에서도 지도가 보입니다)",
+                cur || "./assets/maps/aion2map.jpg"
               );
               if(v == null) return;
               if(!p.map) p.map = { imageKey:"", imageUrl:"", width:2200, height:1400 };
-              p.map.imageUrl = String(v).trim();
+              p.map.imageUrl = String(v).trim() || DEFAULT_MAP_IMAGE_URL;
               saveState();
               if(p.id === getCurrentPage().id) loadMapImageForCurrentPage();
               rebuildPageList();
@@ -1912,7 +1929,7 @@
               }catch(e2){}
               g.pages = g.pages.filter(x => x.id !== p.id);
               if(g.pages.length === 0){
-                g.pages.push({ id: uid(), name:"1번마을", map:{ imageKey:"", imageUrl:"", width:2200, height:1400 }, markers:[], links:[] });
+                g.pages.push({ id: uid(), name:"1번마을", map:{ imageKey:"", imageUrl:DEFAULT_MAP_IMAGE_URL, width:2200, height:1400 }, markers:[], links:[] });
               }
               if(state.currentPageId === p.id){
                 state.currentPageId = g.pages[0].id;
@@ -1939,7 +1956,7 @@
         const nextNum = (g.pages?.length || 0) + 1;
         const name = prompt("새 페이지 이름 (예: 2번마을)", `${nextNum}번마을`);
         if(!name) return;
-        const p = { id: uid(), name: String(name).trim(), map:{ imageKey:"", imageUrl:"", width:2200, height:1400 }, markers:[], links:[] };
+        const p = { id: uid(), name: String(name).trim(), map:{ imageKey:"", imageUrl:DEFAULT_MAP_IMAGE_URL, width:2200, height:1400 }, markers:[], links:[] };
         g.pages.push(p);
         saveState();
         setCurrentPage(p.id);
@@ -2772,10 +2789,7 @@
           const m = list[i];
           const p = worldToMarkerScreen(m);
           const rPx = (typeof m.radiusPx === "number" ? m.radiusPx : DEFAULT_MARKER_RADIUS_PX);
-
-          /* ✅ [PATCH] 모바일(스케일 따라 마커 커짐)일 때 히트테스트도 동일하게 스케일 */
           const rScreen = (rPx * view.scale) / markerScaleDenom();
-
           const dx = sx - p.x, dy = sy - p.y;
           if(dx*dx + dy*dy <= rScreen*rScreen) return m;
         }
@@ -2789,7 +2803,6 @@
         const weight = (typeof m.labelWeight === "number" ? m.labelWeight : DEFAULT_LABEL_WEIGHT);
         const label = getMarkerLabel(m);
 
-        /* ✅ [PATCH] 라벨 히트영역도 줌 스케일 반영 */
         const denom = markerScaleDenom();
         const sizeScreen = (sizePx * view.scale) / denom;
 
@@ -2834,24 +2847,34 @@
         view.offsetX += (after.x - before.x) * view.scale;
         view.offsetY += (after.y - before.y) * view.scale;
 
-        clampViewToBounds(); // ✅ [PATCH]
+        clampViewToBounds();
         draw();
       }, { passive:false });
 
+      // -----------------------------
+      // ✅ [FIX] 유저(index)에서도 "마우스 누른채 이동"이 되도록:
+      // - 클릭: 마커 dim 토글
+      // - 드래그(조금이라도 움직이면): 지도 이동(팬)
+      // -----------------------------
       let isPanning = false;
       let panStart = { x:0, y:0 };
       let viewStart = { ox:0, oy:0 };
 
+      // admin marker dragging
       let draggingMarkerId = "";
       let dragOffsetWorld = { x:0, y:0 };
-      let didDrag = false;
 
-      canvas.addEventListener("contextmenu", (e) => e.preventDefault());
+      // user drag detect
+      let userDragActive = false;
+      let userDragMoved = false;
+      let userDownMarkerId = "";
+      let userDownScreen = { x:0, y:0 };
+      const USER_DRAG_THRESHOLD = 3; // px
 
       canvas.addEventListener("mousedown", (evt) => {
         const { x:sx, y:sy } = getPointerPos(evt);
-        didDrag = false;
 
+        // 우클릭(관리자만 마커 생성)
         if(evt.button === 2){
           if(state.ui.admin){
             const w = screenToWorld(sx, sy);
@@ -2861,25 +2884,41 @@
         }
         if(evt.button !== 0) return;
 
+        // -----------------------------
+        // USER MODE
+        // -----------------------------
+        if(!state.ui.admin){
+          // 유저는 "어디서 눌러도 드래그하면 지도 이동"이 되게
+          userDragActive = true;
+          userDragMoved = false;
+          userDownScreen = { x:sx, y:sy };
+
+          const m = findMarkerAtScreen(sx, sy);
+          userDownMarkerId = m ? m.id : "";
+
+          // 팬 준비
+          isPanning = true;
+          panStart = { x:sx, y:sy };
+          viewStart = { ox:view.offsetX, oy:view.offsetY };
+
+          // 선택만 미리(표시 패널)
+          if(m){
+            state.ui.selectedMarkerId = m.id;
+            renderSelectedPanel();
+          }
+          // (중요) 여기서 dim 토글은 하지 않음. mouseup에서 "드래그 아니면" 토글.
+          return;
+        }
+
+        // -----------------------------
+        // ADMIN MODE
+        // -----------------------------
         const m = findMarkerAtScreen(sx, sy);
         if(m){
           state.ui.selectedMarkerId = m.id;
-
-          if(!state.ui.admin){
-            const arr = Array.isArray(state.ui.dimmedMarkerIds) ? state.ui.dimmedMarkerIds : [];
-            const idx = arr.indexOf(m.id);
-            if(idx >= 0) arr.splice(idx, 1);
-            else arr.push(m.id);
-            state.ui.dimmedMarkerIds = arr;
-
-            saveState();
-            renderSelectedPanel();
-            draw();
-            return;
-          }
-
           saveState();
           renderSelectedPanel();
+
           draggingMarkerId = m.id;
 
           const w = screenToWorld(sx, sy);
@@ -2892,6 +2931,7 @@
           return;
         }
 
+        // 빈 곳 드래그 = 지도 이동
         isPanning = true;
         panStart = { x:sx, y:sy };
         viewStart = { ox:view.offsetX, oy:view.offsetY };
@@ -2900,6 +2940,7 @@
       canvas.addEventListener("mousemove", (evt) => {
         const { x:sx, y:sy } = getPointerPos(evt);
 
+        // ADMIN: marker dragging
         if(draggingMarkerId && state.ui.admin){
           const m = currentMarkers().find(x => x.id === draggingMarkerId);
           if(!m) return;
@@ -2912,24 +2953,44 @@
           const nx = clamp01(mwx / mp.width);
           const ny = clamp01(mwy / mp.height);
 
-          if(Math.abs(nx - m.x) > 0.0001 || Math.abs(ny - m.y) > 0.0001) didDrag = true;
           m.x = nx;
           m.y = ny;
           draw();
           return;
         }
 
-        if(isPanning){
+        // USER: 드래그 판단 + 지도 팬
+        if(userDragActive && !state.ui.admin){
+          const dx = sx - userDownScreen.x;
+          const dy = sy - userDownScreen.y;
+          if(!userDragMoved && (Math.abs(dx) > USER_DRAG_THRESHOLD || Math.abs(dy) > USER_DRAG_THRESHOLD)){
+            userDragMoved = true;
+            // 드래그 시작하면 overlay는 숨김(불편 방지)
+            if(!overlayPinned) hideHoverOverlay(true);
+          }
+
+          if(isPanning && userDragMoved){
+            const pdx = sx - panStart.x;
+            const pdy = sy - panStart.y;
+            view.offsetX = viewStart.ox + pdx;
+            view.offsetY = viewStart.oy + pdy;
+            clampViewToBounds();
+            draw();
+          }
+        }
+
+        // ADMIN: 빈 곳 팬
+        if(isPanning && state.ui.admin){
           const dx = sx - panStart.x;
           const dy = sy - panStart.y;
-          if(Math.abs(dx) > 2 || Math.abs(dy) > 2) didDrag = true;
           view.offsetX = viewStart.ox + dx;
           view.offsetY = viewStart.oy + dy;
-          clampViewToBounds(); // ✅ [PATCH]
+          clampViewToBounds();
           draw();
         }
 
-        if(!state.ui.admin && !overlayPinned){
+        // Hover overlay (user mode, not pinned, not dragging)
+        if(!state.ui.admin && !overlayPinned && !userDragMoved){
           const mLabel = findMarkerLabelAtScreen(sx, sy);
           if(mLabel){
             showHoverOverlayForMarker(mLabel, evt.clientX, evt.clientY);
@@ -2940,6 +3001,7 @@
       });
 
       window.addEventListener("mouseup", () => {
+        // ADMIN: finish marker drag
         if(draggingMarkerId){
           saveState();
           draggingMarkerId = "";
@@ -2947,11 +3009,36 @@
           rebuildPageList();
           draw();
         }
+
+        // USER: mouseup에서 클릭/드래그 분기
+        if(userDragActive && !state.ui.admin){
+          if(!userDragMoved && userDownMarkerId){
+            // ✅ 클릭(드래그 아님) = dim 토글
+            const id = userDownMarkerId;
+            const arr = Array.isArray(state.ui.dimmedMarkerIds) ? state.ui.dimmedMarkerIds : [];
+            const idx = arr.indexOf(id);
+            if(idx >= 0) arr.splice(idx, 1);
+            else arr.push(id);
+            state.ui.dimmedMarkerIds = arr;
+
+            saveState();
+            renderSelectedPanel();
+            draw();
+          }
+          userDragActive = false;
+          userDragMoved = false;
+          userDownMarkerId = "";
+        }
+
         isPanning = false;
       });
 
       canvas.addEventListener("click", (evt) => {
         if(state.ui.admin) return;
+
+        // ✅ 드래그 직후 click으로 overlay가 튀는 것 방지
+        if(userDragMoved) return;
+
         const { x:sx, y:sy } = getPointerPos(evt);
         const mLabel = findMarkerLabelAtScreen(sx, sy);
         if(mLabel){
@@ -2966,7 +3053,6 @@
 
       canvas.addEventListener("dblclick", (evt) => {
         if(!state.ui.admin) return;
-        if(didDrag) return;
         const { x:sx, y:sy } = getPointerPos(evt);
         const m = findMarkerAtScreen(sx, sy);
         if(m) openMarkerModal(m.id);
@@ -3007,7 +3093,6 @@
         const ux = dx / len;
         const uy = dy / len;
 
-        /* ✅ [PATCH] 화살표 머리도 마커와 동일한 스케일 정책(모바일: 줌 따라 커짐) */
         const head = 10 / markerScaleDenom();
 
         const angle = Math.atan2(uy, ux);
@@ -3092,8 +3177,6 @@
         ctx.strokeStyle = "#ffffff";
         ctx.fillStyle = "#ffffff";
         ctx.globalAlpha = 0.85;
-
-        /* ✅ [PATCH] 선 두께도 모바일에서는 줌 따라 같이 스케일 */
         ctx.lineWidth = 2 / markerScaleDenom();
 
         for(const l of currentLinks()){
@@ -3259,6 +3342,14 @@
       async function init(){
         getCurrentGame();
         getCurrentPage();
+
+        // ✅ 현재 페이지 map.imageUrl이 비어있으면 repo 기본 지도 URL 강제
+        const mp = currentMap();
+        if(!mp.imageUrl || !String(mp.imageUrl).trim()){
+          mp.imageUrl = DEFAULT_MAP_IMAGE_URL;
+          saveState();
+        }
+
         ensureCreateDefaults();
         ensureSampleMarkersOnce();
 
@@ -3300,7 +3391,7 @@
       }
 
       // ==========================================================
-      // ✅ [INDEX] 관리자 인증/락 로직 제거 + 유저모드 고정
+      // ✅ [INDEX] 유저모드 고정 (토글 숨김)
       // ==========================================================
       function lockToUserMode(){
         adminToggleWrap.style.display = "none";
