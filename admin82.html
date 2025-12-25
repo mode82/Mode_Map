@@ -1542,6 +1542,7 @@
 
         const key = currentMapImageKey();
 
+        /*
         // 1) IDB first (device-local)
         const blob = await idbGet(key).catch(()=>null);
         if(blob){
@@ -1559,6 +1560,7 @@
           mapImg.src = mapObjectUrl;
           return;
         }
+        */
 
         // 2) Fallback: public URL (shared across devices)
         const mp = currentMap();
