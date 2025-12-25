@@ -45,10 +45,6 @@
       color: var(--text);
     }
 
-    body {
-      background: linear-gradient(180deg, var(--bg), #050812 70%);
-    }
-
     a {
       color: var(--accent);
       text-decoration: none;
@@ -107,25 +103,6 @@
     input:focus, select:focus, textarea:focus, button:focus-visible {
       border-color: rgba(124, 196, 255, .8);
       box-shadow: 0 0 0 4px rgba(124, 196, 255, .14);
-    }
-
-    .ghost {
-      background: rgba(9, 14, 24, .55);
-    }
-
-    .ok {
-      border-color: rgba(57, 217, 138, .65) !important;
-      background: rgba(10, 22, 16, .55) !important;
-    }
-
-    .danger {
-      border-color: rgba(255, 93, 93, .55) !important;
-      background: rgba(26, 10, 12, .55) !important;
-    }
-
-    .warn {
-      border-color: rgba(255, 214, 10, .55) !important;
-      background: rgba(22, 18, 10, .55) !important;
     }
 
     .wrap {
@@ -239,45 +216,6 @@
       margin: 12px 0;
     }
 
-    /* UI 요소 */
-    .topSlots {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .topSlot {
-      width: var(--topSlotW);
-      height: var(--topSlotH);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 14px;
-      border: 1px solid rgba(39, 52, 74, .9);
-      background: rgba(14, 22, 38, .55);
-      overflow: hidden;
-      position: relative;
-      flex: 0 0 auto;
-    }
-
-    .topSlot.placeholder {
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    #logoSlot {
-      padding: 0;
-      justify-content: center;
-      border: 0;
-    }
-
-    #logoImg {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      display: none;
-    }
-
     /* 카테고리 UI */
     #categoryBar {
       display: flex;
@@ -285,7 +223,6 @@
       gap: 8px;
     }
 
-    /* 마커 기능 */
     .adminOnly {
       display: none;
     }
