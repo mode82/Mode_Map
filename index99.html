@@ -3,16 +3,18 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>MAPMODE</title>
+  <title>MAPMODE · INDEX99</title>
   <style>
     :root{
       color-scheme: dark;
       --bg:#0a0f18;
       --bg2:#070b12;
+
       --panel:#0b1220cc;
       --card:#0e1626cc;
       --stroke:#1f2a3a;
       --stroke2:#27344a;
+
       --text:#e7eef8;
       --muted:#9fb0c6;
       --accent:#7cc4ff;
@@ -23,7 +25,6 @@
       --r12:12px;
       --r14:14px;
       --r16:16px;
-
       --shadow: 0 18px 60px rgba(0,0,0,.45);
       --shadow2: 0 8px 24px rgba(0,0,0,.35);
       --blur: 14px;
@@ -32,7 +33,6 @@
       --sideW:320px;
       --sideW2:350px;
     }
-
     *{ box-sizing:border-box; }
     html,body{ height:100%; }
     body{
@@ -46,13 +46,13 @@
       overflow:hidden;
     }
 
-    /* Top bar (same shape, but user page: no admin controls) */
+    /* TOPBAR */
     .topbar{
       position:fixed; inset:0 0 auto 0;
       height:var(--topH);
       display:flex; align-items:center; justify-content:space-between;
       padding:10px 14px;
-      z-index:50;
+      z-index:80;
       background: linear-gradient(180deg, rgba(9,14,23,.88), rgba(9,14,23,.58));
       backdrop-filter: blur(var(--blur));
       border-bottom:1px solid rgba(39,52,74,.65);
@@ -61,8 +61,7 @@
 
     .slot{
       height:38px;
-      display:flex;
-      align-items:center;
+      display:flex; align-items:center;
       padding:0 10px;
       border-radius:999px;
       background: rgba(14,22,38,.55);
@@ -85,39 +84,26 @@
       border-radius:999px;
       display:flex; align-items:center; justify-content:center;
       overflow:hidden;
-      background: rgba(14,22,38,.0);
+      background: transparent;
       border:none;
+      cursor:pointer;
+      user-select:none;
     }
     .logoBox img{ height:26px; width:auto; display:block; opacity:.98; }
-    .brand{
-      display:flex; align-items:center; gap:10px;
-      font-weight:900; letter-spacing:.5px;
-    }
-    .brand .word{
-      font-size:20px;
-      line-height:1;
-      display:flex;
-      align-items:center;
-      gap:0;
-    }
+    .brand{ display:flex; align-items:center; gap:10px; font-weight:900; letter-spacing:.5px; }
+    .brand .word{ font-size:20px; line-height:1; display:flex; align-items:center; }
     .brand .word .o{
       display:inline-block;
       width:12px; height:12px; border-radius:999px;
-      margin:0 2px 0 2px;
-      background: #fff;
+      margin:0 2px;
+      background:#fff;
       box-shadow: 0 0 0 2px rgba(255,255,255,.12);
       transform: translateY(1px);
     }
 
     .select{
-      appearance:none;
-      border:none;
-      background:transparent;
-      color:var(--text);
-      font-weight:800;
-      padding-right:18px;
-      outline:none;
-      cursor:pointer;
+      appearance:none; border:none; background:transparent; color:var(--text);
+      font-weight:900; padding-right:18px; outline:none; cursor:pointer;
     }
     .chev{
       width:0; height:0;
@@ -130,7 +116,8 @@
 
     .pill{
       height:34px;
-      display:flex; align-items:center; gap:8px;
+      display:inline-flex; align-items:center; justify-content:center;
+      gap:8px;
       padding:0 12px;
       border-radius:999px;
       background: rgba(14,22,38,.55);
@@ -140,14 +127,15 @@
       cursor:pointer;
       user-select:none;
       text-decoration:none;
+      font-weight:900;
     }
     .pill:hover{ border-color: rgba(124,196,255,.55); }
     .pill:active{ transform: translateY(1px); }
-    .pill.small{ height:32px; padding:0 10px; font-size:13px; }
+    .pill.small{ height:32px; padding:0 10px; font-size:13px; font-weight:900; }
     .pill.ghost{ background: rgba(14,22,38,.25); }
-    .pill.danger{ border-color: rgba(255,93,93,.5); }
+    .pill.danger{ border-color: rgba(255,93,93,.55); }
 
-    /* Layout */
+    /* LAYOUT */
     .layout{
       position:fixed;
       inset:var(--topH) 0 0 0;
@@ -162,10 +150,8 @@
       background: rgba(8,12,20,.35);
       backdrop-filter: blur(var(--blur));
     }
-    .side.right{
-      border-right:none;
-      border-left:1px solid rgba(39,52,74,.55);
-    }
+    .side.right{ border-right:none; border-left:1px solid rgba(39,52,74,.55); }
+
     .sideInner{
       height:100%;
       padding:12px;
@@ -182,22 +168,16 @@
     .card + .card{ margin-top:12px; }
 
     .sectionTitle{
-      font-size:12px;
-      letter-spacing:.3px;
+      font-size:12px; letter-spacing:.3px;
       color: rgba(231,238,248,.8);
       margin:4px 0 10px 0;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
+      display:flex; justify-content:space-between; align-items:center;
+      gap:10px;
     }
-    .subtle{
-      color: rgba(159,176,198,.9);
-      font-size:12px;
-      line-height:1.45;
-    }
+    .subtle{ color: rgba(159,176,198,.92); font-size:12px; line-height:1.45; }
 
-    /* Left pages list */
-    .pageList{ display:flex; flex-direction:column; gap:10px; margin-top:10px; }
+    /* LEFT pages */
+    .pageList{ display:flex; flex-direction:column; gap:10px; }
     .pageItem{
       display:flex; align-items:center; justify-content:space-between; gap:10px;
       padding:10px 10px;
@@ -211,12 +191,9 @@
       border-color: rgba(57,217,138,.55);
       background: rgba(14,22,38,.55);
     }
-    .pageItem .name{
-      font-weight:900;
-      font-size:13px;
-    }
+    .pageItem .name{ font-weight:900; font-size:13px; }
 
-    /* Center canvas */
+    /* CENTER canvas */
     .center{
       position:relative;
       overflow:hidden;
@@ -232,13 +209,8 @@
       justify-content:center;
       padding:16px;
     }
-    canvas{
-      background: transparent;
-      border-radius: 0px;
-      box-shadow: none;
-      image-rendering: auto;
-      touch-action:none;
-    }
+    canvas{ background: transparent; touch-action:none; }
+
     .hintToast{
       position:absolute;
       left:50%;
@@ -256,7 +228,7 @@
     }
     .hintToast.show{ display:block; }
 
-    /* Right: category + (no admin controls) */
+    /* RIGHT categories */
     .chipRow{ display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
     .chip{
       display:flex; align-items:center; gap:8px;
@@ -270,73 +242,66 @@
     }
     .chip.on{ border-color: rgba(124,196,255,.6); background: rgba(124,196,255,.10); }
     .dotc{ width:9px; height:9px; border-radius:999px; box-shadow:0 0 0 2px rgba(255,255,255,.06); }
+    .hr{ height:1px; background: rgba(39,52,74,.55); margin:10px 0; }
+
     .kpi{
       margin-top:10px;
       font-size:12px;
       color: rgba(231,238,248,.85);
       display:flex; justify-content:space-between;
     }
-    .hr{ height:1px; background: rgba(39,52,74,.55); margin:10px 0; }
+    .btnFull{ width:100%; height:42px; border-radius:14px; justify-content:center; }
 
-    .btnFull{
-      width:100%;
-      justify-content:center;
-      height:42px;
-      border-radius: 14px;
-      font-weight:900;
-    }
-
-    /* Hover tooltip (memo + youtube) */
-    .hoverBox{
+    /* Tooltip (memo + youtube) */
+    .tip{
       position:fixed;
-      z-index:70;
-      max-width:min(520px, 90vw);
-      background: linear-gradient(180deg, rgba(14,22,38,.92), rgba(10,15,24,.86));
+      z-index:120;
+      max-width:min(420px, calc(100vw - 24px));
+      background: linear-gradient(180deg, rgba(14,22,38,.95), rgba(10,15,24,.90));
       border:1px solid rgba(39,52,74,.75);
+      border-radius:16px;
       box-shadow: var(--shadow);
-      border-radius: 16px;
       padding:12px;
       display:none;
       pointer-events:auto;
     }
-    .hoverBox.show{ display:block; }
-    .hoverTitle{
+    .tip.show{ display:block; }
+    .tip .tTitle{
       font-weight:900;
       margin:0 0 8px 0;
-      font-size:14px;
-      color: rgba(231,238,248,.95);
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-    }
-    .hoverMemo{
-      margin:0;
-      white-space:pre-wrap;
-      color: rgba(231,238,248,.86);
       font-size:13px;
-      line-height:1.5;
-    }
-    .ytLink{
-      margin-top:10px;
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      text-decoration:none;
       color: rgba(231,238,248,.95);
     }
-    .ytBadge{
-      width:22px; height:22px;
-      border-radius:7px;
-      display:flex; align-items:center; justify-content:center;
-      border:1px solid rgba(39,52,74,.6);
-      background: rgba(10,15,24,.45);
+    .tip .tRow{
+      display:flex; gap:10px; align-items:center; justify-content:space-between;
+      margin-bottom:8px;
+    }
+    .tip a{
+      color: rgba(124,196,255,.95);
       font-weight:900;
+      text-decoration:none;
+      border-bottom:1px solid rgba(124,196,255,.35);
+    }
+    .tip .memo{
+      white-space:pre-wrap;
+      color: rgba(231,238,248,.88);
+      font-size:12px;
+      line-height:1.5;
+      margin:0;
+    }
+    .tip .close{
+      width:32px; height:32px;
+      border-radius:12px;
+      border:1px solid rgba(39,52,74,.65);
+      background: rgba(10,15,24,.35);
+      color: rgba(231,238,248,.9);
+      cursor:pointer;
+      font-weight:900;
+      display:flex; align-items:center; justify-content:center;
     }
 
-    /* Mobile / Mac: force identical layout (no responsive collapse) */
+    /* Same on mobile/mac/pc: keep 3 columns; allow horizontal scroll if narrow */
     @media (max-width: 1200px){
-      /* Keep same 3 columns: allow horizontal scroll if needed */
       body{ overflow:auto; }
       .layout{
         width: calc(var(--sideW) + 1000px + var(--sideW2));
@@ -348,15 +313,17 @@
 </head>
 <body>
 
-  <!-- TOP BAR -->
+  <!-- TOPBAR -->
   <div class="topbar">
     <div class="top-left">
+      <!-- Slot 1: Logo (no border) -->
       <div class="slot fixed logo">
-        <div class="logoBox" id="logoBox">
+        <div class="logoBox" id="logoBox" title="MAPMODE">
           <div class="brand"><div class="word">MAPM<span class="o"></span>DE</div></div>
         </div>
       </div>
 
+      <!-- Slot 2: Game -->
       <div class="slot fixed">
         <select id="gameSelect" class="select" title="게임 선택">
           <option value="아이온2">아이온2</option>
@@ -364,10 +331,12 @@
         <div class="chev"></div>
       </div>
 
+      <!-- Slot 3: Mode label -->
       <div class="slot fixed">
-        <div class="subtle" style="font-weight:900; color:rgba(231,238,248,.92);">유저</div>
+        <div style="font-weight:900; color:rgba(231,238,248,.92);">유저</div>
       </div>
 
+      <!-- Slot 4: Controls (user only) -->
       <div class="slot fixed" style="justify-content:center;">
         <button class="pill small ghost" id="btnReload" title="새로고침">새로고침</button>
         <button class="pill small danger" id="btnResetView" title="화면 초기화">전체 초기화</button>
@@ -388,7 +357,9 @@
             <span>페이지</span>
             <span class="subtle"><b id="pathGame">아이온2</b> / <b id="pathPage">전체지도</b></span>
           </div>
+
           <div class="pageList" id="pageList"></div>
+
           <div class="subtle" style="margin-top:10px;">
             • 페이지를 선택하면 해당 페이지 마커만 표시됩니다.
           </div>
@@ -410,9 +381,16 @@
         <div class="card">
           <div class="sectionTitle">
             <span>카테고리</span>
-            <span class="subtle" id="catCounts"></span>
+            <span class="subtle">필터</span>
           </div>
+
           <div class="chipRow" id="catChips"></div>
+
+          <div class="hr"></div>
+
+          <button class="pill btnFull danger" id="btnClearDim" type="button" style="border-color:rgba(255,93,93,.65);">
+            마커 초기화
+          </button>
 
           <div class="hr"></div>
 
@@ -422,37 +400,37 @@
           </div>
 
           <div style="margin-top:10px;">
-            <button class="pill btnFull" id="btnFit">화면 맞춤</button>
+            <button class="pill btnFull" id="btnFit" type="button">화면 맞춤</button>
           </div>
 
           <div class="subtle" style="margin-top:10px;">
-            • 마커 클릭: 해당 마커만 불투명 30%<br/>
-            • 텍스트에 마우스 올리면 메모/유튜브 링크 표시
+            • 마커 클릭: <b>원만</b> 30% 불투명<br/>
+            • 마커 텍스트에 마우스를 올리면: 메모/유튜브 표시
           </div>
         </div>
       </div>
     </aside>
   </div>
 
-  <!-- Hover tooltip -->
-  <div class="hoverBox" id="hoverBox">
-    <div class="hoverTitle">
-      <span id="hoverTitleText">-</span>
-      <button class="pill small ghost" id="hoverPin" type="button" style="height:28px;">고정</button>
+  <!-- Hover/Click tooltip -->
+  <div class="tip" id="tip" role="dialog" aria-hidden="true">
+    <div class="tRow">
+      <div class="tTitle" id="tipTitle">-</div>
+      <button class="close" id="tipClose" type="button">닫기</button>
     </div>
-    <p class="hoverMemo" id="hoverMemo">-</p>
-    <a class="ytLink" id="hoverYt" href="#" target="_blank" rel="noopener" style="display:none;">
-      <span class="ytBadge">▶</span>
-      <span id="hoverYtText">유튜브</span>
-    </a>
+    <div class="subtle" style="margin-bottom:8px;">
+      <a href="#" id="tipLink" target="_blank" rel="noopener">유튜브 열기</a>
+    </div>
+    <p class="memo" id="tipMemo"></p>
   </div>
 
 <script>
 (() => {
-  /***********************
-   * STATE LOAD
-   ***********************/
-  const LS_KEY = "mapmode_state_v1";
+  /******************************************************************
+   * index99 전용 분리 설정
+   ******************************************************************/
+  const LS_KEY = "mapmode_state_v99"; // ✅ admin99와 동일 (v99 전용)
+  const REMOTE_STATE_URL = new URL("./data/state99.json", location.href).toString(); // ✅ 원격 우선
   const defaultCats = [
     { id:"전체", name:"전체", color:"#7cc4ff", on:true },
     { id:"보스", name:"보스", color:"#ff5d5d", on:true },
@@ -460,56 +438,36 @@
     { id:"큐브", name:"큐브", color:"#2b8cff", on:true },
   ];
   const defaultState = {
-    version:1,
+    version:99,
     game:"아이온2",
     logoUrl:"",
     pages: [{id:"p_all", name:"전체지도", url:""}],
     currentPageId:"p_all",
     categories: defaultCats,
     markerLabelDefault:"#e7eef8",
-    map:{ imgDataUrl:"", naturalW:1, naturalH:1, scale:1, tx:0, ty:0 },
+    map:{ imgDataUrl:"", naturalW:1, naturalH:1, scale:0, tx:0, ty:0 },
     markers:[],
     chains:[]
   };
 
-  const safeParse = (json, fallback) => { try{ return JSON.parse(json); }catch(e){ return fallback; } };
-  let S = loadState();
-  function loadState(){
-    const raw = localStorage.getItem(LS_KEY);
-    const st = raw ? safeParse(raw, null) : null;
-    if(!st || typeof st !== "object") return structuredClone(defaultState);
-    const merged = structuredClone(defaultState);
-    Object.assign(merged, st);
-    merged.pages = Array.isArray(st.pages) && st.pages.length ? st.pages : structuredClone(defaultState.pages);
-    merged.categories = Array.isArray(st.categories) && st.categories.length ? st.categories : structuredClone(defaultCats);
-    merged.markers = Array.isArray(st.markers) ? st.markers : [];
-    merged.chains = Array.isArray(st.chains) ? st.chains : [];
-    merged.map = Object.assign(structuredClone(defaultState.map), st.map||{});
-    return merged;
-  }
-
-  /***********************
-   * UI refs
-   ***********************/
-  const logoBox = document.getElementById("logoBox");
-  const gameSelect = document.getElementById("gameSelect");
-  const pageList = document.getElementById("pageList");
-  const pathGame = document.getElementById("pathGame");
-  const pathPage = document.getElementById("pathPage");
-  const catChips = document.getElementById("catChips");
-  const cv = document.getElementById("cv");
+  const $ = (id)=>document.getElementById(id);
+  const cv = $("cv");
   const ctx = cv.getContext("2d");
-  const toastEl = document.getElementById("toast");
+  const toastEl = $("toast");
+  const pageList = $("pageList");
+  const catChips = $("catChips");
 
-  const hoverBox = document.getElementById("hoverBox");
-  const hoverTitleText = document.getElementById("hoverTitleText");
-  const hoverMemo = document.getElementById("hoverMemo");
-  const hoverYt = document.getElementById("hoverYt");
-  const hoverYtText = document.getElementById("hoverYtText");
-  const hoverPin = document.getElementById("hoverPin");
+  const tip = $("tip");
+  const tipTitle = $("tipTitle");
+  const tipLink = $("tipLink");
+  const tipMemo = $("tipMemo");
+  const tipClose = $("tipClose");
 
   const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
-  const now = ()=>Date.now();
+  const safeParse = (json, fallback) => { try{ return JSON.parse(json); }catch(e){ return fallback; } };
+  const escapeHtml = (s)=>String(s)
+    .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;").replaceAll("'","&#39;");
 
   function toast(msg, ms=1200){
     toastEl.textContent = msg;
@@ -517,18 +475,43 @@
     clearTimeout(toast._t);
     toast._t = setTimeout(()=>toastEl.classList.remove("show"), ms);
   }
-  function escapeHtml(s){
-    return String(s)
-      .replaceAll("&","&amp;")
-      .replaceAll("<","&lt;")
-      .replaceAll(">","&gt;")
-      .replaceAll('"',"&quot;")
-      .replaceAll("'","&#39;");
+
+  // state
+  let S = structuredClone(defaultState);
+  let mapImg = new Image();
+  mapImg.crossOrigin = "anonymous";
+
+  async function loadStateRemoteFirst(){
+    // 1) remote (state99.json)
+    try{
+      const r = await fetch(REMOTE_STATE_URL, { cache:"no-store" });
+      if(r.ok){
+        const st = await r.json();
+        localStorage.setItem(LS_KEY, JSON.stringify(st));
+        return st;
+      }
+    }catch(e){}
+    // 2) local
+    const raw = localStorage.getItem(LS_KEY);
+    return raw ? safeParse(raw, structuredClone(defaultState)) : structuredClone(defaultState);
   }
 
-  /***********************
-   * Logo & game
-   ***********************/
+  function mergeState(st){
+    const merged = structuredClone(defaultState);
+    if(st && typeof st === "object") Object.assign(merged, st);
+    merged.pages = Array.isArray(st?.pages) && st.pages.length ? st.pages : structuredClone(defaultState.pages);
+    merged.categories = Array.isArray(st?.categories) && st.categories.length ? st.categories : structuredClone(defaultCats);
+    merged.markers = Array.isArray(st?.markers) ? st.markers : [];
+    merged.chains = Array.isArray(st?.chains) ? st.chains : [];
+    merged.map = Object.assign(structuredClone(defaultState.map), st?.map||{});
+    if(!merged.pages.find(p=>p.id===merged.currentPageId)) merged.currentPageId = merged.pages[0].id;
+    return merged;
+  }
+
+  /******************************************************************
+   * UI: logo
+   ******************************************************************/
+  const logoBox = $("logoBox");
   function renderLogo(){
     logoBox.innerHTML = "";
     if(S.logoUrl){
@@ -543,80 +526,160 @@
       logoBox.innerHTML = `<div class="brand"><div class="word">MAPM<span class="o"></span>DE</div></div>`;
     }
   }
-  renderLogo();
 
-  gameSelect.value = S.game || "아이온2";
-  pathGame.textContent = gameSelect.value;
-
-  gameSelect.addEventListener("change", () => {
-    // user page: game select is display only (keep AION2)
-    gameSelect.value = "아이온2";
-    toast("현재는 아이온2만 사용합니다");
-  });
-
-  /***********************
-   * Pages
-   ***********************/
+  /******************************************************************
+   * Pages & Categories
+   ******************************************************************/
   function renderPages(){
     pageList.innerHTML = "";
-    if(!S.pages || !S.pages.length){
-      S.pages = structuredClone(defaultState.pages);
-      S.currentPageId = S.pages[0].id;
-    }
+    const cur = S.pages.find(p=>p.id===S.currentPageId) || S.pages[0];
+    $("pathPage").textContent = cur ? cur.name : "전체지도";
+
     for(const p of S.pages){
       const item = document.createElement("div");
-      item.className = "pageItem" + (p.id === S.currentPageId ? " active" : "");
+      item.className = "pageItem" + (p.id===S.currentPageId ? " active" : "");
       item.innerHTML = `<div class="name">${escapeHtml(p.name)}</div>`;
-      item.addEventListener("click", () => {
+      item.addEventListener("click", ()=>{
         S.currentPageId = p.id;
-        // (user page) persist current page for convenience
-        localStorage.setItem("mapmode_user_current_page", p.id);
+        hideTip(true);
+        saveLocal();
         renderPages();
         renderKPIs();
-        hideHover(true);
         draw();
       });
       pageList.appendChild(item);
     }
-    // restore user-selected page if exists
-    const saved = localStorage.getItem("mapmode_user_current_page");
-    if(saved && S.pages.find(x=>x.id===saved)){
-      S.currentPageId = saved;
-      localStorage.removeItem("mapmode_user_current_page"); // avoid loops on first paint
-      renderPages();
-      return;
-    }
-
-    const cur = S.pages.find(p=>p.id===S.currentPageId) || S.pages[0];
-    pathPage.textContent = cur ? cur.name : "전체지도";
   }
 
-  /***********************
-   * Categories (toggle visibility)
-   ***********************/
-  function getCat(id){ return S.categories.find(c=>c.id===id); }
-  function renderCategoryChips(){
+  function renderCats(){
     catChips.innerHTML = "";
-    if(!S.categories || !S.categories.length) S.categories = structuredClone(defaultCats);
-
     for(const c of S.categories){
       const chip = document.createElement("div");
       chip.className = "chip" + (c.on ? " on" : "");
       chip.innerHTML = `<div class="dotc" style="background:${c.color};"></div><div style="font-weight:900;">${escapeHtml(c.name)}</div>`;
-      chip.addEventListener("click", () => {
-        // allow toggling, but keep at least one category on
+      chip.addEventListener("click", ()=>{
         c.on = !c.on;
         if(!S.categories.some(x=>x.on)){
           c.on = true;
           toast("최소 1개 카테고리는 켜져야 합니다");
         }
-        renderCategoryChips();
+        hideTip(true);
+        saveLocal();
+        renderCats();
         renderKPIs();
-        hideHover(true);
         draw();
       });
       catChips.appendChild(chip);
     }
+  }
+
+  /******************************************************************
+   * Local save (index에서도 view 관련 값 저장)
+   ******************************************************************/
+  function saveLocal(){
+    localStorage.setItem(LS_KEY, JSON.stringify(S));
+  }
+
+  /******************************************************************
+   * Map load
+   ******************************************************************/
+  function loadMap(){
+    if(S.map.imgDataUrl){
+      mapImg = new Image();
+      mapImg.onload = ()=>{
+        S.map.naturalW = mapImg.naturalWidth || 1;
+        S.map.naturalH = mapImg.naturalHeight || 1;
+        if(!S.map.scale || S.map.scale<=0) fitToScreen();
+        draw();
+      };
+      mapImg.src = S.map.imgDataUrl;
+      return;
+    }
+    // placeholder
+    mapImg = new Image();
+    mapImg.onload = ()=>draw();
+    mapImg.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(
+      `<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1000">
+        <defs>
+          <radialGradient id="g" cx="50%" cy="40%" r="70%">
+            <stop offset="0%" stop-color="#ffffff"/>
+            <stop offset="100%" stop-color="#e8edf7"/>
+          </radialGradient>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#g)"/>
+        <text x="50%" y="50%" text-anchor="middle" font-family="Arial" font-size="28" fill="#7a889e">state99.json 또는 로컬 데이터가 필요합니다</text>
+      </svg>`
+    );
+  }
+
+  /******************************************************************
+   * Canvas sizing & fit
+   ******************************************************************/
+  function resizeCanvas(){
+    const wrap = cv.parentElement;
+    const w = wrap.clientWidth - 32;
+    const h = wrap.clientHeight - 32;
+    cv.width = Math.max(900, Math.floor(w));
+    cv.height = Math.max(650, Math.floor(h));
+  }
+  window.addEventListener("resize", ()=>{ resizeCanvas(); draw(); });
+
+  function fitToScreen(){
+    const pad = 40;
+    const iw = S.map.naturalW || (mapImg.naturalWidth||1);
+    const ih = S.map.naturalH || (mapImg.naturalHeight||1);
+    const cw = cv.width, ch = cv.height;
+    const scale = Math.min((cw - pad)/iw, (ch - pad)/ih);
+    S.map.scale = clamp(scale, 0.05, 10);
+    S.map.tx = (cw - iw*S.map.scale)/2;
+    S.map.ty = (ch - ih*S.map.scale)/2;
+  }
+
+  $("btnFit").addEventListener("click", ()=>{
+    fitToScreen();
+    saveLocal();
+    draw();
+    toast("화면 맞춤");
+  });
+
+  $("btnReload").addEventListener("click", async ()=>{
+    hideTip(true);
+    const st = await loadStateRemoteFirst();
+    S = mergeState(st);
+    renderLogo();
+    renderPages();
+    renderCats();
+    resizeCanvas();
+    loadMap();
+    renderKPIs();
+    toast("새로고침 완료");
+  });
+
+  $("btnResetView").addEventListener("click", ()=>{
+    // 화면(뷰)만 초기화: 데이터는 유지
+    hideTip(true);
+    fitToScreen();
+    saveLocal();
+    draw();
+    toast("화면 초기화");
+  });
+
+  /******************************************************************
+   * Markers: filtering, drawing, picking
+   ******************************************************************/
+  let dimmedMarkerIds = new Set(); // user: 클릭한 마커만 dim 유지
+  let hoveredLabelMarkerId = null;
+
+  function getCat(id){ return S.categories.find(c=>c.id===id); }
+  function markerColor(m){
+    if(!m) return "#7cc4ff";
+    if(m.useCatColor){
+      const c = getCat(m.cat);
+      return (c && c.color) ? c.color : "#7cc4ff";
+    }
+    if(m.colorOverride && m.colorOverride.trim()) return m.colorOverride.trim();
+    const c = getCat(m.cat);
+    return (c && c.color) ? c.color : "#7cc4ff";
   }
 
   function getVisibleMarkers(){
@@ -630,293 +693,36 @@
     });
   }
 
-  function markerColor(m){
-    if(!m) return "#7cc4ff";
-    if(m.useCatColor){
-      const c = getCat(m.cat);
-      return (c && c.color) ? c.color : "#7cc4ff";
-    }
-    if(m.colorOverride && m.colorOverride.trim()) return m.colorOverride.trim();
-    const c = getCat(m.cat);
-    return (c && c.color) ? c.color : "#7cc4ff";
-  }
-
   function renderKPIs(){
     const curPage = S.currentPageId;
     const total = (S.markers||[]).filter(m=>m.pageId===curPage).length;
     const shown = getVisibleMarkers().length;
-    document.getElementById("kpiTotal").textContent = "마커: " + total;
-    document.getElementById("kpiShown").textContent = "표시 중: " + shown;
-
-    const counts = {};
-    for(const m of (S.markers||[]).filter(m=>m.pageId===curPage)){
-      counts[m.cat] = (counts[m.cat]||0) + 1;
-    }
-    const boss = counts["보스"]||0, gitel = counts["기텔"]||0, cube = counts["큐브"]||0;
-    document.getElementById("catCounts").textContent = `보스 ${boss} · 기텔 ${gitel} · 큐브 ${cube}`;
+    $("kpiTotal").textContent = "마커: " + total;
+    $("kpiShown").textContent = "표시 중: " + shown;
   }
 
-  /***********************
-   * Map image + canvas sizing
-   ***********************/
-  let mapImg = new Image();
-  mapImg.crossOrigin = "anonymous";
-  mapImg.onload = () => {
-    S.map.naturalW = mapImg.naturalWidth || 1;
-    S.map.naturalH = mapImg.naturalHeight || 1;
-    if(!S.map.scale || (S.map.scale===1 && S.map.tx===0 && S.map.ty===0)){
-      fitToScreen();
-    }
-    draw();
-  };
-
-  function loadMapImage(){
-    return new Promise((resolve) => {
-      if(!S.map.imgDataUrl){
-        mapImg = new Image();
-        mapImg.onload = () => resolve();
-        mapImg.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(
-          `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900">
-            <defs>
-              <radialGradient id="g" cx="50%" cy="40%" r="70%">
-                <stop offset="0%" stop-color="#ffffff"/>
-                <stop offset="100%" stop-color="#e8edf7"/>
-              </radialGradient>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#g)"/>
-            <text x="50%" y="50%" text-anchor="middle" font-family="Arial" font-size="28" fill="#7a889e">state.json이 필요합니다</text>
-          </svg>`
-        );
-        return;
-      }
-      mapImg = new Image();
-      mapImg.onload = () => resolve();
-      mapImg.src = S.map.imgDataUrl;
-    });
-  }
-
-  function resizeCanvas(){
-    const wrap = cv.parentElement;
-    const w = wrap.clientWidth - 32;
-    const h = wrap.clientHeight - 32;
-    cv.width = Math.max(900, Math.floor(w));
-    cv.height = Math.max(650, Math.floor(h));
-  }
-  window.addEventListener("resize", () => {
-    resizeCanvas();
-    draw();
-  });
-
-  function fitToScreen(){
-    const pad = 40;
-    const iw = S.map.naturalW || 1;
-    const ih = S.map.naturalH || 1;
-    const cw = cv.width;
-    const ch = cv.height;
-
-    const scale = Math.min((cw - pad) / iw, (ch - pad) / ih);
-    S.map.scale = clamp(scale, 0.05, 10);
-    S.map.tx = (cw - iw * S.map.scale) / 2;
-    S.map.ty = (ch - ih * S.map.scale) / 2;
-  }
-
-  document.getElementById("btnFit").addEventListener("click", () => {
-    fitToScreen();
-    hideHover(true);
-    draw();
-    toast("화면 맞춤");
-  });
-
-  /***********************
-   * Pan/Zoom (same behavior on PC/Mac/Mobile)
-   ***********************/
-  let isPanning = false;
-  let lastX=0, lastY=0;
-
-  cv.addEventListener("pointerdown", (e) => {
-    cv.setPointerCapture(e.pointerId);
-    lastX = e.clientX; lastY = e.clientY;
-    isPanning = true;
-  });
-  cv.addEventListener("pointermove", (e) => {
-    if(!isPanning) return;
-    const dx = e.clientX - lastX;
-    const dy = e.clientY - lastY;
-    lastX = e.clientX; lastY = e.clientY;
-    S.map.tx += dx;
-    S.map.ty += dy;
-    hideHover(true);
-    draw();
-  });
-  cv.addEventListener("pointerup", () => { isPanning = false; });
-  cv.addEventListener("pointercancel", () => { isPanning = false; });
-
-  cv.addEventListener("wheel", (e) => {
-    e.preventDefault();
-    const rect = cv.getBoundingClientRect();
-    const mx = (e.clientX - rect.left);
-    const my = (e.clientY - rect.top);
-
-    const oldScale = S.map.scale;
-    const zoom = Math.exp(-e.deltaY * 0.0012);
-    const newScale = clamp(oldScale * zoom, 0.05, 10);
-
-    const wx = (mx - S.map.tx) / oldScale;
-    const wy = (my - S.map.ty) / oldScale;
-
-    S.map.scale = newScale;
-    S.map.tx = mx - wx * newScale;
-    S.map.ty = my - wy * newScale;
-
-    hideHover(true);
-    draw();
-  }, {passive:false});
-
-  /***********************
-   * Marker picking / opacity 30% (text not affected)
-   ***********************/
-  let dimmedMarkerId = null; // only one at a time
-
-  function worldFromScreen(sx, sy){
-    const x = (sx - S.map.tx) / S.map.scale;
-    const y = (sy - S.map.ty) / S.map.scale;
-    return {x,y};
-  }
   function worldFromNorm(nx, ny){
-    const iw = S.map.naturalW || 1;
-    const ih = S.map.naturalH || 1;
-    return { x: nx * iw, y: ny * ih };
+    const iw = S.map.naturalW || (mapImg.naturalWidth||1);
+    const ih = S.map.naturalH || (mapImg.naturalHeight||1);
+    return { x:nx*iw, y:ny*ih };
+  }
+  function worldFromScreen(sx, sy){
+    return { x:(sx - S.map.tx)/S.map.scale, y:(sy - S.map.ty)/S.map.scale };
+  }
+  function screenFromWorld(wx, wy){
+    return { sx: wx*S.map.scale + S.map.tx, sy: wy*S.map.scale + S.map.ty };
   }
 
-  function pickMarkerAt(sx, sy){
-    const w = worldFromScreen(sx, sy);
-    const ms = getVisibleMarkers();
-    let best=null, bestD=Infinity;
-    for(const m of ms){
-      const p = worldFromNorm(m.x, m.y);
-      const r = (m.r ?? 10);
-      const dx = p.x - w.x;
-      const dy = p.y - w.y;
-      const d = Math.sqrt(dx*dx + dy*dy);
-      if(d <= r*1.3 && d < bestD){
-        best=m; bestD=d;
-      }
-    }
-    return best;
-  }
+  // hitboxes updated each draw
+  let labelHitboxes = []; // {id, x1,y1,x2,y2, anchorX, anchorY}
+  let circleHitboxes = []; // {id, sx,sy, rPx}
 
-  cv.addEventListener("click", (e) => {
-    const rect = cv.getBoundingClientRect();
-    const sx = e.clientX - rect.left;
-    const sy = e.clientY - rect.top;
-    const hit = pickMarkerAt(sx, sy);
-    if(hit){
-      dimmedMarkerId = hit.id; // only this marker circle dims
-      hideHover(true);
-      draw();
-    }else{
-      dimmedMarkerId = null;
-      hideHover(true);
-      draw();
-    }
-  });
-
-  /***********************
-   * Hover: show memo + youtube when hovering TEXT area
-   * (We implement simple text hitboxes computed each draw)
-   ***********************/
-  let labelHitboxes = []; // {id, x1,y1,x2,y2, marker}
-  let hoverPinned = false;
-
-  function hideHover(force=false){
-    if(hoverPinned && !force) return;
-    hoverBox.classList.remove("show");
-  }
-  function showHover(m, sx, sy){
-    hoverTitleText.textContent = m.name || "(이름 없음)";
-    hoverMemo.textContent = (m.memo && m.memo.trim()) ? m.memo : "(메모 없음)";
-
-    const ytUrl = (m.yt || "").trim();
-    const ytTitle = (m.ytTitle || "").trim() || "유튜브";
-    if(ytUrl){
-      hoverYt.style.display = "inline-flex";
-      hoverYt.href = ytUrl;
-      hoverYtText.textContent = ytTitle;
-    }else{
-      hoverYt.style.display = "none";
-      hoverYt.href = "#";
-      hoverYtText.textContent = "유튜브";
-    }
-
-    // position (avoid edges)
-    const pad = 12;
-    const boxW = 520;
-    const boxH = 160;
-    let x = sx + 18;
-    let y = sy + 18;
-
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    x = clamp(x, pad, vw - pad - Math.min(boxW, vw - pad*2));
-    y = clamp(y, pad + 60, vh - pad - Math.min(boxH, vh - pad*2));
-
-    hoverBox.style.left = x + "px";
-    hoverBox.style.top = y + "px";
-    hoverBox.classList.add("show");
-  }
-
-  hoverPin.addEventListener("click", () => {
-    hoverPinned = !hoverPinned;
-    hoverPin.textContent = hoverPinned ? "고정됨" : "고정";
-    if(!hoverPinned){
-      hideHover(true);
-    }
-  });
-
-  window.addEventListener("keydown", (e) => {
-    if(e.key === "Escape"){
-      hoverPinned = false;
-      hoverPin.textContent = "고정";
-      hideHover(true);
-    }
-  });
-
-  window.addEventListener("pointerdown", (e) => {
-    if(!hoverBox.classList.contains("show")) return;
-    if(hoverPinned) return;
-    if(!hoverBox.contains(e.target)){
-      hideHover(true);
-    }
-  });
-
-  cv.addEventListener("pointermove", (e) => {
-    if(hoverPinned) return;
-    const x = e.clientX;
-    const y = e.clientY;
-
-    // hit test label boxes
-    let hit = null;
-    for(const hb of labelHitboxes){
-      if(x >= hb.x1 && x <= hb.x2 && y >= hb.y1 && y <= hb.y2){
-        hit = hb.marker;
-        break;
-      }
-    }
-    if(hit){
-      showHover(hit, x, y);
-    }else{
-      hideHover(true);
-    }
-  });
-
-  /***********************
-   * Drawing
-   ***********************/
   function draw(){
     ctx.clearRect(0,0,cv.width,cv.height);
     labelHitboxes = [];
+    circleHitboxes = [];
 
-    // bg
+    // bg overlay
     ctx.save();
     ctx.fillStyle = "rgba(0,0,0,.22)";
     ctx.fillRect(0,0,cv.width,cv.height);
@@ -927,27 +733,28 @@
     ctx.translate(S.map.tx, S.map.ty);
     ctx.scale(S.map.scale, S.map.scale);
 
-    // map image
+    // map
     if(mapImg && mapImg.complete){
-      ctx.drawImage(mapImg, 0, 0, S.map.naturalW || mapImg.naturalWidth || 1, S.map.naturalH || mapImg.naturalHeight || 1);
+      const iw = S.map.naturalW || (mapImg.naturalWidth||1);
+      const ih = S.map.naturalH || (mapImg.naturalHeight||1);
+      ctx.drawImage(mapImg, 0,0, iw, ih);
     }
 
     const ms = getVisibleMarkers();
 
-    // lines by chain
+    // chain lines
     const byChain = new Map();
     for(const m of ms){
       if(!m.chainId || !m.chainIndex) continue;
       if(!byChain.has(m.chainId)) byChain.set(m.chainId, []);
       byChain.get(m.chainId).push(m);
     }
-
     ctx.lineWidth = 2 / S.map.scale;
-    ctx.strokeStyle = "rgba(255,255,255,.75)";
+    ctx.strokeStyle = "rgba(255,255,255,.78)";
     ctx.globalAlpha = 0.9;
     for(const arr of byChain.values()){
       arr.sort((a,b)=>(a.chainIndex||0)-(b.chainIndex||0));
-      if(arr.length < 2) continue;
+      if(arr.length<2) continue;
       ctx.beginPath();
       for(let i=0;i<arr.length;i++){
         const p = worldFromNorm(arr[i].x, arr[i].y);
@@ -957,18 +764,15 @@
       ctx.stroke();
     }
 
-    // markers + text
+    // markers + labels
     for(const m of ms){
       const p = worldFromNorm(m.x, m.y);
       const r = (m.r ?? 10);
       const col = markerColor(m);
 
-      // circle opacity rule:
-      // - If this marker is selected: 0.3
-      // - Others: 1
-      const circleAlpha = (dimmedMarkerId === m.id) ? 0.30 : 1.0;
+      const circleAlpha = dimmedMarkerIds.has(m.id) ? 0.30 : 1.0;
 
-      // circle
+      // circle only dimmed (text NOT dimmed)
       ctx.save();
       ctx.globalAlpha = circleAlpha;
       ctx.beginPath();
@@ -984,7 +788,7 @@
       const num = (m.chainIndex != null) ? String(m.chainIndex) : "";
       if(num){
         ctx.save();
-        ctx.globalAlpha = 0.98;
+        ctx.globalAlpha = 0.98; // always visible
         ctx.fillStyle = "rgba(0,0,0,.75)";
         ctx.font = `${m.fw ?? 900} ${Math.max(10, Math.round((m.fs ?? 15) * 0.95))}px ui-sans-serif`;
         ctx.textAlign = "center";
@@ -993,7 +797,7 @@
         ctx.restore();
       }
 
-      // label (TEXT must NOT be affected by circle opacity)
+      // label (always visible, not dimmed)
       if(m.name){
         ctx.save();
         ctx.globalAlpha = 0.98;
@@ -1001,77 +805,259 @@
         ctx.font = `${m.fw ?? 900} ${m.fs ?? 15}px ui-sans-serif`;
         ctx.textAlign = "left";
         ctx.textBaseline = "middle";
-
         const off = r + 8;
         ctx.fillText(m.name, p.x + off, p.y);
-        // build label hitbox in screen space
-        const text = m.name;
-        const metrics = ctx.measureText(text);
-        const w = metrics.width;
-        const h = (m.fs ?? 15) * 1.35;
-
-        // world -> screen conversion for hitbox
-        const sx = (p.x + off) * S.map.scale + S.map.tx;
-        const sy = (p.y) * S.map.scale + S.map.ty;
-
-        labelHitboxes.push({
-          id: m.id,
-          marker: m,
-          x1: sx - 2,
-          y1: sy - h/2,
-          x2: sx + w + 6,
-          y2: sy + h/2
-        });
-
         ctx.restore();
+
+        // label hitbox in screen coords
+        const size = (m.fs ?? 15);
+        const textW = ctx.measureText(m.name).width;
+        const labelWorldX = p.x + off;
+        const labelWorldY = p.y;
+        const a = screenFromWorld(labelWorldX, labelWorldY);
+        const h = size * S.map.scale;
+        const w = textW * S.map.scale;
+        labelHitboxes.push({
+          id:m.id,
+          x1:a.sx,
+          y1:a.sy - h*0.6,
+          x2:a.sx + w,
+          y2:a.sy + h*0.6,
+          anchorX:a.sx,
+          anchorY:a.sy
+        });
       }
+
+      // circle hitbox for click
+      const sp = screenFromWorld(p.x, p.y);
+      circleHitboxes.push({ id:m.id, sx:sp.sx, sy:sp.sy, rPx: r*S.map.scale });
     }
 
     ctx.restore();
   }
 
-  /***********************
-   * Buttons
-   ***********************/
-  document.getElementById("btnReload").addEventListener("click", () => {
-    S = loadState();
-    renderAll();
-    toast("새로고침 완료");
-  });
-
-  document.getElementById("btnResetView").addEventListener("click", () => {
-    // user page: reset view only (not deleting data)
-    dimmedMarkerId = null;
-    hoverPinned = false;
-    hoverPin.textContent = "고정";
-    fitToScreen();
-    hideHover(true);
-    draw();
-    toast("화면 초기화");
-  });
-
-  /***********************
-   * Boot
-   ***********************/
-  async function renderAll(){
-    renderLogo();
-    pathGame.textContent = (S.game || "아이온2");
-    renderPages();
-    renderCategoryChips();
-    renderKPIs();
-    await loadMapImage();
-    resizeCanvas();
-    if(mapImg && mapImg.complete){
-      S.map.naturalW = mapImg.naturalWidth || S.map.naturalW || 1;
-      S.map.naturalH = mapImg.naturalHeight || S.map.naturalH || 1;
+  function pickLabelAt(sx, sy){
+    for(let i=labelHitboxes.length-1;i>=0;i--){
+      const b = labelHitboxes[i];
+      if(sx>=b.x1 && sx<=b.x2 && sy>=b.y1 && sy<=b.y2) return b;
     }
-    if(!S.map.scale || S.map.scale < 0.0001){
-      fitToScreen();
-    }
-    draw();
+    return null;
   }
 
-  renderAll().then(()=>toast("MAPMODE 준비 완료", 900));
+  function pickCircleAt(sx, sy){
+    let best=null, bestD=Infinity;
+    for(const c of circleHitboxes){
+      const d = Math.hypot(c.sx - sx, c.sy - sy);
+      if(d <= c.rPx*1.25 && d < bestD){
+        best = c;
+        bestD = d;
+      }
+    }
+    return best;
+  }
+
+  /******************************************************************
+   * Tooltip behavior (hover text)
+   ******************************************************************/
+  function hideTip(force=false){
+    tip.classList.remove("show");
+    tip.setAttribute("aria-hidden","true");
+    hoveredLabelMarkerId = null;
+    if(force) return;
+  }
+
+  function showTipForMarker(markerId, anchorX, anchorY){
+    const m = (S.markers||[]).find(x=>x.id===markerId);
+    if(!m) return;
+
+    const title = (m.ytTitle || m.name || "(이름 없음)").trim();
+    const memo = (m.memo || "").trim();
+    const yt = (m.yt || "").trim();
+
+    tipTitle.textContent = title || "(제목 없음)";
+    tipMemo.textContent = memo || "(메모 없음)";
+    if(yt){
+      tipLink.style.display = "";
+      tipLink.href = yt;
+    }else{
+      tipLink.style.display = "none";
+      tipLink.href = "#";
+    }
+
+    // position near label
+    const pad = 10;
+    const rect = tip.getBoundingClientRect(); // may be old; show first then adjust
+    tip.style.left = "0px";
+    tip.style.top = "0px";
+    tip.classList.add("show");
+    tip.setAttribute("aria-hidden","false");
+
+    const r2 = tip.getBoundingClientRect();
+    let left = anchorX + 12;
+    let top = anchorY + 12;
+
+    // clamp to viewport
+    left = clamp(left, pad, window.innerWidth - r2.width - pad);
+    top = clamp(top, pad + 60, window.innerHeight - r2.height - pad); // avoid topbar
+    tip.style.left = left + "px";
+    tip.style.top = top + "px";
+
+    hoveredLabelMarkerId = markerId;
+  }
+
+  tipClose.addEventListener("click", ()=>hideTip(true));
+  document.addEventListener("keydown", (e)=>{
+    if(e.key==="Escape") hideTip(true);
+  });
+
+  // close tip if click outside (but keep youtube click)
+  document.addEventListener("pointerdown", (e)=>{
+    if(!tip.classList.contains("show")) return;
+    if(tip.contains(e.target)) return;
+    // if clicking on canvas label will reopen anyway
+    hideTip(true);
+  });
+
+  /******************************************************************
+   * Pan/Zoom (same on all devices)
+   ******************************************************************/
+  let isPanning=false, lastX=0,lastY=0;
+
+  cv.addEventListener("pointerdown", (e)=>{
+    cv.setPointerCapture(e.pointerId);
+    lastX=e.clientX; lastY=e.clientY;
+    isPanning=true;
+  });
+  cv.addEventListener("pointermove", (e)=>{
+    // hover tooltip on desktop (mouse/pen)
+    if(e.pointerType !== "touch"){
+      const rect = cv.getBoundingClientRect();
+      const sx = e.clientX - rect.left;
+      const sy = e.clientY - rect.top;
+      const hit = pickLabelAt(sx, sy);
+      if(hit){
+        if(hoveredLabelMarkerId !== hit.id){
+          showTipForMarker(hit.id, hit.anchorX + rect.left, hit.anchorY + rect.top);
+        }
+      }else{
+        // hide only if not hovering the tip itself
+        if(!tip.matches(":hover")) hideTip();
+      }
+    }
+
+    if(!isPanning) return;
+    const dx=e.clientX-lastX, dy=e.clientY-lastY;
+    lastX=e.clientX; lastY=e.clientY;
+    S.map.tx += dx;
+    S.map.ty += dy;
+    draw();
+  });
+  cv.addEventListener("pointerup", ()=>{ isPanning=false; });
+  cv.addEventListener("pointercancel", ()=>{ isPanning=false; });
+
+  cv.addEventListener("wheel", (e)=>{
+    e.preventDefault();
+    hideTip();
+    const rect = cv.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+
+    const old = S.map.scale || 1;
+    const zoom = Math.exp(-e.deltaY * 0.0012);
+    const next = clamp(old * zoom, 0.05, 10);
+
+    const wx = (mx - S.map.tx) / old;
+    const wy = (my - S.map.ty) / old;
+
+    S.map.scale = next;
+    S.map.tx = mx - wx * next;
+    S.map.ty = my - wy * next;
+
+    draw();
+  }, {passive:false});
+
+  /******************************************************************
+   * Click interactions
+   * - Click circle: toggle dim 30% (text unaffected)
+   * - Click label on touch: toggle tooltip
+   ******************************************************************/
+  cv.addEventListener("click", (e)=>{
+    const rect = cv.getBoundingClientRect();
+    const sx = e.clientX - rect.left;
+    const sy = e.clientY - rect.top;
+
+    // touch: label click toggles tooltip
+    const labelHit = pickLabelAt(sx, sy);
+    if(labelHit){
+      const anchorX = labelHit.anchorX + rect.left;
+      const anchorY = labelHit.anchorY + rect.top;
+      if(tip.classList.contains("show") && hoveredLabelMarkerId === labelHit.id){
+        hideTip(true);
+      }else{
+        showTipForMarker(labelHit.id, anchorX, anchorY);
+      }
+      return;
+    }
+
+    const hit = pickCircleAt(sx, sy);
+    if(hit){
+      if(dimmedMarkerIds.has(hit.id)) dimmedMarkerIds.delete(hit.id);
+      else dimmedMarkerIds.add(hit.id);
+      draw();
+      return;
+    }
+
+    // click empty area: close tip only
+    hideTip(true);
+  });
+
+  $("btnClearDim").addEventListener("click", ()=>{
+    dimmedMarkerIds.clear();
+    hideTip(true);
+    draw();
+    toast("마커 초기화");
+  });
+
+  /******************************************************************
+   * INIT
+   ******************************************************************/
+  async function init(){
+    // lock game select
+    $("gameSelect").value = "아이온2";
+    $("gameSelect").addEventListener("change", ()=>{
+      $("gameSelect").value = "아이온2";
+      toast("현재는 아이온2만 사용합니다");
+    });
+
+    // load state (remote first)
+    const st = await loadStateRemoteFirst();
+    S = mergeState(st);
+
+    renderLogo();
+    renderPages();
+    renderCats();
+    renderKPIs();
+
+    resizeCanvas();
+    loadMap();
+
+    // fit if needed
+    if(!S.map.scale || S.map.scale<=0){
+      setTimeout(()=>{
+        fitToScreen();
+        saveLocal();
+        draw();
+      }, 0);
+    }else{
+      draw();
+    }
+
+    // prevent context menu on canvas (mobile long press)
+    cv.addEventListener("contextmenu", (e)=>e.preventDefault());
+  }
+
+  init();
+
 })();
 </script>
 </body>
