@@ -1,0 +1,156 @@
+{
+  "version": 99,
+  "game": "아이온2",
+  "logoUrl": "https://mode82.github.io/Mode_Map/assets/logo/MAPMODELOGO2.png",
+  "games": [
+    "아이온2",
+    "패스오브엑자일"
+  ],
+  "pages": [
+    {
+      "id": "p_all",
+      "name": "전체지도",
+      "url": "https://mode82.github.io/Mode_Map/assets/maps/aion2map.jpg"
+    },
+    {
+      "id": "p_c808f23eb9594819b58a59afe",
+      "name": "도망자마을",
+      "url": "https://mode82.github.io/Mode_Map/assets/maps/aion2test.jpg"
+    }
+  ],
+  "currentPageId": "p_all",
+  "categories": [
+    {
+      "id": "전체",
+      "name": "전체",
+      "color": "#7cc4ff",
+      "on": true
+    },
+    {
+      "id": "보스",
+      "name": "보스",
+      "color": "#ff5d5d",
+      "on": true
+    },
+    {
+      "id": "기텔",
+      "name": "기텔",
+      "color": "#ffd60a",
+      "on": true
+    },
+    {
+      "id": "큐브",
+      "name": "큐브",
+      "color": "#2b8cff",
+      "on": true
+    }
+  ],
+  "showLinesWithCatFilter": true,
+  "map": {
+    "imgDataUrl": "",
+    "naturalW": 1,
+    "naturalH": 1,
+    "scale": 2.635971132874969,
+    "tx": 451.6792180163543,
+    "ty": 260.2910266014644
+  },
+  "markers": [
+    {
+      "id": "m_5aaca0dacd82f19b58ad2fef",
+      "pageId": "p_c808f23eb9594819b58a59afe",
+      "x": 0,
+      "y": 0,
+      "cat": "큐브",
+      "name": "",
+      "yt": "",
+      "ytTitle": "",
+      "memo": "",
+      "r": 10,
+      "fs": 15,
+      "fw": 900,
+      "labelColor": "#e7eef8",
+      "useCatColor": true,
+      "colorOverride": "",
+      "chainId": "c_p_c808f23eb9594819b58a59afe",
+      "chainIndex": 1
+    },
+    {
+      "id": "m_3c1b61079e7db819b58ae00d6",
+      "pageId": "p_c808f23eb9594819b58a59afe",
+      "x": 0,
+      "y": 0,
+      "cat": "큐브",
+      "name": "",
+      "yt": "",
+      "ytTitle": "",
+      "memo": "",
+      "r": 10,
+      "fs": 15,
+      "fw": 900,
+      "labelColor": "#e7eef8",
+      "useCatColor": true,
+      "colorOverride": "",
+      "chainId": "c_p_c808f23eb9594819b58a59afe",
+      "chainIndex": 2
+    },
+    {
+      "id": "m_d47043658f63d819b58ae11c0",
+      "pageId": "p_c808f23eb9594819b58a59afe",
+      "x": 0,
+      "y": 0,
+      "cat": "큐브",
+      "name": "",
+      "yt": "",
+      "ytTitle": "",
+      "memo": "",
+      "r": 10,
+      "fs": 15,
+      "fw": 900,
+      "labelColor": "#e7eef8",
+      "useCatColor": true,
+      "colorOverride": "",
+      "chainId": "c_p_c808f23eb9594819b58a59afe",
+      "chainIndex": 3
+    },
+    {
+      "id": "m_sve4s54j",
+      "pageId": "p_all",
+      "x": 1,
+      "y": 0,
+      "name": "111111",
+      "cat": "보스",
+      "colorOverride": "",
+      "useCatColor": true,
+      "yt": "",
+      "ytTitle": "111111",
+      "memo": "111111",
+      "r": 10,
+      "fs": 15,
+      "fw": 900,
+      "labelColor": "#e7eef8",
+      "chainId": "c_ms2jr9wl",
+      "chainIndex": 1
+    },
+    {
+      "id": "m_0axmvaqx",
+      "pageId": "p_all",
+      "x": 0,
+      "y": 0,
+      "name": "",
+      "cat": "보스",
+      "colorOverride": "",
+      "useCatColor": true,
+      "yt": "",
+      "ytTitle": "",
+      "memo": "",
+      "r": 10,
+      "fs": 15,
+      "fw": 900,
+      "labelColor": "#e7eef8",
+      "chainId": "c_vtx1veg6",
+      "chainIndex": 1
+    }
+  ],
+  "chains": [],
+  "markerLabelDefault": "#e7eef8"
+}
