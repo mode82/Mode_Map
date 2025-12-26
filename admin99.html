@@ -4,60 +4,69 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>MAPMODE · ADMIN99</title>
+
   <style>
     :root{
       color-scheme: dark;
-      --bg:#0a0f18;
-      --bg2:#070b12;
 
+      --bg:#070b12;
       --panel:#0b1220cc;
       --card:#0e1626cc;
+
       --stroke:#1f2a3a;
       --stroke2:#27344a;
 
       --text:#e7eef8;
       --muted:#9fb0c6;
+
       --accent:#7cc4ff;
       --danger:#ff5d5d;
       --ok:#39d98a;
       --warn:#ffd60a;
 
-      --r12:12px;
       --r14:14px;
       --r16:16px;
+      --r18:18px;
+
       --shadow: 0 18px 60px rgba(0,0,0,.45);
       --shadow2: 0 8px 24px rgba(0,0,0,.35);
       --blur: 14px;
 
       --topH:58px;
       --sideW:320px;
-      --sideW2:350px;
+      --sideW2:360px;
     }
+
     *{ box-sizing:border-box; }
     html,body{ height:100%; }
     body{
       margin:0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Apple SD Gothic Neo", "Noto Sans KR", Arial, sans-serif;
-      background: radial-gradient(1200px 700px at 50% -10%, rgba(124,196,255,.18), transparent 55%),
-                  radial-gradient(800px 600px at 90% 10%, rgba(57,217,138,.12), transparent 55%),
-                  radial-gradient(800px 600px at 10% 10%, rgba(255,214,10,.08), transparent 55%),
-                  linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
-      color:var(--text);
       overflow:hidden;
+      background:
+        radial-gradient(1200px 700px at 50% -10%, rgba(124,196,255,.18), transparent 55%),
+        radial-gradient(900px 650px at 88% 10%, rgba(57,217,138,.12), transparent 55%),
+        radial-gradient(900px 650px at 12% 10%, rgba(255,214,10,.08), transparent 55%),
+        linear-gradient(180deg, #0a0f18 0%, var(--bg) 100%);
+      color:var(--text);
+
+      /* ✅ 1번 이미지 느낌: UI 글씨 굵고 또렷(마커 관련은 별도 클래스에서 제외) */
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Apple SD Gothic Neo", "Noto Sans KR", Arial, sans-serif;
+      font-weight: 800;
+      letter-spacing: .1px;
     }
 
-    /* TOPBAR */
+    /* ========== TOPBAR ========== */
     .topbar{
       position:fixed; inset:0 0 auto 0;
       height:var(--topH);
       display:flex; align-items:center; justify-content:space-between;
       padding:10px 14px;
-      z-index:80;
+      z-index:90;
       background: linear-gradient(180deg, rgba(9,14,23,.88), rgba(9,14,23,.58));
       backdrop-filter: blur(var(--blur));
       border-bottom:1px solid rgba(39,52,74,.65);
     }
-    .top-left, .top-right{ display:flex; align-items:center; gap:10px; }
+    .top-left, .top-right{ display:flex; align-items:center; gap:10px; min-width:0; }
 
     .slot{
       height:38px;
@@ -90,10 +99,7 @@
       user-select:none;
     }
     .logoBox img{ height:26px; width:auto; display:block; opacity:.98; }
-    .brand{
-      display:flex; align-items:center; gap:10px;
-      font-weight:900; letter-spacing:.5px;
-    }
+    .brand{ display:flex; align-items:center; gap:10px; font-weight:900; letter-spacing:.5px; }
     .brand .word{ font-size:20px; line-height:1; display:flex; align-items:center; }
     .brand .word .o{
       display:inline-block;
@@ -105,8 +111,17 @@
     }
 
     .select{
-      appearance:none; border:none; background:transparent; color:var(--text);
-      font-weight:900; padding-right:18px; outline:none; cursor:pointer;
+      appearance:none;
+      border:none;
+      background:transparent;
+      color:var(--text);
+      font-weight:900;
+      padding-right:18px;
+      outline:none;
+      cursor:pointer;
+      max-width: 140px;
+      overflow:hidden;
+      text-overflow: ellipsis;
     }
     .chev{
       width:0; height:0;
@@ -137,21 +152,27 @@
     .pill.small{ height:32px; padding:0 10px; font-size:13px; font-weight:900; }
     .pill.ghost{ background: rgba(14,22,38,.25); }
     .pill.danger{ border-color: rgba(255,93,93,.55); }
+    .pill.ok{ border-color: rgba(57,217,138,.55); }
 
-    /* LAYOUT */
+    /* ✅ 5번: 아이콘/버튼 겹침 방지 */
+    .top-right{ flex-wrap:wrap; justify-content:flex-end; }
+    .top-right .pill{ flex: 0 0 auto; }
+
+    /* ========== LAYOUT ========== */
     .layout{
       position:fixed;
       inset:var(--topH) 0 0 0;
       display:grid;
       grid-template-columns: var(--sideW) 1fr var(--sideW2);
       height:calc(100% - var(--topH));
+      min-height: 0;
     }
-
     .side{
       overflow:hidden;
       border-right:1px solid rgba(39,52,74,.55);
       background: rgba(8,12,20,.35);
       backdrop-filter: blur(var(--blur));
+      min-height:0;
     }
     .side.right{ border-right:none; border-left:1px solid rgba(39,52,74,.55); }
 
@@ -171,34 +192,43 @@
     .card + .card{ margin-top:12px; }
 
     .sectionTitle{
-      font-size:12px; letter-spacing:.3px;
-      color: rgba(231,238,248,.8);
+      font-size:12px;
+      color: rgba(231,238,248,.9);
       margin:4px 0 10px 0;
       display:flex; justify-content:space-between; align-items:center;
       gap:10px;
     }
-    .subtle{ color: rgba(159,176,198,.92); font-size:12px; line-height:1.45; }
-
-    /* LEFT pages */
-    .row{ display:flex; gap:10px; align-items:center; }
-    .grow{ flex:1; }
-    .input{
-      width:100%;
-      height:38px;
-      border-radius: 12px;
-      border:1px solid rgba(39,52,74,.65);
-      background: rgba(10,15,24,.35);
-      color: var(--text);
-      padding:0 12px;
-      outline:none;
+    .sectionTitle b{ font-weight:900; }
+    .subtle{
+      color: rgba(159,176,198,.92);
+      font-size:12px;
+      line-height:1.45;
+      font-weight:800;
     }
-    .input:focus{ border-color: rgba(124,196,255,.6); box-shadow: 0 0 0 3px rgba(124,196,255,.08); }
+
+    /* ========== LEFT: Pages (1번 이미지 형태) ========== */
+    .pageHeader{
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      margin-bottom:10px;
+    }
+    .btnAddPage{
+      width:100%;
+      height:52px;
+      border-radius:18px;
+      border:1px solid rgba(39,52,74,.65);
+      background: rgba(14,22,38,.35);
+      color: rgba(231,238,248,.95);
+      font-weight:900;
+      cursor:pointer;
+      box-shadow: var(--shadow2);
+    }
+    .btnAddPage:hover{ border-color: rgba(124,196,255,.55); }
 
     .pageList{ display:flex; flex-direction:column; gap:10px; margin-top:10px; }
     .pageItem{
       display:flex; align-items:center; justify-content:space-between; gap:10px;
       padding:10px 10px;
-      border-radius: var(--r14);
+      border-radius: var(--r16);
       border:1px solid rgba(39,52,74,.6);
       background: rgba(14,22,38,.35);
       cursor:pointer;
@@ -208,36 +238,40 @@
       border-color: rgba(57,217,138,.55);
       background: rgba(14,22,38,.55);
     }
-    .pageItem .name{ font-weight:900; font-size:13px; }
-    .miniBtns{ display:flex; gap:8px; }
+    .pageName{ font-weight:900; font-size:16px; }
+    .pageActions{ display:flex; align-items:center; gap:8px; flex:0 0 auto; }
     .miniBtn{
-      width:28px; height:28px;
-      border-radius:10px;
-      border:1px solid rgba(39,52,74,.6);
+      height:34px;
+      padding:0 12px;
+      border-radius:999px;
+      border:1px solid rgba(39,52,74,.65);
       background: rgba(10,15,24,.35);
+      color: rgba(231,238,248,.92);
       cursor:pointer;
-      display:flex; align-items:center; justify-content:center;
-      color: rgba(231,238,248,.9);
-      user-select:none;
       font-weight:900;
-      font-size:12px;
+      font-size:13px;
+      display:flex; align-items:center; justify-content:center;
     }
-    .miniBtn:hover{ border-color: rgba(124,196,255,.55); }
+    .miniBtn.icon{
+      width:34px;
+      padding:0;
+    }
+    .miniBtn.url{ border-color: rgba(57,217,138,.55); }
+    .miniBtn.edit{ border-color: rgba(124,196,255,.55); }
+    .miniBtn.del{ border-color: rgba(255,93,93,.55); }
 
-    /* CENTER canvas */
+    /* ========== CENTER: Canvas ========== */
     .center{
       position:relative;
       overflow:hidden;
       background:
         radial-gradient(900px 700px at 50% 15%, rgba(124,196,255,.08), transparent 60%),
         radial-gradient(900px 700px at 50% 80%, rgba(57,217,138,.05), transparent 60%);
+      min-height:0;
     }
     .canvasWrap{
-      position:absolute;
-      inset:0;
-      display:flex;
-      align-items:center;
-      justify-content:center;
+      position:absolute; inset:0;
+      display:flex; align-items:center; justify-content:center;
       padding:16px;
     }
     canvas{ background: transparent; touch-action:none; }
@@ -259,165 +293,282 @@
     }
     .hintToast.show{ display:block; }
 
-    /* RIGHT categories + marker list */
-    .chipRow{ display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
+    /* ========== RIGHT: Tools (3,5번 느낌) ========== */
+    .chipRow{ display:flex; gap:10px; flex-wrap:wrap; }
     .chip{
-      display:flex; align-items:center; gap:8px;
-      padding:7px 10px;
+      display:flex; align-items:center; gap:10px;
+      padding:10px 12px;
       border-radius:999px;
       border:1px solid rgba(39,52,74,.6);
       background: rgba(10,15,24,.35);
       cursor:pointer;
-      font-size:12px;
+      font-size:13px;
       user-select:none;
+      font-weight:900;
     }
     .chip.on{ border-color: rgba(124,196,255,.6); background: rgba(124,196,255,.10); }
-    .dotc{ width:9px; height:9px; border-radius:999px; box-shadow:0 0 0 2px rgba(255,255,255,.06); }
+    .dotc{ width:10px; height:10px; border-radius:999px; box-shadow:0 0 0 2px rgba(255,255,255,.06); }
 
-    .hr{ height:1px; background: rgba(39,52,74,.55); margin:10px 0; }
+    .toggleRow{ display:flex; gap:10px; flex-direction:column; margin-top:10px; }
+    .toggle{
+      display:flex; align-items:center; gap:10px;
+      padding:10px 12px;
+      border-radius:999px;
+      border:1px solid rgba(39,52,74,.6);
+      background: rgba(10,15,24,.35);
+      cursor:pointer;
+      font-size:13px;
+      user-select:none;
+      font-weight:900;
+    }
+    .toggle .dot{
+      width:10px; height:10px; border-radius:999px;
+      background: rgba(231,238,248,.25);
+      border:1px solid rgba(231,238,248,.25);
+    }
+    .toggle.on{ border-color: rgba(57,217,138,.55); }
+    .toggle.on .dot{ background: rgba(57,217,138,.9); border-color: rgba(57,217,138,.9); }
 
-    .kpi{
-      margin-top:10px;
-      font-size:12px;
-      color: rgba(231,238,248,.85);
-      display:flex; justify-content:space-between;
+    .hr{ height:1px; background: rgba(39,52,74,.55); margin:12px 0; }
+
+    .btnFull{
+      width:100%;
+      height:52px;
+      border-radius:18px;
+      font-weight:900;
+      font-size:15px;
+      justify-content:center;
     }
 
-    .btnFull{ width:100%; height:42px; border-radius:14px; justify-content:center; }
+    /* ✅ 5번 이미지: 빠른 색상표 */
+    .palette{
+      display:flex; gap:12px; align-items:flex-start;
+      flex-wrap:wrap;
+      margin-top:10px;
+    }
+    .sw{
+      width:42px; height:42px;
+      border-radius:14px;
+      border:1px solid rgba(39,52,74,.65);
+      box-shadow: var(--shadow2);
+      cursor:pointer;
+      display:flex; align-items:center; justify-content:center;
+      position:relative;
+      overflow:hidden;
+      background: rgba(10,15,24,.35);
+    }
+    .sw::after{
+      content:"";
+      position:absolute; inset:6px;
+      border-radius:10px;
+      background: var(--c);
+    }
+    .swLabel{
+      margin-top:6px;
+      font-size:12px;
+      text-align:center;
+      color: rgba(231,238,248,.85);
+      font-weight:900;
+    }
+    .swWrap{ display:flex; flex-direction:column; align-items:center; }
 
-    /* Modal */
-    .overlay{
+    .row2{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+      margin-top:10px;
+    }
+
+    .field{
+      width:100%;
+      padding:12px 14px;
+      border-radius:16px;
+      border:1px solid rgba(39,52,74,.65);
+      background: rgba(10,15,24,.35);
+      color: rgba(231,238,248,.95);
+      outline:none;
+      font-weight:900;
+      font-size:14px;
+    }
+    textarea.field{ min-height:90px; resize:vertical; }
+
+    /* ✅ 6번: 우측 하단 "선택한 마커" 영역 */
+    .selectedBox .label{
+      font-size:14px; font-weight:900; margin-bottom:8px;
+    }
+    .selectedBox .sub{
+      font-size:12px; color: rgba(159,176,198,.92); font-weight:900;
+      margin-top:10px;
+    }
+
+    /* ========== MODAL (마커 편집 / 카테고리 편집) ========== */
+    .modalBack{
       position:fixed; inset:0;
       background: rgba(0,0,0,.55);
-      backdrop-filter: blur(10px);
       display:none;
+      align-items:stretch;
+      justify-content:stretch;
       z-index:200;
     }
-    .overlay.show{ display:block; }
+    .modalBack.show{ display:flex; }
     .modal{
-      position:absolute;
-      inset: 6% 6%;
-      background: linear-gradient(180deg, rgba(14,22,38,.95), rgba(10,15,24,.90));
+      margin:auto;
+      width:min(1050px, calc(100vw - 28px));
+      height:min(860px, calc(100vh - 28px));
+      background: linear-gradient(180deg, rgba(14,22,38,.96), rgba(10,15,24,.92));
       border:1px solid rgba(39,52,74,.75);
-      border-radius: 20px;
+      border-radius:22px;
       box-shadow: var(--shadow);
       overflow:hidden;
-      display:flex;
-      flex-direction:column;
+      display:flex; flex-direction:column;
     }
     .modalHead{
       padding:14px 16px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
+      display:flex; align-items:center; justify-content:space-between;
       border-bottom:1px solid rgba(39,52,74,.55);
     }
-    .modalHead h3{
-      margin:0;
-      font-size:18px;
-      font-weight:900;
-    }
+    .modalHead .title{ font-size:18px; font-weight:900; }
     .modalBody{
       padding:16px;
       overflow:auto;
-      flex:1;
+      flex:1 1 auto;
     }
+    .modalClose{
+      height:40px;
+      padding:0 14px;
+      border-radius:999px;
+      border:1px solid rgba(39,52,74,.65);
+      background: rgba(10,15,24,.35);
+      color: rgba(231,238,248,.92);
+      cursor:pointer;
+      font-weight:900;
+    }
+
+    /* ✅ 9번 이미지 느낌: 마커 편집 UI */
     .grid2{
       display:grid;
       grid-template-columns: 1fr 1fr;
       gap:14px;
     }
-    .label{
-      font-size:12px;
-      color: rgba(159,176,198,.95);
-      margin:0 0 6px 2px;
+    .labelRow{ color: rgba(159,176,198,.92); font-size:13px; font-weight:900; margin:10px 0 8px; }
+    .checkRow{ display:flex; align-items:center; gap:10px; justify-content:flex-end; }
+    .checkRow input{ width:18px; height:18px; accent-color:#a86bff; }
+    .colorChip{
+      width:46px; height:46px;
+      border-radius:16px;
+      border:1px solid rgba(39,52,74,.65);
+      box-shadow: var(--shadow2);
+      background: rgba(10,15,24,.35);
+      position:relative;
+      overflow:hidden;
     }
-    .textarea{
-      width:100%;
-      min-height:120px;
-      border-radius: 14px;
+    .colorChip::after{ content:""; position:absolute; inset:7px; border-radius:12px; background: var(--c); }
+
+    .styleGrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap:12px;
+      margin-top:14px;
+    }
+    .styleCard{
+      border-radius:18px;
       border:1px solid rgba(39,52,74,.65);
       background: rgba(10,15,24,.35);
-      color: var(--text);
-      padding:12px;
-      outline:none;
-      resize:vertical;
+      padding:14px;
+      min-height:160px;
     }
-    .textarea:focus{ border-color: rgba(124,196,255,.6); box-shadow: 0 0 0 3px rgba(124,196,255,.08); }
+    .styleCard h4{ margin:0 0 10px; font-size:18px; font-weight:900; }
+    .rangeRow{ display:flex; align-items:center; gap:12px; }
+    .rangeRow input[type="range"]{ width:100%; }
+    .numBox{
+      width:68px;
+      text-align:center;
+      border-radius:999px;
+      border:1px solid rgba(39,52,74,.65);
+      background: rgba(10,15,24,.35);
+      padding:8px 10px;
+      font-weight:900;
+    }
+    .fwSelect{ width:100%; }
 
-    .selectBox{
-      width:100%;
-      height:38px;
+    .quickTextColors{
+      display:flex; gap:10px; flex-wrap:wrap;
+      margin-top:10px;
+    }
+    .tSw{
+      width:34px; height:34px;
       border-radius:12px;
       border:1px solid rgba(39,52,74,.65);
       background: rgba(10,15,24,.35);
-      color: var(--text);
-      padding:0 12px;
-      outline:none;
-    }
-    .checkboxRow{ display:flex; align-items:center; gap:10px; margin-top:6px; }
-    .rangeRow{
-      display:flex; align-items:center; gap:12px;
-      padding:10px 12px;
-      border-radius: 16px;
-      border:1px solid rgba(39,52,74,.55);
-      background: rgba(10,15,24,.22);
-    }
-    input[type="range"]{ width: 100%; }
-    .pillNum{
-      width:64px; text-align:center;
-      height:34px; border-radius:12px;
-      border:1px solid rgba(39,52,74,.65);
-      background: rgba(10,15,24,.35);
-      color:var(--text);
-      font-weight:900;
-      outline:none;
-    }
-
-    /* Quick colors */
-    .colorRow{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
-    .swatch{
-      width:36px; height:28px;
-      border-radius:10px;
-      border:1px solid rgba(39,52,74,.65);
-      background: rgba(10,15,24,.35);
+      box-shadow: var(--shadow2);
       cursor:pointer;
-      display:flex; align-items:center; justify-content:center;
-      user-select:none;
+      position:relative;
+      overflow:hidden;
     }
-    .swatch > div{
-      width:14px; height:14px; border-radius:6px;
-      box-shadow:0 0 0 2px rgba(255,255,255,.08);
+    .tSw::after{ content:""; position:absolute; inset:7px; border-radius:9px; background: var(--c); }
+
+    .modalFoot{
+      padding:14px 16px;
+      border-top:1px solid rgba(39,52,74,.55);
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .btnBig{
+      height:46px;
+      padding:0 16px;
+      border-radius:999px;
+      border:1px solid rgba(39,52,74,.65);
+      background: rgba(10,15,24,.35);
+      color: rgba(231,238,248,.95);
+      font-weight:900;
+      cursor:pointer;
+    }
+    .btnBig.danger{ border-color: rgba(255,93,93,.65); }
+    .btnBig.ok{ border-color: rgba(57,217,138,.65); }
+
+    /* ✅ 마커 텍스트/표시 자체는 "마커 관련 제외" */
+    .markerFont{
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      font-weight: 900;
+      letter-spacing: 0;
     }
 
-    /* Auth */
-    .auth{
+    /* ========== LOGIN OVERLAY ========== */
+    .lock{
       position:fixed; inset:0;
-      display:none;
-      z-index:300;
       background: rgba(0,0,0,.65);
-      backdrop-filter: blur(12px);
-      align-items:center;
-      justify-content:center;
-      padding:24px;
+      backdrop-filter: blur(8px);
+      display:none;
+      align-items:center; justify-content:center;
+      z-index:300;
     }
-    .auth.show{ display:flex; }
-    .authCard{
-      width:min(520px, 96vw);
-      background: linear-gradient(180deg, rgba(14,22,38,.95), rgba(10,15,24,.90));
+    .lock.show{ display:flex; }
+    .lockBox{
+      width:min(420px, calc(100vw - 28px));
+      background: linear-gradient(180deg, rgba(14,22,38,.96), rgba(10,15,24,.92));
       border:1px solid rgba(39,52,74,.75);
-      border-radius: 22px;
+      border-radius:22px;
       box-shadow: var(--shadow);
       padding:18px;
     }
-    .authTitle{ font-weight:900; font-size:18px; margin:0 0 10px; }
-    .authHint{ color: rgba(159,176,198,.95); font-size:12px; margin:0 0 12px; line-height:1.5; }
-    .authRow{ display:flex; gap:10px; align-items:center; }
-    .authRow .input{ height:42px; }
-    .authErr{ color: rgba(255,93,93,.95); font-size:12px; margin-top:10px; display:none; }
-    .authErr.show{ display:block; }
+    .lockBox h3{ margin:0 0 10px; font-size:18px; font-weight:900; }
+    .lockBox p{ margin:0 0 14px; color:rgba(159,176,198,.92); font-size:13px; font-weight:900; }
+    .lockRow{ display:flex; gap:10px; }
+    .lockRow input{
+      flex:1;
+      padding:12px 14px;
+      border-radius:16px;
+      border:1px solid rgba(39,52,74,.65);
+      background: rgba(10,15,24,.35);
+      color: rgba(231,238,248,.95);
+      outline:none;
+      font-weight:900;
+      font-size:14px;
+    }
 
-    /* Same layout on mobile: keep columns, allow horizontal scroll if needed */
+    /* ========== responsive: 작은 화면에서 3컬럼 유지하되 가로 스크롤 허용 ========== */
     @media (max-width: 1200px){
       body{ overflow:auto; }
       .layout{
@@ -426,68 +577,76 @@
       }
       .center{ min-width: 1000px; }
     }
+    @media (max-width: 560px){
+      .slot.fixed{ width:160px; }
+      .slot.logo{ width:160px; }
+      .logoBox{ width:160px; }
+      .select{ max-width:130px; }
+    }
   </style>
 </head>
+
 <body>
 
-  <!-- AUTH -->
-  <div class="auth" id="auth">
-    <div class="authCard">
-      <p class="authTitle">관리자 인증</p>
-      <p class="authHint">
-        비밀번호를 입력하면 <b>24시간</b> 인증이 유지됩니다.<br/>
-        (admin99 전용 / 기존 admin82에는 영향 없음)
-      </p>
-      <div class="authRow">
-        <input class="input" id="authPw" type="password" inputmode="numeric" placeholder="비밀번호 입력" />
-        <button class="pill" id="authBtn" type="button">접속</button>
+  <!-- LOGIN LOCK -->
+  <div class="lock" id="lock">
+    <div class="lockBox">
+      <h3>관리자 인증</h3>
+      <p>비밀번호를 입력하면 <b>24시간</b> 인증이 유지됩니다.</p>
+      <div class="lockRow">
+        <input id="pw" type="password" placeholder="비밀번호" autocomplete="current-password" />
+        <button class="pill ok" id="btnLogin">로그인</button>
       </div>
-      <div class="authErr" id="authErr">비밀번호가 올바르지 않습니다.</div>
+      <div class="subtle" id="lockMsg" style="margin-top:10px;"></div>
     </div>
   </div>
 
   <!-- TOPBAR -->
   <div class="topbar">
     <div class="top-left">
-      <!-- Slot 1: Logo placeholder -->
+      <!-- Slot 1: Logo (클릭해서 URL 입력) -->
       <div class="slot fixed logo">
-        <div class="logoBox" id="logoBox" title="로고 URL 설정">
+        <div class="logoBox" id="logoBox" title="로고 클릭 → URL 입력">
           <div class="brand"><div class="word">MAPM<span class="o"></span>DE</div></div>
         </div>
       </div>
 
-      <!-- Slot 2: Game -->
-      <div class="slot fixed">
-        <select id="gameSelect" class="select" title="게임 선택">
+      <!-- Slot 2: Game (추가 가능) -->
+      <div class="slot fixed" title="게임 선택/추가">
+        <select id="gameSelect" class="select">
           <option value="아이온2">아이온2</option>
         </select>
         <div class="chev"></div>
+        <button class="miniBtn icon edit" id="btnAddGame" title="게임 추가">+</button>
       </div>
 
-      <!-- Slot 3: ADMIN badge -->
+      <!-- Slot 3: Admin label -->
       <div class="slot fixed">
-        <div style="font-weight:900; color:rgba(231,238,248,.92);">ADMIN</div>
-        <div style="width:8px;height:8px;border-radius:999px;background:var(--ok);box-shadow:0 0 0 4px rgba(57,217,138,.12);"></div>
+        <div style="font-weight:900; color:rgba(57,217,138,.95);">ADMIN</div>
       </div>
 
       <!-- Slot 4: Controls -->
-      <div class="slot fixed" style="justify-content:center;">
-        <label class="pill small ghost" style="gap:8px; cursor:pointer;">
+      <div class="slot fixed" style="justify-content:center; gap:8px;">
+        <label class="pill small ghost" style="cursor:pointer;">
           지도 업로드
-          <input id="mapUpload" type="file" accept="image/*" style="display:none;">
+          <input id="fileMap" type="file" accept="image/*" style="display:none;" />
         </label>
         <button class="pill small ghost" id="btnExport">state99.json 내보내기</button>
-        <button class="pill small danger" id="btnResetAll" title="데이터 초기화">전체 초기화</button>
+        <button class="pill small danger" id="btnResetAll">전체 초기화</button>
       </div>
     </div>
 
     <div class="top-right">
-      <a class="pill small ghost" href="./index99.html" target="_blank" rel="noopener">유저 보기</a>
+      <span class="pill small ghost" title="현재 페이지">
+        관리자
+        <span style="opacity:.7;">/</span>
+        <span id="pathGameTop">아이온2</span>
+      </span>
     </div>
   </div>
 
   <div class="layout">
-    <!-- LEFT: Pages -->
+    <!-- LEFT -->
     <aside class="side left">
       <div class="sideInner">
         <div class="card">
@@ -496,37 +655,19 @@
             <span class="subtle"><b id="pathGame">아이온2</b> / <b id="pathPage">전체지도</b></span>
           </div>
 
-          <div class="row">
-            <input class="input grow" id="pageName" placeholder="페이지 이름" />
-            <button class="pill small" id="btnAddPage" type="button">추가</button>
-          </div>
+          <button class="btnAddPage" id="btnAddPage">+ 페이지 추가</button>
 
           <div class="subtle" style="margin-top:10px;">
-            • 페이지는 “각 지도 탭”입니다. (전체지도, 2번마을… 등)<br/>
-            • 페이지별로 마커가 분리됩니다.
+            • 페이지 버튼 클릭 → 같은 게임 안에서 지도 페이지 이동<br/>
+            • 폰/다른 기기에서도 지도 보이게 하려면: 관리자에서 URL 버튼으로 지도 이미지 URL 설정
           </div>
 
           <div class="pageList" id="pageList"></div>
         </div>
-
-        <div class="card">
-          <div class="sectionTitle">
-            <span>로고</span>
-            <span class="subtle">URL로 설정</span>
-          </div>
-          <div class="row">
-            <input class="input grow" id="logoUrl" placeholder="로고 이미지 URL" />
-            <button class="pill small" id="btnSaveLogo" type="button">적용</button>
-          </div>
-          <div class="subtle" style="margin-top:10px;">
-            • 상단 첫 번째 슬롯(로고 자리)은 <b>테두리 없음</b><br/>
-            • 로고 URL 비우면 기본 MAPMODE 텍스트로 표시
-          </div>
-        </div>
       </div>
     </aside>
 
-    <!-- CENTER: Canvas -->
+    <!-- CENTER -->
     <main class="center">
       <div class="hintToast" id="toast"></div>
       <div class="canvasWrap">
@@ -534,40 +675,89 @@
       </div>
     </main>
 
-    <!-- RIGHT: Marker edit + categories -->
+    <!-- RIGHT -->
     <aside class="side right">
       <div class="sideInner">
 
+        <!-- 카테고리 -->
         <div class="card">
           <div class="sectionTitle">
             <span>카테고리</span>
-            <span class="subtle">표시 필터</span>
+            <span class="subtle">필터</span>
           </div>
+
           <div class="chipRow" id="catChips"></div>
+
+          <div class="toggleRow">
+            <div class="toggle" id="tgShowChainSameCat">
+              <div class="dot"></div>
+              <div>같은 카테고리 필터 시 선도 같이 표시/숨김</div>
+            </div>
+            <div class="toggle" id="tgAutoAddCatFromText">
+              <div class="dot"></div>
+              <div>발견하는 아이템 희귀도 증가 마을</div>
+            </div>
+            <div class="toggle" id="tgAutoAddCatFromText2">
+              <div class="dot"></div>
+              <div>발견하는 아이템 희귀도 증가</div>
+            </div>
+            <div class="toggle" id="tgAutoAddCatFromText3">
+              <div class="dot"></div>
+              <div>발견하는 아이템 희귀도 증가 마을 감소</div>
+            </div>
+
+            <div class="chipRow" style="gap:10px;">
+              <div class="chip" data-quickcat="4"><div class="dotc" style="background:#fff;"></div>4</div>
+              <div class="chip" data-quickcat="11"><div class="dotc" style="background:#fff;"></div>11</div>
+              <div class="chip" data-quickcat="22"><div class="dotc" style="background:#fff;"></div>22</div>
+              <div class="chip" data-quickcat="33"><div class="dotc" style="background:#fff;"></div>33</div>
+              <div class="chip" data-quickcat="44"><div class="dotc" style="background:#fff;"></div>44</div>
+              <div class="chip" data-quickcat="455"><div class="dotc" style="background:#fff;"></div>455</div>
+            </div>
+
+            <div class="subtle" id="kpi" style="margin-top:2px;">표시 중 마커: 0 / 페이지 전체: 0</div>
+
+            <button class="pill btnFull ghost" id="btnEditCats">카테고리/색상 편집</button>
+          </div>
+        </div>
+
+        <!-- 관리자 툴 (5번 느낌) -->
+        <div class="card">
+          <div class="sectionTitle">
+            <span>관리자 툴</span>
+            <span class="subtle">• 색상 팔레트(체인 1번 기준 전파)<br/>• 선은 "같은 카테고리 필터" 시 같이 표시/숨김</span>
+          </div>
+
+          <div class="subtle" style="margin-top:8px;">빠른 색상 (원 색상 오버라이드)</div>
+          <div class="palette" id="palette"></div>
+
+          <div class="row2">
+            <button class="pill btnFull ghost" id="btnApplyQuick" disabled>선택 마커에 적용</button>
+            <button class="pill btnFull ghost" id="btnUseCatColor" disabled>선택 마커 색상(카테고리로)</button>
+          </div>
+
           <div class="hr"></div>
 
-          <div class="sectionTitle" style="margin-top:0;">
-            <span>선택한 마커</span>
-            <span class="subtle" id="selMarkerInfo">없음</span>
+          <div class="row2">
+            <button class="pill btnFull danger" id="btnClearLines">모든 선 제거</button>
+            <button class="pill btnFull ghost" id="btnRechain">선 다시 체인(전체)</button>
           </div>
-
-          <button class="pill btnFull danger" id="btnClearDim" type="button" style="border-color:rgba(255,93,93,.65);">마커 초기화</button>
 
           <div class="hr"></div>
 
-          <div class="kpi">
-            <span id="kpiShown">표시 중: 0</span>
-            <span id="kpiTotal">마커: 0</span>
-          </div>
+          <button class="pill btnFull danger" id="btnResetMarkers" style="border-color:rgba(255,93,93,.65);">마커 초기화</button>
 
-          <div style="margin-top:10px;">
-            <button class="pill btnFull" id="btnFit" type="button">화면 맞춤</button>
-          </div>
+          <div class="hr"></div>
 
-          <div class="subtle" style="margin-top:10px;">
-            • <b>우클릭</b>(모바일: 길게 누르기)로 마커 추가<br/>
-            • 마커 클릭 → 편집창 열기<br/>
-            • 휠/핀치로 확대축소, 드래그로 이동
+          <div class="selectedBox" style="margin-top:6px;">
+            <div class="label">선택한 마커: <span id="selName">(이름 없음)</span></div>
+            <div class="sub">유튜브 링크</div>
+            <input class="field" id="selLink" placeholder="유튜브" />
+            <div class="sub">유튜브 표시명</div>
+            <input class="field" id="selYtTitle" placeholder="유튜브 표시명" />
+            <div style="margin-top:10px;">
+              <button class="pill btnFull ghost" id="btnOpenMarkerEdit" disabled>마커 편집 열기</button>
+            </div>
           </div>
         </div>
 
@@ -576,151 +766,161 @@
   </div>
 
   <!-- MARKER EDIT MODAL -->
-  <div class="overlay" id="editOverlay" aria-hidden="true">
-    <div class="modal" role="dialog" aria-modal="true">
+  <div class="modalBack" id="mMarker">
+    <div class="modal">
       <div class="modalHead">
         <div>
-          <h3>마커 편집</h3>
-          <div class="subtle" style="margin-top:4px;">
-            관리자 모드에서만 편집/삭제 가능합니다. <b>(Enter = 저장)</b>
-          </div>
+          <div class="title">마커 편집</div>
+          <div class="subtle" style="margin-top:6px;">관리자 모드에서만 편집/삭제 가능합니다. (Enter = 저장)</div>
         </div>
-        <button class="pill" id="btnCloseEdit" type="button">닫기</button>
+        <button class="modalClose" id="btnCloseMarker">닫기</button>
       </div>
 
       <div class="modalBody">
         <div class="grid2">
           <div>
-            <div class="label">이름(마커 이름)</div>
-            <input class="input" id="mName" placeholder="예: 기텔 위치" />
+            <div class="labelRow">이름(마커 이름)</div>
+            <input class="field" id="mfName" placeholder="예: 기텔 위치" />
           </div>
           <div>
-            <div class="label">카테고리</div>
-            <select class="selectBox" id="mCat"></select>
+            <div class="labelRow">카테고리</div>
+            <select class="field" id="mfCat"></select>
           </div>
         </div>
 
-        <div style="margin-top:14px;">
-          <div class="label">마커 원 색상</div>
-          <div class="rangeRow" style="gap:14px;">
-            <input class="input" id="mColor" placeholder="#2b8cff 또는 red" />
-            <div class="checkboxRow">
-              <input type="checkbox" id="mUseCatColor" />
-              <label for="mUseCatColor" class="subtle" style="cursor:pointer;">카테고리 색상 사용</label>
+        <div class="labelRow" style="margin-top:12px;">마커 원 색상</div>
+        <div style="display:flex; align-items:center; gap:12px; justify-content:space-between;">
+          <input class="field" id="mfColor" placeholder="개별 오버라이드 색상 (예: #ff0000)" />
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div class="colorChip" id="mfColorChip" style="--c:#2b8cff;"></div>
+            <div class="checkRow">
+              <input type="checkbox" id="mfUseCatColor" />
+              <label for="mfUseCatColor" class="subtle" style="cursor:pointer;">카테고리 색상 사용</label>
             </div>
-            <div class="swatch" title="미리보기"><div id="mColorPreview"></div></div>
           </div>
-          <div class="subtle" style="margin-top:8px;">
-            • “카테고리 색상 사용” 체크 시, 개별 색상은 무시됩니다.
-          </div>
-        </div>
-
-        <div class="grid2" style="margin-top:14px;">
-          <div>
-            <div class="label">유튜브 링크(URL)</div>
-            <input class="input" id="mYt" placeholder="https://www.youtube.com/watch?v=..." />
-          </div>
-          <div>
-            <div class="label">유튜브 표시명(유저모드 제목)</div>
-            <input class="input" id="mYtTitle" placeholder="예: 기텔 1번위치" />
-          </div>
-        </div>
-
-        <div style="margin-top:14px;">
-          <div class="label">메모 (관리자 등록)</div>
-          <textarea class="textarea" id="mMemo" placeholder="관리자 메모를 입력하세요. 유저 모드에서는 읽기 전용입니다."></textarea>
         </div>
 
         <div class="hr"></div>
 
-        <div class="sectionTitle" style="margin-top:0;">
-          <span>마커 스타일</span>
-          <span class="subtle">원 크기 / 글씨 크기 / 굵기·색상</span>
-        </div>
-
         <div class="grid2">
-          <div class="card" style="padding:12px;">
-            <div class="label">원 크기</div>
-            <div class="rangeRow">
-              <input type="range" id="mR" min="4" max="30" value="10" />
-              <input class="pillNum" id="mRNum" type="number" min="4" max="30" value="10" />
-              <div class="subtle">px</div>
-            </div>
-            <div class="subtle" style="margin-top:10px;">
-              * 원 크기 변경 시 글씨 크기도 같은 비율로 자동 변경됩니다.
-            </div>
+          <div>
+            <div class="labelRow">유튜브 링크(URL)</div>
+            <input class="field" id="mfYt" placeholder="https://www.youtube.com/..." />
           </div>
-
-          <div class="card" style="padding:12px;">
-            <div class="label">글씨 크기</div>
-            <div class="rangeRow">
-              <input type="range" id="mFS" min="10" max="26" value="15" />
-              <input class="pillNum" id="mFSNum" type="number" min="10" max="26" value="15" />
-              <div class="subtle">라벨</div>
-            </div>
-            <div class="subtle" style="margin-top:10px;">
-              * 현재는 “원 크기”가 우선(자동 동기화)입니다.
-            </div>
+          <div>
+            <div class="labelRow">유튜브 표시명(유저모드 제목)</div>
+            <input class="field" id="mfYtTitle" placeholder="예: 기텔 1번위치" />
           </div>
         </div>
 
-        <div class="grid2" style="margin-top:14px;">
-          <div class="card" style="padding:12px;">
-            <div class="label">굵기(라벨)</div>
-            <select class="selectBox" id="mFW">
+        <div class="labelRow" style="margin-top:12px;">메모 (관리자 등록)</div>
+        <textarea class="field" id="mfMemo" placeholder="관리자 메모를 입력하세요. 유저 모드에서는 읽기 전용입니다."></textarea>
+
+        <div class="hr"></div>
+
+        <div class="labelRow">마커 스타일</div>
+        <div class="styleGrid">
+          <div class="styleCard">
+            <h4>원 크기 <span class="subtle" style="float:right;">px</span></h4>
+            <div class="rangeRow">
+              <input type="range" id="mfR" min="4" max="40" step="1" />
+              <div class="numBox" id="mfRVal">10</div>
+            </div>
+            <div class="subtle" style="margin-top:10px;">* 원 크기 변경 시 글씨 크기가 같은 비율로 자동 변경됩니다.</div>
+          </div>
+
+          <div class="styleCard">
+            <h4>글씨 크기 <span class="subtle" style="float:right;">라벨</span></h4>
+            <div class="rangeRow">
+              <input type="range" id="mfFs" min="8" max="40" step="1" />
+              <div class="numBox" id="mfFsVal">15</div>
+            </div>
+            <div class="subtle" style="margin-top:10px;">* 현재는 자동 동기화 우선</div>
+          </div>
+
+          <div class="styleCard">
+            <h4>굵기/색상 <span class="subtle" style="float:right;">라벨</span></h4>
+            <select class="field fwSelect" id="mfFw">
               <option value="900">900 (Black)</option>
               <option value="800">800 (ExtraBold)</option>
               <option value="700">700 (Bold)</option>
               <option value="600">600 (SemiBold)</option>
             </select>
-            <div class="label" style="margin-top:10px;">글씨 색상(라벨)</div>
-            <div class="row">
-              <input class="input grow" id="mLabelColor" placeholder="#e7eef8" />
-              <button class="pill small ghost" id="btnLabelDefault" type="button">기본값</button>
+
+            <div class="labelRow" style="margin-top:10px;">글씨 색상 (라벨)</div>
+            <div style="display:flex; gap:10px; align-items:center;">
+              <input class="field” style="flex:1;" id="mfLabelColor" placeholder="#e7eef8" />
+              <button class="btnBig" id="mfLabelDefault" type="button">기본값</button>
             </div>
 
-            <div class="label" style="margin-top:10px;">빠른 글씨 색</div>
-            <div class="colorRow" id="quickLabelColors"></div>
-          </div>
-
-          <div class="card" style="padding:12px;">
-            <div class="label">빠른 마커 색(카테고리)</div>
-            <div class="colorRow" id="quickMarkerColors"></div>
-
-            <div class="hr"></div>
-            <div class="subtle">
-              좌표(비율): <span id="mPos">-</span>
-            </div>
-
-            <div class="subtle" style="margin-top:10px;">
-              • “새로운 번호로 시작 / 이어서 시작”은 여기서는 생략(코드 길이 축소 목적).<br/>
-              • 체인(선 연결)은 “chainId + chainIndex”로만 유지됩니다.
-            </div>
+            <div class="labelRow" style="margin-top:10px;">빠른 글씨색</div>
+            <div class="quickTextColors" id="textColors"></div>
           </div>
         </div>
 
-        <div style="height:16px;"></div>
+        <div class="subtle" id="mfPos" style="margin-top:12px;">좌표(비율): -</div>
+        <div class="subtle" style="margin-top:8px;">
+          • 새로운 번호로 시작: 이 마커부터 새 체인(새 1번) 시작<br/>
+          • 해당 마커를 이어서 시작: 이 마커 뒤로 "중간 삽입" 모드 활성화
+        </div>
       </div>
 
-      <div class="modalHead" style="border-top:1px solid rgba(39,52,74,.55); border-bottom:none;">
-        <div class="subtle" id="editHint">저장/삭제</div>
-        <div style="display:flex; gap:10px;">
-          <button class="pill danger" id="btnDelete" type="button">삭제</button>
-          <button class="pill" id="btnSave" type="button" style="border-color:rgba(57,217,138,.55);">저장</button>
+      <div class="modalFoot">
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button class="btnBig" id="btnNewChain">새로운 번호로 시작</button>
+          <button class="btnBig" id="btnInsertAfter">해당 마커를 이어서 시작</button>
         </div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-left:auto;">
+          <button class="btnBig danger" id="btnDeleteMarker">삭제</button>
+          <button class="btnBig ok" id="btnSaveMarker">저장</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CATEGORY EDIT MODAL -->
+  <div class="modalBack" id="mCats">
+    <div class="modal">
+      <div class="modalHead">
+        <div class="title">카테고리/색상 편집</div>
+        <button class="modalClose" id="btnCloseCats">닫기</button>
+      </div>
+
+      <div class="modalBody">
+        <div class="subtle">저장하면 현재 게임의 카테고리 목록이 완전히 교체됩니다.</div>
+
+        <div class="labelRow" style="margin-top:14px;">빠른 색상 (선택한 카테고리 행에 적용)</div>
+        <div class="palette" id="catQuickPalette" style="margin-top:10px;"></div>
+        <div class="subtle" style="margin-top:8px;">카테고리 행을 먼저 클릭해서 선택하세요.</div>
+
+        <div class="hr"></div>
+
+        <div class="row2">
+          <button class="pill btnFull ghost" id="btnAddCat">+ 카테고리 추가</button>
+          <button class="pill btnFull ghost" id="btnCatsDefault">기본값으로</button>
+        </div>
+
+        <div class="hr"></div>
+
+        <div id="catRows"></div>
+      </div>
+
+      <div class="modalFoot" style="justify-content:flex-end;">
+        <button class="btnBig ok" id="btnSaveCats">저장</button>
       </div>
     </div>
   </div>
 
 <script>
 (() => {
-  /******************************************************************
-   * admin99 전용 분리 설정
-   ******************************************************************/
-  const LS_KEY = "mapmode_state_v99";          // ✅ v99 전용 localStorage
-  const AUTH_KEY = "mapmode_admin99_auth_v1";  // ✅ v99 전용 인증
-  const ADMIN_PASSWORD = "0000000001";
-  const AUTH_TTL_MS = 24 * 60 * 60 * 1000;     // ✅ 24시간
+  /************************************************************
+   * ADMIN99 저장 규칙
+   ************************************************************/
+  const LS_AUTH_KEY = "mapmode_admin_auth_v99";
+  const LS_KEY = "mapmode_state_v99";
+  const REMOTE_STATE_URL = new URL("./data/state99.json", location.href).toString();
+  const PASSWORD = "0000000001";
+  const AUTH_MS = 24 * 60 * 60 * 1000;
 
   const defaultCats = [
     { id:"전체", name:"전체", color:"#7cc4ff", on:true },
@@ -728,45 +928,50 @@
     { id:"기텔", name:"기텔", color:"#ffd60a", on:true },
     { id:"큐브", name:"큐브", color:"#2b8cff", on:true },
   ];
+
   const defaultState = {
     version:99,
     game:"아이온2",
     logoUrl:"",
-    pages: [{id:"p_all", name:"전체지도", url:""}],
+    games:["아이온2"],
+    pages: [
+      { id:"p_all", name:"전체지도", url:"" },
+      { id:"p_2", name:"2번마을", url:"" },
+      { id:"p_3", name:"3번마을", url:"" },
+      { id:"p_4", name:"4번마을", url:"" },
+      { id:"p_5", name:"5번마을", url:"" },
+      { id:"p_6", name:"6번마을", url:"" },
+      { id:"p_7", name:"7번마을", url:"" },
+    ],
     currentPageId:"p_all",
-    categories: defaultCats,
-    markerLabelDefault:"#e7eef8",
+    categories: structuredClone(defaultCats),
+    showLinesWithCatFilter:true,
     map:{ imgDataUrl:"", naturalW:1, naturalH:1, scale:0, tx:0, ty:0 },
-    markers:[],   // {id,pageId,x,y,cat,name,yt,ytTitle,memo,r,fs,fw,labelColor,useCatColor,colorOverride,chainId,chainIndex}
-    chains:[]     // keep for future
+    markers:[],
+    chains:[], // [{id, pageId, cat, markerIds:[...]}]
   };
 
   const $ = (id)=>document.getElementById(id);
   const cv = $("cv");
   const ctx = cv.getContext("2d");
+
   const toastEl = $("toast");
+  const lock = $("lock");
+  const pw = $("pw");
+  const btnLogin = $("btnLogin");
+  const lockMsg = $("lockMsg");
+
+  const pageList = $("pageList");
+  const catChips = $("catChips");
+  const palette = $("palette");
+  const textColors = $("textColors");
+
+  const mMarker = $("mMarker");
+  const mCats = $("mCats");
 
   const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
-  const uid = ()=>Math.random().toString(16).slice(2)+Date.now().toString(16);
   const safeParse = (json, fallback) => { try{ return JSON.parse(json); }catch(e){ return fallback; } };
-
-  let S = loadState();
-  function loadState(){
-    const raw = localStorage.getItem(LS_KEY);
-    const st = raw ? safeParse(raw, null) : null;
-    if(!st || typeof st !== "object") return structuredClone(defaultState);
-    const merged = structuredClone(defaultState);
-    Object.assign(merged, st);
-    merged.pages = Array.isArray(st.pages) && st.pages.length ? st.pages : structuredClone(defaultState.pages);
-    merged.categories = Array.isArray(st.categories) && st.categories.length ? st.categories : structuredClone(defaultCats);
-    merged.markers = Array.isArray(st.markers) ? st.markers : [];
-    merged.chains = Array.isArray(st.chains) ? st.chains : [];
-    merged.map = Object.assign(structuredClone(defaultState.map), st.map||{});
-    return merged;
-  }
-  function saveState(){
-    localStorage.setItem(LS_KEY, JSON.stringify(S));
-  }
+  const uid = () => Math.random().toString(36).slice(2,10);
 
   function toast(msg, ms=1200){
     toastEl.textContent = msg;
@@ -774,58 +979,78 @@
     clearTimeout(toast._t);
     toast._t = setTimeout(()=>toastEl.classList.remove("show"), ms);
   }
-  function escapeHtml(s){
-    return String(s)
-      .replaceAll("&","&amp;")
-      .replaceAll("<","&lt;")
-      .replaceAll(">","&gt;")
-      .replaceAll('"',"&quot;")
-      .replaceAll("'","&#39;");
-  }
-
-  /******************************************************************
-   * AUTH (24h)
-   ******************************************************************/
-  const auth = $("auth");
-  const authPw = $("authPw");
-  const authBtn = $("authBtn");
-  const authErr = $("authErr");
 
   function isAuthed(){
-    const t = Number(localStorage.getItem(AUTH_KEY) || "0");
-    return (t && (Date.now() - t) < AUTH_TTL_MS);
+    const t = Number(localStorage.getItem(LS_AUTH_KEY) || "0");
+    return (Date.now() - t) < AUTH_MS;
   }
+  function setAuthed(){
+    localStorage.setItem(LS_AUTH_KEY, String(Date.now()));
+  }
+
   function requireAuth(){
     if(isAuthed()){
-      auth.classList.remove("show");
+      lock.classList.remove("show");
       return;
     }
-    auth.classList.add("show");
-    authPw.value = "";
-    authPw.focus();
+    lock.classList.add("show");
+    pw.value = "";
+    lockMsg.textContent = "";
+    setTimeout(()=>pw.focus(), 0);
   }
-  function doAuth(){
-    if(authPw.value === ADMIN_PASSWORD){
-      localStorage.setItem(AUTH_KEY, String(Date.now()));
-      auth.classList.remove("show");
-      authErr.classList.remove("show");
+
+  btnLogin.addEventListener("click", ()=>{
+    if(pw.value === PASSWORD){
+      setAuthed();
+      lock.classList.remove("show");
       toast("인증 완료");
     }else{
-      authErr.classList.add("show");
+      lockMsg.textContent = "비밀번호가 올바르지 않습니다.";
+      toast("비밀번호 오류");
     }
+  });
+  pw.addEventListener("keydown", (e)=>{
+    if(e.key==="Enter") btnLogin.click();
+  });
+
+  // ---------- state ----------
+  let S = structuredClone(defaultState);
+  let mapImg = new Image();
+  mapImg.crossOrigin = "anonymous";
+
+  function mergeState(st){
+    const merged = structuredClone(defaultState);
+    if(st && typeof st === "object") Object.assign(merged, st);
+    merged.pages = Array.isArray(st?.pages) && st.pages.length ? st.pages : structuredClone(defaultState.pages);
+    merged.categories = Array.isArray(st?.categories) && st.categories.length ? st.categories : structuredClone(defaultCats);
+    merged.markers = Array.isArray(st?.markers) ? st.markers : [];
+    merged.chains = Array.isArray(st?.chains) ? st.chains : [];
+    merged.map = Object.assign(structuredClone(defaultState.map), st?.map||{});
+    merged.games = Array.isArray(st?.games) && st.games.length ? st.games : ["아이온2"];
+    if(!merged.pages.find(p=>p.id===merged.currentPageId)) merged.currentPageId = merged.pages[0].id;
+    if(!merged.games.includes(merged.game)) merged.game = merged.games[0];
+    return merged;
   }
-  authBtn.addEventListener("click", doAuth);
-  authPw.addEventListener("keydown", (e)=>{ if(e.key==="Enter") doAuth(); });
 
-  requireAuth();
+  function saveLocal(){
+    localStorage.setItem(LS_KEY, JSON.stringify(S));
+  }
 
-  /******************************************************************
-   * LOGO
-   ******************************************************************/
+  async function loadStateRemoteFirst(){
+    try{
+      const r = await fetch(REMOTE_STATE_URL, { cache:"no-store" });
+      if(r.ok){
+        const st = await r.json();
+        localStorage.setItem(LS_KEY, JSON.stringify(st));
+        return st;
+      }
+    }catch(e){}
+    const raw = localStorage.getItem(LS_KEY);
+    return raw ? safeParse(raw, structuredClone(defaultState)) : structuredClone(defaultState);
+  }
+
+  // ---------- logo (4번: 로고 클릭 → URL 입력) ----------
   const logoBox = $("logoBox");
-  const logoUrl = $("logoUrl");
-  const btnSaveLogo = $("btnSaveLogo");
-
   function renderLogo(){
     logoBox.innerHTML = "";
     if(S.logoUrl){
@@ -839,172 +1064,257 @@
     }else{
       logoBox.innerHTML = `<div class="brand"><div class="word">MAPM<span class="o"></span>DE</div></div>`;
     }
-    logoUrl.value = S.logoUrl || "";
   }
-  renderLogo();
-
-  btnSaveLogo.addEventListener("click", ()=>{
-    S.logoUrl = (logoUrl.value||"").trim();
-    saveState();
-    renderLogo();
-    toast("로고 적용");
-  });
   logoBox.addEventListener("click", ()=>{
-    logoUrl.focus();
-    toast("로고 URL을 입력 후 적용");
+    requireAuth();
+    if(!isAuthed()) return;
+
+    const cur = S.logoUrl || "";
+    const next = prompt("로고 이미지 URL을 입력하세요 (비우면 기본 로고)", cur);
+    if(next === null) return;
+    S.logoUrl = (next || "").trim();
+    saveLocal();
+    renderLogo();
+    toast("로고 설정 저장");
   });
 
-  /******************************************************************
-   * TOP: game (fixed AION2)
-   ******************************************************************/
+  // ---------- game select (2번: 아이온2 슬롯도 추가 가능) ----------
   const gameSelect = $("gameSelect");
-  const pathGame = $("pathGame");
-  const pathPage = $("pathPage");
-  gameSelect.value = "아이온2";
-  pathGame.textContent = "아이온2";
+  const btnAddGame = $("btnAddGame");
+  function renderGames(){
+    gameSelect.innerHTML = "";
+    for(const g of S.games){
+      const opt = document.createElement("option");
+      opt.value = g; opt.textContent = g;
+      gameSelect.appendChild(opt);
+    }
+    gameSelect.value = S.game;
+    $("pathGameTop").textContent = S.game;
+    $("pathGame").textContent = S.game;
+  }
   gameSelect.addEventListener("change", ()=>{
-    gameSelect.value = "아이온2";
-    toast("현재는 아이온2만 사용합니다");
+    requireAuth();
+    if(!isAuthed()) { gameSelect.value = S.game; return; }
+    S.game = gameSelect.value;
+    $("pathGameTop").textContent = S.game;
+    $("pathGame").textContent = S.game;
+    saveLocal();
+    toast("게임 변경");
+  });
+  btnAddGame.addEventListener("click", ()=>{
+    requireAuth();
+    if(!isAuthed()) return;
+    const name = prompt("추가할 게임 이름을 입력하세요");
+    if(!name) return;
+    const g = name.trim();
+    if(!g) return;
+    if(S.games.includes(g)){
+      toast("이미 존재하는 게임");
+      return;
+    }
+    S.games.push(g);
+    S.game = g;
+    renderGames();
+    saveLocal();
+    toast("게임 추가");
   });
 
-  /******************************************************************
-   * PAGES
-   ******************************************************************/
-  const pageName = $("pageName");
-  const btnAddPage = $("btnAddPage");
-  const pageList = $("pageList");
-
-  function ensurePages(){
-    if(!S.pages || !S.pages.length){
-      S.pages = structuredClone(defaultState.pages);
-      S.currentPageId = S.pages[0].id;
-    }
-    if(!S.pages.find(p=>p.id===S.currentPageId)){
-      S.currentPageId = S.pages[0].id;
-    }
-  }
+  // ---------- pages (3번: 페이지 추가 + URL 설정 버튼) ----------
   function renderPages(){
-    ensurePages();
     pageList.innerHTML = "";
     const cur = S.pages.find(p=>p.id===S.currentPageId) || S.pages[0];
-    pathPage.textContent = cur ? cur.name : "전체지도";
+    $("pathPage").textContent = cur ? cur.name : "전체지도";
 
     for(const p of S.pages){
       const item = document.createElement("div");
       item.className = "pageItem" + (p.id===S.currentPageId ? " active" : "");
       item.innerHTML = `
-        <div class="name">${escapeHtml(p.name)}</div>
-        <div class="miniBtns">
-          <div class="miniBtn" title="이름 변경">✎</div>
-          <div class="miniBtn" title="삭제">🗑</div>
+        <div class="pageName">${p.name}</div>
+        <div class="pageActions">
+          <button class="miniBtn url" title="지도 이미지 URL 설정">URL</button>
+          <button class="miniBtn icon edit" title="이름 편집">✎</button>
+          <button class="miniBtn icon del" title="삭제">🗑</button>
         </div>
       `;
-      const [btnEdit, btnDel] = item.querySelectorAll(".miniBtn");
       item.addEventListener("click", (e)=>{
-        if(e.target === btnEdit || e.target === btnDel) return;
+        const btn = e.target.closest("button");
+        if(btn) return;
         S.currentPageId = p.id;
-        saveState();
+        saveLocal();
         renderPages();
-        renderKPIs();
-        clearSelection();
+        renderKpi();
         draw();
       });
-      btnEdit.addEventListener("click", ()=>{
-        const n = prompt("페이지 이름", p.name);
-        if(n==null) return;
-        const nn = n.trim();
-        if(!nn){ toast("이름이 비어있습니다"); return; }
-        p.name = nn;
-        saveState();
-        renderPages();
-        toast("페이지 이름 변경");
+
+      const [bUrl, bEdit, bDel] = item.querySelectorAll("button");
+
+      bUrl.addEventListener("click", (e)=>{
+        e.stopPropagation();
+        requireAuth();
+        if(!isAuthed()) return;
+        const next = prompt("이 페이지 지도 이미지 URL(또는 Raw/GitHub Pages URL)을 입력하세요", p.url || "");
+        if(next === null) return;
+        p.url = (next || "").trim();
+        saveLocal();
+        toast("페이지 URL 저장");
       });
-      btnDel.addEventListener("click", ()=>{
-        if(S.pages.length<=1){ toast("최소 1개 페이지는 필요합니다"); return; }
-        if(!confirm(`"${p.name}" 페이지를 삭제할까요?\n(해당 페이지의 마커도 함께 삭제됩니다)`)) return;
-        S.pages = S.pages.filter(x=>x.id!==p.id);
-        S.markers = S.markers.filter(m=>m.pageId!==p.id);
-        if(S.currentPageId === p.id) S.currentPageId = S.pages[0].id;
-        saveState();
+
+      bEdit.addEventListener("click", (e)=>{
+        e.stopPropagation();
+        requireAuth();
+        if(!isAuthed()) return;
+        const next = prompt("페이지 이름을 수정하세요", p.name);
+        if(!next) return;
+        p.name = next.trim();
+        saveLocal();
         renderPages();
-        renderKPIs();
-        clearSelection();
+        toast("페이지 이름 수정");
+      });
+
+      bDel.addEventListener("click", (e)=>{
+        e.stopPropagation();
+        requireAuth();
+        if(!isAuthed()) return;
+        if(S.pages.length <= 1){ toast("최소 1개 페이지는 필요합니다"); return; }
+        if(!confirm(`"${p.name}" 페이지를 삭제할까요? (해당 페이지 마커도 같이 삭제됩니다)`)) return;
+
+        // remove markers
+        const pid = p.id;
+        S.markers = S.markers.filter(m=>m.pageId !== pid);
+        S.chains = S.chains.filter(c=>c.pageId !== pid);
+        S.pages = S.pages.filter(x=>x.id !== pid);
+        if(S.currentPageId === pid) S.currentPageId = S.pages[0].id;
+
+        saveLocal();
+        renderPages();
+        renderKpi();
         draw();
-        toast("삭제 완료");
+        toast("페이지 삭제");
       });
+
       pageList.appendChild(item);
     }
   }
 
-  btnAddPage.addEventListener("click", ()=>{
-    const n = (pageName.value||"").trim();
-    if(!n){ toast("페이지 이름을 입력하세요"); return; }
-    const p = { id:"p_"+uid(), name:n, url:"" };
+  $("btnAddPage").addEventListener("click", ()=>{
+    requireAuth();
+    if(!isAuthed()) return;
+    const name = prompt("추가할 페이지 이름을 입력하세요 (예: 8번마을)");
+    if(!name) return;
+    const p = { id:"p_"+uid(), name:name.trim(), url:"" };
     S.pages.push(p);
     S.currentPageId = p.id;
-    pageName.value = "";
-    saveState();
+    saveLocal();
     renderPages();
-    renderKPIs();
-    clearSelection();
+    renderKpi();
     draw();
     toast("페이지 추가");
   });
 
-  /******************************************************************
-   * CATEGORIES (toggle + color)
-   ******************************************************************/
-  const catChips = $("catChips");
+  // ---------- categories ----------
   function getCat(id){ return S.categories.find(c=>c.id===id); }
+  function markerColor(m){
+    if(!m) return "#7cc4ff";
+    if(m.useCatColor){
+      const c = getCat(m.cat);
+      return (c && c.color) ? c.color : "#7cc4ff";
+    }
+    if(m.colorOverride && m.colorOverride.trim()) return m.colorOverride.trim();
+    const c = getCat(m.cat);
+    return (c && c.color) ? c.color : "#7cc4ff";
+  }
 
   function renderCats(){
     catChips.innerHTML = "";
-    if(!S.categories || !S.categories.length) S.categories = structuredClone(defaultCats);
-
     for(const c of S.categories){
       const chip = document.createElement("div");
       chip.className = "chip" + (c.on ? " on" : "");
-      chip.innerHTML = `<div class="dotc" style="background:${c.color};"></div><div style="font-weight:900;">${escapeHtml(c.name)}</div>`;
+      chip.innerHTML = `<div class="dotc" style="background:${c.color};"></div><div>${c.name}</div>`;
       chip.addEventListener("click", ()=>{
+        requireAuth();
+        if(!isAuthed()) return;
         c.on = !c.on;
         if(!S.categories.some(x=>x.on)){
           c.on = true;
           toast("최소 1개 카테고리는 켜져야 합니다");
         }
-        saveState();
+        saveLocal();
         renderCats();
-        renderKPIs();
+        renderKpi();
         draw();
-      });
-      chip.addEventListener("contextmenu", (e)=>{
-        e.preventDefault();
-        const col = prompt(`${c.name} 색상 변경 (#rrggbb)`, c.color);
-        if(col==null) return;
-        const cc = col.trim();
-        if(!cc) return;
-        c.color = cc;
-        saveState();
-        renderCats();
-        draw();
-        toast("카테고리 색상 변경");
       });
       catChips.appendChild(chip);
     }
   }
 
-  /******************************************************************
-   * MAP IMAGE
-   ******************************************************************/
-  const mapUpload = $("mapUpload");
-  let mapImg = new Image();
-  mapImg.crossOrigin = "anonymous";
-  mapImg.onload = ()=>{
-    S.map.naturalW = mapImg.naturalWidth || 1;
-    S.map.naturalH = mapImg.naturalHeight || 1;
-    if(!S.map.scale || S.map.scale<=0) fitToScreen();
-    saveState();
+  // right toggles
+  function setToggle(el, on){
+    el.classList.toggle("on", !!on);
+    el.dataset.on = on ? "1" : "0";
+  }
+  const tgShowLinesWithCatFilter = $("tgShowChainSameCat");
+  tgShowLinesWithCatFilter.addEventListener("click", ()=>{
+    requireAuth(); if(!isAuthed()) return;
+    S.showLinesWithCatFilter = !S.showLinesWithCatFilter;
+    setToggle(tgShowLinesWithCatFilter, S.showLinesWithCatFilter);
+    saveLocal();
     draw();
-  };
+  });
+
+  // quick-cat chips (just quick set category for selected marker)
+  document.querySelectorAll('[data-quickcat]').forEach(ch=>{
+    ch.addEventListener("click", ()=>{
+      requireAuth(); if(!isAuthed()) return;
+      if(!selectedMarker){ toast("마커를 선택하세요"); return; }
+      const name = ch.getAttribute("data-quickcat");
+      ensureCat(name, "#ffffff");
+      selectedMarker.cat = name;
+      selectedMarker.useCatColor = true;
+      saveLocal();
+      syncSelectedPanel();
+      draw();
+      toast("카테고리 변경");
+    });
+  });
+
+  // The three extra toggles in screenshot: we keep UI only (can be used for quick add category text)
+  const tg1=$("tgAutoAddCatFromText"), tg2=$("tgAutoAddCatFromText2"), tg3=$("tgAutoAddCatFromText3");
+  setToggle(tg1,false); setToggle(tg2,false); setToggle(tg3,false);
+  [tg1,tg2,tg3].forEach(tg=>{
+    tg.addEventListener("click", ()=>{
+      requireAuth(); if(!isAuthed()) return;
+      setToggle(tg, !(tg.dataset.on==="1"));
+    });
+  });
+
+  function ensureCat(name, color){
+    if(S.categories.some(c=>c.id===name)) return;
+    S.categories.push({ id:name, name, color:color||"#ffffff", on:true });
+    renderCats();
+  }
+
+  // ---------- map upload ----------
+  $("fileMap").addEventListener("change", async (e)=>{
+    requireAuth();
+    if(!isAuthed()) return;
+    const f = e.target.files && e.target.files[0];
+    if(!f) return;
+    const dataUrl = await fileToDataURL(f);
+    S.map.imgDataUrl = dataUrl;
+    saveLocal();
+    loadMap();
+    toast("지도 업로드 완료");
+    e.target.value = "";
+  });
+
+  function fileToDataURL(file){
+    return new Promise((res, rej)=>{
+      const fr = new FileReader();
+      fr.onload = ()=>res(fr.result);
+      fr.onerror = rej;
+      fr.readAsDataURL(file);
+    });
+  }
 
   function loadMap(){
     if(S.map.imgDataUrl){
@@ -1030,28 +1340,38 @@
           </radialGradient>
         </defs>
         <rect width="100%" height="100%" fill="url(#g)"/>
-        <text x="50%" y="50%" text-anchor="middle" font-family="Arial" font-size="28" fill="#7a889e">지도 업로드가 필요합니다</text>
+        <text x="50%" y="50%" text-anchor="middle" font-family="Arial" font-size="28" fill="#7a889e">지도 업로드 또는 state99.json 필요</text>
       </svg>`
     );
   }
 
-  mapUpload.addEventListener("change", async ()=>{
-    const f = mapUpload.files && mapUpload.files[0];
-    if(!f) return;
-    const reader = new FileReader();
-    reader.onload = ()=>{
-      const dataUrl = String(reader.result||"");
-      S.map.imgDataUrl = dataUrl;
-      saveState();
-      loadMap();
-      toast("지도 업로드 완료");
-    };
-    reader.readAsDataURL(f);
+  // ---------- export ----------
+  $("btnExport").addEventListener("click", ()=>{
+    requireAuth();
+    if(!isAuthed()) return;
+
+    // index에서 원격(state99.json) 읽을 수 있도록: 사용자가 /data/state99.json으로 업로드하면 됨
+    const blob = new Blob([JSON.stringify(S, null, 2)], {type:"application/json"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "state99.json";
+    a.click();
+    URL.revokeObjectURL(a.href);
+    toast("state99.json 다운로드");
   });
 
-  /******************************************************************
-   * CANVAS resize
-   ******************************************************************/
+  $("btnResetAll").addEventListener("click", ()=>{
+    requireAuth();
+    if(!isAuthed()) return;
+    if(!confirm("전체 초기화할까요? (페이지/마커/지도 포함)")) return;
+    S = structuredClone(defaultState);
+    saveLocal();
+    renderAll();
+    loadMap();
+    toast("전체 초기화 완료");
+  });
+
+  // ---------- canvas sizing ----------
   function resizeCanvas(){
     const wrap = cv.parentElement;
     const w = wrap.clientWidth - 32;
@@ -1072,19 +1392,7 @@
     S.map.ty = (ch - ih*S.map.scale)/2;
   }
 
-  $("btnFit").addEventListener("click", ()=>{
-    fitToScreen();
-    saveState();
-    draw();
-    toast("화면 맞춤");
-  });
-
-  /******************************************************************
-   * MARKERS: visibility + draw
-   ******************************************************************/
-  let dimmedMarkerId = null;
-  let selectedMarkerId = null;
-
+  // ---------- marker data ----------
   function getVisibleMarkers(){
     const curPage = S.currentPageId;
     const onCats = new Set(S.categories.filter(c=>c.on).map(c=>c.id));
@@ -1095,66 +1403,34 @@
       return onCats.has(m.cat);
     });
   }
-  function markerColor(m){
-    if(!m) return "#7cc4ff";
-    if(m.useCatColor){
-      const c = getCat(m.cat);
-      return (c && c.color) ? c.color : "#7cc4ff";
-    }
-    if(m.colorOverride && m.colorOverride.trim()) return m.colorOverride.trim();
-    const c = getCat(m.cat);
-    return (c && c.color) ? c.color : "#7cc4ff";
-  }
 
-  function renderKPIs(){
+  function renderKpi(){
     const curPage = S.currentPageId;
     const total = (S.markers||[]).filter(m=>m.pageId===curPage).length;
     const shown = getVisibleMarkers().length;
-    $("kpiTotal").textContent = "마커: " + total;
-    $("kpiShown").textContent = "표시 중: " + shown;
-
-    const sel = S.markers.find(m=>m.id===selectedMarkerId);
-    $("selMarkerInfo").textContent = sel ? (sel.name || "(이름 없음)") : "없음";
+    $("kpi").textContent = `표시 중 마커: ${shown} / 페이지 전체: ${total}`;
   }
 
-  function worldFromScreen(sx, sy){
-    return { x:(sx - S.map.tx)/S.map.scale, y:(sy - S.map.ty)/S.map.scale };
-  }
+  // ---------- drawing ----------
   function worldFromNorm(nx, ny){
     const iw = S.map.naturalW || (mapImg.naturalWidth||1);
     const ih = S.map.naturalH || (mapImg.naturalHeight||1);
     return { x:nx*iw, y:ny*ih };
   }
-  function normFromWorld(wx, wy){
-    const iw = S.map.naturalW || (mapImg.naturalWidth||1);
-    const ih = S.map.naturalH || (mapImg.naturalHeight||1);
-    return { nx: clamp(wx/iw, 0, 1), ny: clamp(wy/ih, 0, 1) };
+  function screenFromWorld(wx, wy){
+    return { sx: wx*S.map.scale + S.map.tx, sy: wy*S.map.scale + S.map.ty };
   }
 
-  function pickMarkerAt(sx, sy){
-    const w = worldFromScreen(sx, sy);
-    const ms = getVisibleMarkers();
-    let best=null, bestD=Infinity;
-    for(const m of ms){
-      const p = worldFromNorm(m.x, m.y);
-      const r = (m.r ?? 10);
-      const dx = p.x - w.x, dy = p.y - w.y;
-      const d = Math.sqrt(dx*dx + dy*dy);
-      if(d <= r*1.3 && d < bestD){ best=m; bestD=d; }
-    }
-    return best;
-  }
-
+  let circleHitboxes = []; // {id,sx,sy,rPx}
   function draw(){
     ctx.clearRect(0,0,cv.width,cv.height);
+    circleHitboxes = [];
 
-    // bg
     ctx.save();
     ctx.fillStyle = "rgba(0,0,0,.22)";
     ctx.fillRect(0,0,cv.width,cv.height);
     ctx.restore();
 
-    // world
     ctx.save();
     ctx.translate(S.map.tx, S.map.ty);
     ctx.scale(S.map.scale, S.map.scale);
@@ -1168,26 +1444,29 @@
 
     const ms = getVisibleMarkers();
 
-    // chains lines
-    const byChain = new Map();
-    for(const m of ms){
-      if(!m.chainId || !m.chainIndex) continue;
-      if(!byChain.has(m.chainId)) byChain.set(m.chainId, []);
-      byChain.get(m.chainId).push(m);
-    }
-    ctx.lineWidth = 2 / S.map.scale;
-    ctx.strokeStyle = "rgba(255,255,255,.78)";
-    ctx.globalAlpha = 0.9;
-    for(const arr of byChain.values()){
-      arr.sort((a,b)=>(a.chainIndex||0)-(b.chainIndex||0));
-      if(arr.length<2) continue;
-      ctx.beginPath();
-      for(let i=0;i<arr.length;i++){
-        const p = worldFromNorm(arr[i].x, arr[i].y);
-        if(i===0) ctx.moveTo(p.x, p.y);
-        else ctx.lineTo(p.x, p.y);
+    // chain lines
+    const showLines = !!S.showLinesWithCatFilter;
+    if(showLines){
+      const byChain = new Map();
+      for(const m of ms){
+        if(!m.chainId || !m.chainIndex) continue;
+        if(!byChain.has(m.chainId)) byChain.set(m.chainId, []);
+        byChain.get(m.chainId).push(m);
       }
-      ctx.stroke();
+      ctx.lineWidth = 2 / S.map.scale;
+      ctx.strokeStyle = "rgba(255,255,255,.78)";
+      ctx.globalAlpha = 0.9;
+      for(const arr of byChain.values()){
+        arr.sort((a,b)=>(a.chainIndex||0)-(b.chainIndex||0));
+        if(arr.length<2) continue;
+        ctx.beginPath();
+        for(let i=0;i<arr.length;i++){
+          const p = worldFromNorm(arr[i].x, arr[i].y);
+          if(i===0) ctx.moveTo(p.x, p.y);
+          else ctx.lineTo(p.x, p.y);
+        }
+        ctx.stroke();
+      }
     }
 
     // markers
@@ -1196,17 +1475,15 @@
       const r = (m.r ?? 10);
       const col = markerColor(m);
 
-      const circleAlpha = (dimmedMarkerId === m.id) ? 0.30 : 1.0;
-
       // circle
       ctx.save();
-      ctx.globalAlpha = circleAlpha;
+      ctx.globalAlpha = 1;
       ctx.beginPath();
       ctx.arc(p.x, p.y, r, 0, Math.PI*2);
       ctx.fillStyle = col;
       ctx.fill();
       ctx.lineWidth = 2 / S.map.scale;
-      ctx.strokeStyle = (m.id===selectedMarkerId) ? "rgba(124,196,255,.9)" : "rgba(0,0,0,.35)";
+      ctx.strokeStyle = "rgba(0,0,0,.35)";
       ctx.stroke();
       ctx.restore();
 
@@ -1223,11 +1500,11 @@
         ctx.restore();
       }
 
-      // label (admin preview)
+      // label (marker related font uses .markerFont concept: keep crisp)
       if(m.name){
         ctx.save();
         ctx.globalAlpha = 0.98;
-        ctx.fillStyle = m.labelColor || (S.markerLabelDefault || "#e7eef8");
+        ctx.fillStyle = m.labelColor || "#e7eef8";
         ctx.font = `${m.fw ?? 900} ${m.fs ?? 15}px ui-sans-serif`;
         ctx.textAlign = "left";
         ctx.textBaseline = "middle";
@@ -1235,14 +1512,28 @@
         ctx.fillText(m.name, p.x + off, p.y);
         ctx.restore();
       }
+
+      // hitbox
+      const sp = screenFromWorld(p.x, p.y);
+      circleHitboxes.push({ id:m.id, sx:sp.sx, sy:sp.sy, rPx: r*S.map.scale });
     }
 
     ctx.restore();
   }
 
-  /******************************************************************
-   * PAN/ZOOM
-   ******************************************************************/
+  function pickCircleAt(sx, sy){
+    let best=null, bestD=Infinity;
+    for(const c of circleHitboxes){
+      const d = Math.hypot(c.sx - sx, c.sy - sy);
+      if(d <= c.rPx*1.25 && d < bestD){
+        best = c;
+        bestD = d;
+      }
+    }
+    return best;
+  }
+
+  // ---------- pan/zoom ----------
   let isPanning=false, lastX=0,lastY=0;
 
   cv.addEventListener("pointerdown", (e)=>{
@@ -1281,406 +1572,631 @@
     draw();
   }, {passive:false});
 
-  /******************************************************************
-   * ADD marker by right click / long press
-   ******************************************************************/
-  function addMarkerAtNorm(nx, ny){
+  // ---------- marker create / select ----------
+  let selectedMarker = null;
+  let insertAfterMarkerId = null; // for "중간 삽입" 느낌
+
+  function newMarkerAt(normX, normY){
     const m = {
       id:"m_"+uid(),
       pageId:S.currentPageId,
-      x:nx, y:ny,
-      cat:"큐브",
+      x:normX, y:normY,
       name:"",
+      cat: (S.categories.find(c=>c.on && c.id!=="전체")?.id) || "기텔",
+      colorOverride:"",
+      useCatColor:true,
       yt:"",
       ytTitle:"",
       memo:"",
-      r:10, fs:15, fw:900,
-      labelColor:S.markerLabelDefault,
-      useCatColor:true,
-      colorOverride:"",
-      chainId:"c_"+S.currentPageId, // default one chain per page
-      chainIndex: nextChainIndexForPage()
+      r:10,
+      fs:15,
+      fw:900,
+      labelColor:"#e7eef8",
+      chainId:null,
+      chainIndex:null,
     };
+
+    // chain logic (간단): 새 체인 or 기존 체인 이어붙이기
+    if(insertAfterMarkerId){
+      const base = S.markers.find(x=>x.id===insertAfterMarkerId);
+      if(base && base.chainId){
+        m.chainId = base.chainId;
+        m.chainIndex = (base.chainIndex||0) + 1;
+        // shift 이후 인덱스 +1
+        for(const mm of S.markers){
+          if(mm.chainId===m.chainId && (mm.chainIndex||0) >= m.chainIndex){
+            mm.chainIndex = (mm.chainIndex||0) + 1;
+          }
+        }
+      }
+    }else{
+      // 기본: 페이지 내 새 체인 시작
+      m.chainId = "c_"+uid();
+      m.chainIndex = 1;
+    }
+
     S.markers.push(m);
-    saveState();
-    renderKPIs();
-    selectedMarkerId = m.id;
-    openEdit(m.id);
+    saveLocal();
+    selectMarker(m.id);
+    renderKpi();
     draw();
-    toast("마커 추가");
-  }
-  function nextChainIndexForPage(){
-    const ms = (S.markers||[]).filter(m=>m.pageId===S.currentPageId && m.chainId==="c_"+S.currentPageId && typeof m.chainIndex==="number");
-    const max = ms.reduce((a,m)=>Math.max(a,m.chainIndex||0), 0);
-    return max + 1;
   }
 
+  function selectMarker(id){
+    selectedMarker = S.markers.find(m=>m.id===id) || null;
+    syncSelectedPanel();
+  }
+
+  function syncSelectedPanel(){
+    $("selName").textContent = selectedMarker ? (selectedMarker.name || "(이름 없음)") : "(이름 없음)";
+    $("selLink").value = selectedMarker ? (selectedMarker.yt || "") : "";
+    $("selYtTitle").value = selectedMarker ? (selectedMarker.ytTitle || "") : "";
+    $("btnOpenMarkerEdit").disabled = !selectedMarker;
+    $("btnApplyQuick").disabled = !selectedMarker;
+    $("btnUseCatColor").disabled = !selectedMarker;
+  }
+
+  // click to select
+  cv.addEventListener("click", (e)=>{
+    requireAuth(); if(!isAuthed()) return;
+    const rect = cv.getBoundingClientRect();
+    const sx = e.clientX - rect.left;
+    const sy = e.clientY - rect.top;
+    const hit = pickCircleAt(sx, sy);
+    if(hit){
+      selectMarker(hit.id);
+      toast("마커 선택");
+      return;
+    }
+    selectedMarker = null;
+    insertAfterMarkerId = null;
+    syncSelectedPanel();
+  });
+
+  // right-click add marker
   cv.addEventListener("contextmenu", (e)=>{
     e.preventDefault();
-    if(!isAuthed()){ requireAuth(); return; }
+    requireAuth(); if(!isAuthed()) return;
+
     const rect = cv.getBoundingClientRect();
     const sx = e.clientX - rect.left;
     const sy = e.clientY - rect.top;
-    const w = worldFromScreen(sx, sy);
-    const n = normFromWorld(w.x, w.y);
-    addMarkerAtNorm(n.nx, n.ny);
+
+    const wx = (sx - S.map.tx) / S.map.scale;
+    const wy = (sy - S.map.ty) / S.map.scale;
+
+    const iw = S.map.naturalW || (mapImg.naturalWidth||1);
+    const ih = S.map.naturalH || (mapImg.naturalHeight||1);
+
+    const nx = clamp(wx / iw, 0, 1);
+    const ny = clamp(wy / ih, 0, 1);
+
+    newMarkerAt(nx, ny);
+    toast("마커 추가");
   });
 
-  // Long press for mobile
-  let lpTimer=null, lpStart=null;
-  cv.addEventListener("pointerdown", (e)=>{
-    if(e.pointerType !== "touch") return;
-    const rect = cv.getBoundingClientRect();
-    lpStart = { x: e.clientX - rect.left, y: e.clientY - rect.top };
-    clearTimeout(lpTimer);
-    lpTimer = setTimeout(()=>{
-      if(!isAuthed()){ requireAuth(); return; }
-      const w = worldFromScreen(lpStart.x, lpStart.y);
-      const n = normFromWorld(w.x, w.y);
-      addMarkerAtNorm(n.nx, n.ny);
-    }, 520);
+  // selected quick edit fields (5번: 링크 → 유튜브 링크, 밑에 유튜브 표시명 표시)
+  $("selLink").addEventListener("input", ()=>{
+    if(!selectedMarker) return;
+    selectedMarker.yt = $("selLink").value.trim();
+    saveLocal();
   });
-  cv.addEventListener("pointermove", (e)=>{
-    if(!lpStart) return;
-    const rect = cv.getBoundingClientRect();
-    const x = e.clientX - rect.left, y = e.clientY - rect.top;
-    if(Math.hypot(x-lpStart.x, y-lpStart.y) > 12){
-      clearTimeout(lpTimer);
+  $("selYtTitle").addEventListener("input", ()=>{
+    if(!selectedMarker) return;
+    selectedMarker.ytTitle = $("selYtTitle").value;
+    saveLocal();
+  });
+
+  $("btnOpenMarkerEdit").addEventListener("click", ()=>{
+    if(!selectedMarker) return;
+    openMarkerModal(selectedMarker.id);
+  });
+
+  // ---------- quick palette (5번 이미지 그대로 느낌) ----------
+  const QUICK = [
+    {name:"빨", c:"#ff3b30"},
+    {name:"주", c:"#ff9500"},
+    {name:"노", c:"#ffd60a"},
+    {name:"초", c:"#34c759"},
+    {name:"파", c:"#0a84ff"},
+    {name:"흰", c:"#ffffff"},
+    {name:"검", c:"#0b0b0f"},
+  ];
+  let pickedQuick = null;
+
+  function renderPalette(){
+    palette.innerHTML = "";
+    for(const q of QUICK){
+      const wrap = document.createElement("div");
+      wrap.className = "swWrap";
+      wrap.innerHTML = `
+        <div class="sw" style="--c:${q.c}" title="${q.name}"></div>
+        <div class="swLabel">${q.name}</div>
+      `;
+      wrap.querySelector(".sw").addEventListener("click", ()=>{
+        pickedQuick = q.c;
+        toast("색상 선택");
+      });
+      palette.appendChild(wrap);
     }
-  });
-  cv.addEventListener("pointerup", ()=>{ clearTimeout(lpTimer); lpStart=null; });
-  cv.addEventListener("pointercancel", ()=>{ clearTimeout(lpTimer); lpStart=null; });
-
-  /******************************************************************
-   * select marker / dim marker / edit
-   ******************************************************************/
-  cv.addEventListener("click", (e)=>{
-    const rect = cv.getBoundingClientRect();
-    const sx = e.clientX - rect.left;
-    const sy = e.clientY - rect.top;
-    const hit = pickMarkerAt(sx, sy);
-    if(hit){
-      selectedMarkerId = hit.id;
-      dimmedMarkerId = hit.id;   // admin에서도 클릭하면 dim 30%
-      renderKPIs();
-      draw();
-      openEdit(hit.id);
-    }else{
-      clearSelection();
-      draw();
-    }
-  });
-
-  function clearSelection(){
-    selectedMarkerId = null;
-    dimmedMarkerId = null;
-    renderKPIs();
   }
 
-  $("btnClearDim").addEventListener("click", ()=>{
-    dimmedMarkerId = null;
-    selectedMarkerId = null;
-    renderKPIs();
+  $("btnApplyQuick").addEventListener("click", ()=>{
+    requireAuth(); if(!isAuthed()) return;
+    if(!selectedMarker){ toast("마커를 선택하세요"); return; }
+    if(!pickedQuick){ toast("빠른 색상을 먼저 선택하세요"); return; }
+    selectedMarker.colorOverride = pickedQuick;
+    selectedMarker.useCatColor = false;
+    saveLocal();
+    draw();
+    toast("색상 적용");
+  });
+
+  $("btnUseCatColor").addEventListener("click", ()=>{
+    requireAuth(); if(!isAuthed()) return;
+    if(!selectedMarker){ toast("마커를 선택하세요"); return; }
+    selectedMarker.colorOverride = "";
+    selectedMarker.useCatColor = true;
+    saveLocal();
+    draw();
+    toast("카테고리 색상 적용");
+  });
+
+  // chain tools
+  $("btnClearLines").addEventListener("click", ()=>{
+    requireAuth(); if(!isAuthed()) return;
+    if(!confirm("모든 선(체인)을 제거할까요?")) return;
+    for(const m of S.markers){
+      if(m.pageId===S.currentPageId){
+        m.chainId = null;
+        m.chainIndex = null;
+      }
+    }
+    S.chains = S.chains.filter(c=>c.pageId!==S.currentPageId);
+    insertAfterMarkerId = null;
+    saveLocal();
+    draw();
+    toast("모든 선 제거");
+  });
+
+  $("btnRechain").addEventListener("click", ()=>{
+    requireAuth(); if(!isAuthed()) return;
+    // 간단: 현재 페이지에서 chainId 없는 마커를 1개의 체인으로 재부여 (배치 순서=생성순)
+    const pageMs = S.markers.filter(m=>m.pageId===S.currentPageId);
+    const chainId = "c_"+uid();
+    let idx=1;
+    for(const m of pageMs){
+      m.chainId = chainId;
+      m.chainIndex = idx++;
+    }
+    saveLocal();
+    draw();
+    toast("선 다시 체인(전체)");
+  });
+
+  $("btnResetMarkers").addEventListener("click", ()=>{
+    requireAuth(); if(!isAuthed()) return;
+    if(!confirm("현재 페이지의 마커를 모두 삭제할까요?")) return;
+    const pid = S.currentPageId;
+    S.markers = S.markers.filter(m=>m.pageId!==pid);
+    S.chains = S.chains.filter(c=>c.pageId!==pid);
+    selectedMarker = null;
+    insertAfterMarkerId = null;
+    saveLocal();
+    syncSelectedPanel();
+    renderKpi();
     draw();
     toast("마커 초기화");
   });
 
-  /******************************************************************
-   * EXPORT state99.json
-   ******************************************************************/
-  $("btnExport").addEventListener("click", ()=>{
-    if(!isAuthed()){ requireAuth(); return; }
-    // 저장 후 export
-    saveState();
-    const blob = new Blob([JSON.stringify(S, null, 2)], {type:"application/json"});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "state99.json"; // ✅ admin99 전용 파일명
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-    toast("state99.json 내보내기 완료");
-  });
-
-  /******************************************************************
-   * RESET ALL (admin99 only)
-   ******************************************************************/
-  $("btnResetAll").addEventListener("click", ()=>{
-    if(!isAuthed()){ requireAuth(); return; }
-    if(!confirm("admin99 데이터를 모두 초기화할까요?\n(기존 admin82/index에는 영향 없음)")) return;
-    localStorage.removeItem(LS_KEY);
-    S = structuredClone(defaultState);
-    saveState();
-    renderLogo();
-    renderPages();
-    renderCats();
-    renderEditCatOptions();
-    resizeCanvas();
-    loadMap();
-    fitToScreen();
-    clearSelection();
-    renderKPIs();
-    draw();
-    toast("초기화 완료");
-  });
-
-  /******************************************************************
-   * EDIT MODAL
-   ******************************************************************/
-  const editOverlay = $("editOverlay");
-  const btnCloseEdit = $("btnCloseEdit");
-  const btnSave = $("btnSave");
-  const btnDelete = $("btnDelete");
-
-  const mName = $("mName");
-  const mCat = $("mCat");
-  const mColor = $("mColor");
-  const mUseCatColor = $("mUseCatColor");
-  const mColorPreview = $("mColorPreview");
-  const mYt = $("mYt");
-  const mYtTitle = $("mYtTitle");
-  const mMemo = $("mMemo");
-  const mR = $("mR");
-  const mRNum = $("mRNum");
-  const mFS = $("mFS");
-  const mFSNum = $("mFSNum");
-  const mFW = $("mFW");
-  const mLabelColor = $("mLabelColor");
-  const btnLabelDefault = $("btnLabelDefault");
-  const mPos = $("mPos");
-
-  // sync flags (name -> ytTitle/memo only if they were auto)
-  let autoYtTitle = true;
-  let autoMemo = true;
+  // ---------- marker modal (9번) ----------
   let editingId = null;
-
-  function renderEditCatOptions(){
-    mCat.innerHTML = "";
-    for(const c of S.categories){
-      if(c.id === "전체") continue;
-      const opt = document.createElement("option");
-      opt.value = c.id;
-      opt.textContent = c.name;
-      mCat.appendChild(opt);
-    }
-  }
-
-  function openEdit(id){
-    if(!isAuthed()){ requireAuth(); return; }
-    const m = S.markers.find(x=>x.id===id);
+  function openMarkerModal(markerId){
+    requireAuth(); if(!isAuthed()) return;
+    const m = S.markers.find(x=>x.id===markerId);
     if(!m) return;
-    editingId = id;
 
-    renderEditCatOptions();
+    editingId = markerId;
+    // categories select
+    const sel = $("mfCat");
+    sel.innerHTML = "";
+    for(const c of S.categories){
+      if(c.id==="전체") continue;
+      const o = document.createElement("option");
+      o.value = c.id;
+      o.textContent = c.name;
+      sel.appendChild(o);
+    }
 
-    mName.value = m.name || "";
-    mCat.value = (m.cat && m.cat!=="전체") ? m.cat : "큐브";
+    $("mfName").value = m.name || "";
+    $("mfCat").value = m.cat || "기텔";
 
-    mUseCatColor.checked = !!m.useCatColor;
-    mColor.value = (m.colorOverride || "");
-    mYt.value = m.yt || "";
-    mYtTitle.value = m.ytTitle || "";
-    mMemo.value = m.memo || "";
+    $("mfColor").value = m.colorOverride || "";
+    $("mfUseCatColor").checked = !!m.useCatColor;
 
-    mR.value = String(m.r ?? 10);
-    mRNum.value = String(m.r ?? 10);
+    $("mfYt").value = m.yt || "";
+    $("mfYtTitle").value = m.ytTitle || "";
+    $("mfMemo").value = m.memo || "";
 
-    mFS.value = String(m.fs ?? 15);
-    mFSNum.value = String(m.fs ?? 15);
+    $("mfR").value = m.r ?? 10;
+    $("mfFs").value = m.fs ?? 15;
+    $("mfFw").value = String(m.fw ?? 900);
+    $("mfLabelColor").value = m.labelColor || "#e7eef8";
 
-    mFW.value = String(m.fw ?? 900);
-    mLabelColor.value = m.labelColor || (S.markerLabelDefault || "#e7eef8");
+    $("mfRVal").textContent = $("mfR").value;
+    $("mfFsVal").textContent = $("mfFs").value;
 
-    // auto sync logic:
-    autoYtTitle = (!m.ytTitle || m.ytTitle === m.name);
-    autoMemo = (!m.memo || m.memo === m.name);
+    $("mfPos").textContent = `좌표(비율): ${m.x.toFixed(6)}, ${m.y.toFixed(6)}`;
 
-    mPos.textContent = `${(m.x||0).toFixed(6)}, ${(m.y||0).toFixed(6)}`;
-
-    updateColorPreview();
-
-    editOverlay.classList.add("show");
-    editOverlay.setAttribute("aria-hidden","false");
-    mName.focus();
+    updateColorChip();
+    mMarker.classList.add("show");
   }
 
-  function closeEdit(){
-    editOverlay.classList.remove("show");
-    editOverlay.setAttribute("aria-hidden","true");
+  function closeMarkerModal(){
+    mMarker.classList.remove("show");
     editingId = null;
   }
+  $("btnCloseMarker").addEventListener("click", closeMarkerModal);
+  $("btnSaveMarker").addEventListener("click", saveMarkerModal);
+  $("btnDeleteMarker").addEventListener("click", deleteMarkerModal);
 
-  btnCloseEdit.addEventListener("click", closeEdit);
-  editOverlay.addEventListener("click", (e)=>{
-    if(e.target === editOverlay) closeEdit();
-  });
-
-  // Enter = save (as requested)
-  window.addEventListener("keydown", (e)=>{
-    if(!editOverlay.classList.contains("show")) return;
-    if(e.key==="Escape"){ closeEdit(); return; }
+  // Enter = 저장
+  mMarker.addEventListener("keydown", (e)=>{
     if(e.key==="Enter"){
-      // allow enter in textarea without saving? (요청상 Enter=저장)
+      // textarea에서는 Enter 유지
+      if(e.target && e.target.tagName==="TEXTAREA") return;
       e.preventDefault();
-      doSave();
+      saveMarkerModal();
+    }
+    if(e.key==="Escape"){
+      closeMarkerModal();
     }
   });
 
-  function updateColorPreview(){
-    const m = S.markers.find(x=>x.id===editingId);
+  function updateColorChip(){
+    const m = getEditing();
     if(!m) return;
-    const temp = {
-      ...m,
-      cat: mCat.value,
-      useCatColor: mUseCatColor.checked,
-      colorOverride: (mColor.value||"").trim()
-    };
-    mColorPreview.style.background = markerColor(temp);
+    const chip = $("mfColorChip");
+    const col = $("mfUseCatColor").checked ? (getCat($("mfCat").value)?.color || "#7cc4ff") : ($("mfColor").value || markerColor(m));
+    chip.style.setProperty("--c", col);
   }
+  $("mfColor").addEventListener("input", updateColorChip);
+  $("mfUseCatColor").addEventListener("change", updateColorChip);
+  $("mfCat").addEventListener("change", updateColorChip);
 
-  mUseCatColor.addEventListener("change", updateColorPreview);
-  mColor.addEventListener("input", updateColorPreview);
-  mCat.addEventListener("change", updateColorPreview);
+  // 8번: 이름 입력 시 유튜브 표시명 + 메모에도 동시에 같은 글(단, 표시명/메모를 사용자가 수정하면 유지)
+  let ytTouched = false, memoTouched = false;
+  $("mfYtTitle").addEventListener("input", ()=>{ ytTouched = true; syncSelectedPanelLive(); });
+  $("mfMemo").addEventListener("input", ()=>{ memoTouched = true; syncSelectedPanelLive(); });
 
-  // Name sync rules:
-  // - name 입력하면 ytTitle/memo도 같이 채움(단, 사용자가 따로 수정한 적 없는 경우만)
-  mName.addEventListener("input", ()=>{
-    const v = mName.value;
-    if(autoYtTitle) mYtTitle.value = v;
-    if(autoMemo) mMemo.value = v;
-  });
-  mYtTitle.addEventListener("input", ()=>{ autoYtTitle = false; });
-  mMemo.addEventListener("input", ()=>{ autoMemo = false; });
-
-  // size sync: r drives fs
-  function syncRToFS(){
-    const r = Number(mR.value||10);
-    mRNum.value = String(r);
-    // 비율: r=10 -> fs=15
-    const fs = Math.round(clamp(r * 1.5, 10, 26));
-    mFS.value = String(fs);
-    mFSNum.value = String(fs);
-  }
-  mR.addEventListener("input", syncRToFS);
-  mRNum.addEventListener("input", ()=>{
-    const v = clamp(Number(mRNum.value||10), 4, 30);
-    mR.value = String(v);
-    syncRToFS();
-  });
-  mFS.addEventListener("input", ()=>{
-    const v = clamp(Number(mFS.value||15), 10, 26);
-    mFSNum.value = String(v);
-  });
-  mFSNum.addEventListener("input", ()=>{
-    const v = clamp(Number(mFSNum.value||15), 10, 26);
-    mFS.value = String(v);
+  $("mfName").addEventListener("input", ()=>{
+    const v = $("mfName").value;
+    if(!ytTouched) $("mfYtTitle").value = v;
+    if(!memoTouched) $("mfMemo").value = v;
+    syncSelectedPanelLive();
   });
 
-  btnLabelDefault.addEventListener("click", ()=>{
-    mLabelColor.value = S.markerLabelDefault || "#e7eef8";
-  });
-
-  // Quick colors
-  const quickMarkerColors = [
-    "#ff5d5d","#ff8a00","#ffd60a","#39d98a","#2b8cff","#ffffff","#000000"
-  ];
-  const quickLabelColors = [
-    "#ff5d5d","#ff8a00","#ffd60a","#39d98a","#2b8cff","#ffffff"
-  ];
-  function renderQuickColors(){
-    const qm = $("quickMarkerColors");
-    const ql = $("quickLabelColors");
-    qm.innerHTML = "";
-    ql.innerHTML = "";
-    for(const c of quickMarkerColors){
-      const b = document.createElement("div");
-      b.className = "swatch";
-      b.title = c;
-      b.innerHTML = `<div style="background:${c};"></div>`;
-      b.addEventListener("click", ()=>{
-        mUseCatColor.checked = false;
-        mColor.value = c;
-        updateColorPreview();
-      });
-      qm.appendChild(b);
-    }
-    for(const c of quickLabelColors){
-      const b = document.createElement("div");
-      b.className = "swatch";
-      b.title = c;
-      b.innerHTML = `<div style="background:${c};"></div>`;
-      b.addEventListener("click", ()=>{
-        mLabelColor.value = c;
-      });
-      ql.appendChild(b);
+  function syncSelectedPanelLive(){
+    // 편집 중에도 우측 하단 표시 반영
+    if(!editingId) return;
+    if(selectedMarker && selectedMarker.id === editingId){
+      $("selName").textContent = $("mfName").value || "(이름 없음)";
+      $("selYtTitle").value = $("mfYtTitle").value || "";
+      $("selLink").value = $("mfYt").value || "";
     }
   }
-  renderQuickColors();
 
-  function doSave(){
-    const m = S.markers.find(x=>x.id===editingId);
+  $("mfR").addEventListener("input", ()=>{
+    $("mfRVal").textContent = $("mfR").value;
+    // 원 크기에 맞춰 글씨 자동 스케일
+    const r = Number($("mfR").value);
+    const fs = clamp(Math.round(r * 1.5), 8, 40);
+    $("mfFs").value = fs;
+    $("mfFsVal").textContent = fs;
+  });
+  $("mfFs").addEventListener("input", ()=>{ $("mfFsVal").textContent = $("mfFs").value; });
+
+  $("mfLabelDefault").addEventListener("click", ()=>{ $("mfLabelColor").value = "#e7eef8"; });
+
+  function getEditing(){
+    if(!editingId) return null;
+    return S.markers.find(x=>x.id===editingId) || null;
+  }
+
+  function saveMarkerModal(){
+    requireAuth(); if(!isAuthed()) return;
+    const m = getEditing();
     if(!m) return;
 
-    m.name = (mName.value||"").trim();
-    m.cat = mCat.value;
+    m.name = ($("mfName").value || "").trim();
+    m.cat = $("mfCat").value || "기텔";
+    ensureCat(m.cat, "#ffffff");
 
-    m.useCatColor = !!mUseCatColor.checked;
-    m.colorOverride = (mColor.value||"").trim();
+    m.useCatColor = $("mfUseCatColor").checked;
+    m.colorOverride = ($("mfColor").value || "").trim();
 
-    m.yt = (mYt.value||"").trim();
-    m.ytTitle = (mYtTitle.value||"").trim();
-    m.memo = (mMemo.value||"").trim();
+    m.yt = ($("mfYt").value || "").trim();
+    m.ytTitle = ($("mfYtTitle").value || "").trim();
+    m.memo = ($("mfMemo").value || "").trim();
 
-    m.r = clamp(Number(mR.value||10), 4, 30);
-    m.fs = clamp(Number(mFS.value||15), 10, 26);
-    m.fw = clamp(Number(mFW.value||900), 600, 900);
-    m.labelColor = (mLabelColor.value||"").trim() || (S.markerLabelDefault || "#e7eef8");
+    m.r = Number($("mfR").value);
+    m.fs = Number($("mfFs").value);
+    m.fw = Number($("mfFw").value);
+    m.labelColor = ($("mfLabelColor").value || "#e7eef8").trim();
 
-    saveState();
-    renderKPIs();
+    saveLocal();
+    selectMarker(m.id);
+    renderCats();
+    renderKpi();
     draw();
     toast("저장 완료");
-    closeEdit();
   }
 
-  btnSave.addEventListener("click", doSave);
-
-  btnDelete.addEventListener("click", ()=>{
-    const m = S.markers.find(x=>x.id===editingId);
+  function deleteMarkerModal(){
+    requireAuth(); if(!isAuthed()) return;
+    const m = getEditing();
     if(!m) return;
     if(!confirm("이 마커를 삭제할까요?")) return;
-    S.markers = S.markers.filter(x=>x.id!==editingId);
-    saveState();
-    closeEdit();
-    clearSelection();
-    renderKPIs();
+
+    // remove and reindex chain
+    const cid = m.chainId;
+    const cidx = m.chainIndex;
+    S.markers = S.markers.filter(x=>x.id!==m.id);
+    if(cid && cidx){
+      for(const mm of S.markers){
+        if(mm.chainId===cid && (mm.chainIndex||0) > cidx){
+          mm.chainIndex = (mm.chainIndex||0) - 1;
+        }
+      }
+    }
+    saveLocal();
+    closeMarkerModal();
+    selectedMarker = null;
+    syncSelectedPanel();
+    renderKpi();
     draw();
     toast("삭제 완료");
+  }
+
+  $("btnNewChain").addEventListener("click", ()=>{
+    requireAuth(); if(!isAuthed()) return;
+    const m = getEditing();
+    if(!m) return;
+    m.chainId = "c_"+uid();
+    m.chainIndex = 1;
+    insertAfterMarkerId = null;
+    saveLocal();
+    draw();
+    toast("새 체인 시작");
   });
 
-  /******************************************************************
-   * INIT
-   ******************************************************************/
-  renderPages();
-  renderCats();
-  renderEditCatOptions();
+  $("btnInsertAfter").addEventListener("click", ()=>{
+    requireAuth(); if(!isAuthed()) return;
+    const m = getEditing();
+    if(!m) return;
+    insertAfterMarkerId = m.id;
+    toast("중간 삽입 모드 활성화");
+  });
 
-  // load map & canvas
-  resizeCanvas();
-  loadMap();
-  if(!S.map.scale || S.map.scale<=0){
-    // fit after map load; if placeholder, still fits
-    setTimeout(()=>{
-      fitToScreen();
-      saveState();
-      draw();
-    }, 0);
-  }else{
+  // open modal via double click on marker
+  cv.addEventListener("dblclick", (e)=>{
+    requireAuth(); if(!isAuthed()) return;
+    const rect = cv.getBoundingClientRect();
+    const sx = e.clientX - rect.left;
+    const sy = e.clientY - rect.top;
+    const hit = pickCircleAt(sx, sy);
+    if(hit){
+      selectMarker(hit.id);
+      ytTouched = false; memoTouched = false;
+      openMarkerModal(hit.id);
+    }
+  });
+
+  // ---------- category modal (7번 이미지) ----------
+  let catSelectedRowId = null;
+
+  $("btnEditCats").addEventListener("click", ()=>{
+    requireAuth(); if(!isAuthed()) return;
+    openCatsModal();
+  });
+  $("btnCloseCats").addEventListener("click", ()=>mCats.classList.remove("show"));
+
+  function openCatsModal(){
+    catSelectedRowId = null;
+    renderCatRows();
+    renderCatQuickPalette();
+    mCats.classList.add("show");
+  }
+
+  function renderCatQuickPalette(){
+    const wrap = $("catQuickPalette");
+    wrap.innerHTML = "";
+    for(const q of QUICK){
+      const w = document.createElement("div");
+      w.className = "swWrap";
+      w.innerHTML = `<div class="sw" style="--c:${q.c}"></div><div class="swLabel">${q.name}</div>`;
+      w.querySelector(".sw").addEventListener("click", ()=>{
+        if(!catSelectedRowId){ toast("카테고리 행을 먼저 선택하세요"); return; }
+        const c = S.categories.find(x=>x.id===catSelectedRowId);
+        if(!c) return;
+        c.color = q.c;
+        renderCatRows();
+      });
+      wrap.appendChild(w);
+    }
+  }
+
+  function renderCatRows(){
+    const rows = $("catRows");
+    rows.innerHTML = "";
+
+    const list = S.categories.filter(c=>c.id!=="전체"); // 편집은 전체 제외(필터칩은 유지)
+    for(const c of list){
+      const row = document.createElement("div");
+      row.style.display = "grid";
+      row.style.gridTemplateColumns = "1fr 70px 90px";
+      row.style.gap = "10px";
+      row.style.alignItems = "center";
+      row.style.marginBottom = "10px";
+
+      row.innerHTML = `
+        <input class="field" value="${c.name}" />
+        <div class="colorChip" style="--c:${c.color};"></div>
+        <button class="pill danger" type="button">삭제</button>
+      `;
+
+      const inp = row.querySelector("input");
+      const chip = row.querySelector(".colorChip");
+      const del = row.querySelector("button");
+
+      row.addEventListener("click", ()=>{
+        catSelectedRowId = c.id;
+        toast("카테고리 선택");
+      });
+
+      inp.addEventListener("input", ()=>{
+        c.name = inp.value;
+      });
+
+      chip.addEventListener("click", ()=>{
+        catSelectedRowId = c.id;
+        const next = prompt("색상 코드 입력 (#rrggbb)", c.color);
+        if(next===null) return;
+        c.color = (next||"").trim() || c.color;
+        renderCatRows();
+      });
+
+      del.addEventListener("click", (e)=>{
+        e.stopPropagation();
+        if(!confirm(`"${c.name}" 카테고리를 삭제할까요?`)) return;
+        // markers with this cat -> move to "기텔"
+        const fallback = S.categories.find(x=>x.id==="기텔") || S.categories[0];
+        for(const m of S.markers){
+          if(m.cat === c.id) m.cat = fallback.id;
+        }
+        S.categories = S.categories.filter(x=>x.id!==c.id);
+        renderCatRows();
+        renderCats();
+        saveLocal();
+        draw();
+      });
+
+      rows.appendChild(row);
+    }
+  }
+
+  $("btnAddCat").addEventListener("click", ()=>{
+    const name = prompt("카테고리 이름");
+    if(!name) return;
+    const id = name.trim();
+    if(!id) return;
+    if(S.categories.some(c=>c.id===id)){ toast("이미 존재"); return; }
+    S.categories.push({ id, name:id, color:"#ffffff", on:true });
+    renderCatRows();
+  });
+
+  $("btnCatsDefault").addEventListener("click", ()=>{
+    if(!confirm("기본 카테고리로 되돌릴까요?")) return;
+    S.categories = structuredClone(defaultCats);
+    renderCatRows();
+  });
+
+  $("btnSaveCats").addEventListener("click", ()=>{
+    requireAuth(); if(!isAuthed()) return;
+    // ensure ids unique: use name as id
+    const cleaned = [];
+    const seen = new Set(["전체"]);
+    for(const c of S.categories){
+      const name = (c.name||c.id||"").trim();
+      if(!name) continue;
+      const id = (c.id||name).trim();
+      const finalId = name; // ✅ 단순: 이름=ID
+      if(seen.has(finalId)) continue;
+      seen.add(finalId);
+      cleaned.push({ id:finalId, name, color:(c.color||"#ffffff"), on:!!c.on });
+    }
+    // prepend "전체"
+    const all = { id:"전체", name:"전체", color:"#7cc4ff", on:true };
+    S.categories = [all, ...cleaned];
+
+    // remap markers cat if old id removed
+    const valid = new Set(S.categories.map(x=>x.id));
+    const fb = valid.has("기텔") ? "기텔" : (S.categories[1]?.id || "전체");
+    for(const m of S.markers){
+      if(!valid.has(m.cat)) m.cat = fb;
+    }
+
+    saveLocal();
+    renderCats();
+    renderKpi();
+    draw();
+    mCats.classList.remove("show");
+    toast("카테고리 저장");
+  });
+
+  // ---------- marker edit: text quick colors ----------
+  function renderTextColors(){
+    textColors.innerHTML = "";
+    const colors = [
+      "#ff3b30","#ff9500","#ffd60a","#34c759","#0a84ff","#ffffff","#0b0b0f"
+    ];
+    for(const c of colors){
+      const d = document.createElement("div");
+      d.className = "tSw";
+      d.style.setProperty("--c", c);
+      d.addEventListener("click", ()=>{
+        $("mfLabelColor").value = c;
+      });
+      textColors.appendChild(d);
+    }
+  }
+
+  // ---------- selected marker row buttons ----------
+  $("btnOpenMarkerEdit").addEventListener("click", ()=>{
+    if(!selectedMarker) return;
+    ytTouched = false; memoTouched = false;
+    openMarkerModal(selectedMarker.id);
+  });
+
+  // ---------- helpers ----------
+  function renderAll(){
+    renderLogo();
+    renderGames();
+    renderPages();
+    renderCats();
+    renderPalette();
+    renderTextColors();
+    setToggle(tgShowLinesWithCatFilter, !!S.showLinesWithCatFilter);
+    syncSelectedPanel();
+    renderKpi();
+    resizeCanvas();
+    if(!S.map.scale || S.map.scale<=0) fitToScreen();
     draw();
   }
-  renderKPIs();
+
+  // ---------- init ----------
+  async function init(){
+    requireAuth();
+    const st = await loadStateRemoteFirst();
+    S = mergeState(st);
+
+    // ✅ 기본 toggle 값 반영
+    if(typeof S.showLinesWithCatFilter !== "boolean") S.showLinesWithCatFilter = true;
+
+    renderAll();
+    loadMap();
+    if(!S.map.scale || S.map.scale<=0){
+      setTimeout(()=>{
+        fitToScreen();
+        saveLocal();
+        draw();
+      }, 0);
+    }else{
+      draw();
+    }
+  }
+
+  init();
 
 })();
 </script>
