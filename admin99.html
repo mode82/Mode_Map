@@ -1,0 +1,1988 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MAPMODE Admin</title>
+  <style>
+    :root{
+      color-scheme: dark;
+      --bg:#0a0f18;
+      --bg2:#070b12;
+      --panel:#0b1220cc;
+      --card:#0e1626cc;
+      --stroke:#1f2a3a;
+      --stroke2:#27344a;
+      --text:#e7eef8;
+      --muted:#9fb0c6;
+      --accent:#7cc4ff;
+      --danger:#ff5d5d;
+      --ok:#39d98a;
+      --warn:#ffd60a;
+
+      --r10:10px;
+      --r12:12px;
+      --r14:14px;
+      --r16:16px;
+      --shadow: 0 18px 60px rgba(0,0,0,.45);
+      --shadow2: 0 8px 24px rgba(0,0,0,.35);
+      --blur: 14px;
+
+      --topH:58px;
+      --sideW:320px;
+      --sideW2:350px;
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Apple SD Gothic Neo", "Noto Sans KR", Arial, sans-serif;
+      background: radial-gradient(1200px 700px at 50% -10%, rgba(124,196,255,.18), transparent 55%),
+                  radial-gradient(800px 600px at 90% 10%, rgba(57,217,138,.12), transparent 55%),
+                  radial-gradient(800px 600px at 10% 10%, rgba(255,214,10,.08), transparent 55%),
+                  linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
+      color:var(--text);
+      overflow:hidden;
+    }
+
+    /* Top bar */
+    .topbar{
+      position:fixed; inset:0 0 auto 0;
+      height:var(--topH);
+      display:flex; align-items:center; justify-content:space-between;
+      padding:10px 14px;
+      z-index:50;
+      background: linear-gradient(180deg, rgba(9,14,23,.88), rgba(9,14,23,.58));
+      backdrop-filter: blur(var(--blur));
+      border-bottom:1px solid rgba(39,52,74,.65);
+    }
+    .top-left, .top-right{ display:flex; align-items:center; gap:10px; }
+    .brand{
+      display:flex; align-items:center; gap:10px;
+      font-weight:900; letter-spacing:.5px;
+    }
+    .brand .word{
+      font-size:20px;
+      line-height:1;
+      display:flex;
+      align-items:center;
+      gap:0;
+    }
+    .brand .word .o{
+      display:inline-block;
+      width:12px; height:12px; border-radius:999px;
+      margin:0 2px 0 2px;
+      background: #fff;
+      box-shadow: 0 0 0 2px rgba(255,255,255,.12);
+      transform: translateY(1px);
+    }
+
+    .slot{
+      height:38px;
+      display:flex;
+      align-items:center;
+      padding:0 10px;
+      border-radius:999px;
+      background: rgba(14,22,38,.55);
+      border:1px solid rgba(39,52,74,.65);
+      box-shadow: var(--shadow2);
+      gap:8px;
+      white-space:nowrap;
+    }
+    /* 4 slots (same size) */
+    .slot.fixed{ width:170px; justify-content:center; }
+    .slot.logo{
+      justify-content:flex-start;
+      border:none; /* no outer stroke (requested) */
+      background: transparent;
+      box-shadow:none;
+      padding:0;
+      width:170px;
+    }
+    .logoBox{
+      width:170px; height:38px;
+      border-radius:999px;
+      display:flex; align-items:center; justify-content:center;
+      overflow:hidden;
+      background: rgba(14,22,38,.0);
+      border:none;
+    }
+    .logoBox img{ height:26px; width:auto; display:block; opacity:.98; }
+    .logoBox .ph{
+      font-weight:900; letter-spacing:.6px;
+      opacity:.95;
+    }
+
+    .pill{
+      height:34px;
+      display:flex; align-items:center; gap:8px;
+      padding:0 12px;
+      border-radius:999px;
+      background: rgba(14,22,38,.55);
+      border:1px solid rgba(39,52,74,.65);
+      color:var(--text);
+      box-shadow: var(--shadow2);
+      cursor:pointer;
+      user-select:none;
+    }
+    .pill:hover{ border-color: rgba(124,196,255,.55); }
+    .pill:active{ transform: translateY(1px); }
+    .pill.small{ height:32px; padding:0 10px; font-size:13px; }
+    .pill.ghost{
+      background: rgba(14,22,38,.25);
+    }
+    .pill.warn{ border-color: rgba(255,214,10,.45); }
+    .pill.danger{ border-color: rgba(255,93,93,.5); }
+    .pill.ok{ border-color: rgba(57,217,138,.45); }
+
+    .select{
+      appearance:none;
+      border:none;
+      background:transparent;
+      color:var(--text);
+      font-weight:800;
+      padding-right:18px;
+      outline:none;
+      cursor:pointer;
+    }
+    .chev{
+      width:0; height:0;
+      border-left:5px solid transparent;
+      border-right:5px solid transparent;
+      border-top:6px solid rgba(231,238,248,.7);
+      margin-left:-8px;
+      pointer-events:none;
+    }
+
+    /* Layout */
+    .layout{
+      position:fixed;
+      inset:var(--topH) 0 0 0;
+      display:grid;
+      grid-template-columns: var(--sideW) 1fr var(--sideW2);
+      gap:0;
+      height:calc(100% - var(--topH));
+    }
+
+    .side{
+      overflow:hidden;
+      border-right:1px solid rgba(39,52,74,.55);
+      background: rgba(8,12,20,.35);
+      backdrop-filter: blur(var(--blur));
+    }
+    .side.right{
+      border-right:none;
+      border-left:1px solid rgba(39,52,74,.55);
+    }
+
+    .sideInner{
+      height:100%;
+      padding:12px;
+      overflow:auto;
+    }
+    .sectionTitle{
+      font-size:12px;
+      letter-spacing:.3px;
+      color: rgba(231,238,248,.8);
+      margin:4px 0 10px 0;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+    .subtle{
+      color: rgba(159,176,198,.9);
+      font-size:12px;
+      line-height:1.45;
+    }
+
+    .card{
+      background: rgba(14,22,38,.50);
+      border:1px solid rgba(39,52,74,.6);
+      border-radius: var(--r16);
+      padding:12px;
+      box-shadow: var(--shadow2);
+    }
+    .card + .card{ margin-top:12px; }
+
+    /* Left pages */
+    .pageHeaderRow{
+      display:flex; gap:10px; align-items:center; justify-content:space-between;
+      margin-bottom:10px;
+    }
+    .pagePath{
+      display:flex; align-items:center; gap:6px;
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid rgba(39,52,74,.65);
+      background: rgba(14,22,38,.35);
+      font-size:12px;
+      color: rgba(231,238,248,.85);
+      max-width:100%;
+      overflow:hidden;
+    }
+    .pagePath .dot{ opacity:.55; }
+    .btnAdd{
+      min-width:76px;
+      justify-content:center;
+    }
+    .pageList{ display:flex; flex-direction:column; gap:10px; margin-top:10px; }
+    .pageItem{
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      padding:10px 10px;
+      border-radius: var(--r14);
+      border:1px solid rgba(39,52,74,.6);
+      background: rgba(14,22,38,.35);
+      cursor:pointer;
+    }
+    .pageItem.active{
+      outline:2px solid rgba(57,217,138,.35);
+      border-color: rgba(57,217,138,.55);
+      background: rgba(14,22,38,.55);
+    }
+    .pageItem .name{
+      font-weight:800;
+      font-size:13px;
+    }
+    .pageItem .mini{
+      display:flex; gap:6px;
+    }
+    .miniBtn{
+      width:30px; height:30px;
+      border-radius:10px;
+      display:flex; align-items:center; justify-content:center;
+      border:1px solid rgba(39,52,74,.6);
+      background: rgba(10,15,24,.5);
+      cursor:pointer;
+    }
+    .miniBtn:hover{ border-color: rgba(124,196,255,.55); }
+    .miniBtn.danger:hover{ border-color: rgba(255,93,93,.55); }
+
+    /* Center canvas */
+    .center{
+      position:relative;
+      overflow:hidden;
+      background:
+        radial-gradient(900px 700px at 50% 15%, rgba(124,196,255,.08), transparent 60%),
+        radial-gradient(900px 700px at 50% 80%, rgba(57,217,138,.05), transparent 60%);
+    }
+    .canvasWrap{
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:16px;
+    }
+    canvas{
+      background: transparent;
+      border-radius: 0px;
+      box-shadow: none;
+      image-rendering: auto;
+      touch-action:none;
+    }
+    .hintToast{
+      position:absolute;
+      left:50%;
+      transform: translateX(-50%);
+      top:14px;
+      padding:10px 12px;
+      border-radius:999px;
+      border:1px solid rgba(39,52,74,.6);
+      background: rgba(14,22,38,.55);
+      color: rgba(231,238,248,.9);
+      box-shadow: var(--shadow2);
+      font-size:12px;
+      display:none;
+      z-index:40;
+    }
+    .hintToast.show{ display:block; }
+
+    /* Right tools */
+    .chipRow{ display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
+    .chip{
+      display:flex; align-items:center; gap:8px;
+      padding:7px 10px;
+      border-radius:999px;
+      border:1px solid rgba(39,52,74,.6);
+      background: rgba(10,15,24,.35);
+      cursor:pointer;
+      font-size:12px;
+      user-select:none;
+    }
+    .chip.on{ border-color: rgba(124,196,255,.6); background: rgba(124,196,255,.10); }
+    .dotc{ width:9px; height:9px; border-radius:999px; box-shadow:0 0 0 2px rgba(255,255,255,.06); }
+    .kpi{
+      margin-top:10px;
+      font-size:12px;
+      color: rgba(231,238,248,.85);
+      display:flex; justify-content:space-between;
+    }
+    .hr{ height:1px; background: rgba(39,52,74,.55); margin:10px 0; }
+
+    .row{ display:flex; gap:10px; }
+    .row > *{ flex:1; }
+
+    .btnFull{
+      width:100%;
+      justify-content:center;
+      height:42px;
+      border-radius: 14px;
+      font-weight:900;
+    }
+
+    input[type="text"], input[type="url"], input[type="password"], textarea, select{
+      width:100%;
+      background: rgba(10,15,24,.45);
+      border:1px solid rgba(39,52,74,.65);
+      color: var(--text);
+      border-radius: 14px;
+      padding:10px 12px;
+      outline:none;
+      font-size:14px;
+    }
+    textarea{
+      min-height:92px;
+      resize: vertical;
+    }
+    label{
+      display:block;
+      font-size:12px;
+      color: rgba(231,238,248,.78);
+      margin:10px 0 6px;
+    }
+
+    .mutebox{
+      border:1px dashed rgba(39,52,74,.7);
+      border-radius: 14px;
+      padding:10px 12px;
+      color: rgba(159,176,198,.9);
+      background: rgba(10,15,24,.20);
+      font-size:12px;
+      line-height:1.5;
+    }
+
+    /* Modal */
+    .modal{
+      position:fixed;
+      inset:0;
+      background: rgba(0,0,0,.55);
+      backdrop-filter: blur(8px);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:16px;
+      z-index:80;
+    }
+    .modal.show{ display:flex; }
+    .modalBox{
+      width:min(1100px, 98vw);
+      height:min(820px, 92vh);
+      border-radius: 22px;
+      background: linear-gradient(180deg, rgba(14,22,38,.92), rgba(10,15,24,.86));
+      border:1px solid rgba(39,52,74,.75);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+    }
+    .modalTop{
+      padding:16px 18px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      border-bottom:1px solid rgba(39,52,74,.6);
+    }
+    .modalTop .ttl{
+      font-size:18px;
+      font-weight:900;
+    }
+    .modalBody{
+      padding:16px 18px;
+      overflow:auto;
+    }
+    .modalGrid{
+      display:grid;
+      grid-template-columns: 1.2fr .9fr;
+      gap:16px;
+      align-items:start;
+    }
+    .grid2{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+    }
+    .inline{
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+    .inline .grow{ flex:1; }
+    .toggle{
+      display:flex; align-items:center; gap:8px;
+      font-size:13px;
+      color: rgba(231,238,248,.85);
+      user-select:none;
+    }
+    input[type="checkbox"]{ width:18px; height:18px; accent-color: var(--accent); }
+
+    .styleCards{
+      margin-top:14px;
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap:12px;
+    }
+    .styleCard{
+      border-radius: 18px;
+      border:1px solid rgba(39,52,74,.6);
+      background: rgba(10,15,24,.25);
+      padding:12px;
+    }
+    .styleCard h4{
+      margin:0 0 8px 0;
+      font-size:13px;
+      font-weight:900;
+      color: rgba(231,238,248,.92);
+    }
+    .sliderRow{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    input[type="range"]{ width:100%; }
+    .val{
+      min-width:50px;
+      text-align:center;
+      padding:8px 10px;
+      border-radius: 14px;
+      border:1px solid rgba(39,52,74,.65);
+      background: rgba(10,15,24,.35);
+      font-weight:900;
+    }
+    .quickColors{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:10px;
+    }
+    .qbtn{
+      width:44px; height:34px;
+      border-radius:12px;
+      border:1px solid rgba(39,52,74,.65);
+      background: rgba(10,15,24,.35);
+      display:flex; align-items:center; justify-content:center;
+      cursor:pointer;
+    }
+    .qbtn .dotc{ width:12px; height:12px; }
+    .modalBottom{
+      padding:14px 18px;
+      border-top:1px solid rgba(39,52,74,.6);
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .btnWide{
+      height:46px;
+      border-radius: 16px;
+      font-weight:900;
+      padding:0 18px;
+      justify-content:center;
+    }
+    .btnWide.primary{ border-color: rgba(57,217,138,.55); }
+    .btnWide.danger{ border-color: rgba(255,93,93,.55); }
+    .btnWide.ghost{ background: rgba(14,22,38,.25); }
+
+    .footerNote{
+      margin-top:14px;
+      font-size:12px;
+      color: rgba(159,176,198,.95);
+    }
+
+    /* Small helper for icon-like glyphs */
+    .ico{
+      width:18px; height:18px;
+      display:inline-flex; align-items:center; justify-content:center;
+      border-radius: 6px;
+      border:1px solid rgba(39,52,74,.6);
+      background: rgba(10,15,24,.35);
+      font-size:12px;
+      color: rgba(231,238,248,.9);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOP BAR (4 fixed slots) -->
+  <div class="topbar">
+    <div class="top-left">
+      <!-- Slot 1: logo (image url 자리) -->
+      <div class="slot fixed logo" title="로고 이미지 URL을 설정할 수 있습니다">
+        <div class="logoBox" id="logoBox">
+          <div class="brand">
+            <div class="word">MAPM<span class="o"></span>DE</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slot 2: game select (AION2) -->
+      <div class="slot fixed">
+        <select id="gameSelect" class="select" title="게임 선택">
+          <option value="아이온2">아이온2</option>
+        </select>
+        <div class="chev"></div>
+      </div>
+
+      <!-- Slot 3: ADMIN + 관리자 checkbox (visual only) -->
+      <div class="slot fixed">
+        <div class="pill small ghost" id="adminBadge" style="height:34px;">
+          <span class="ico">A</span>
+          <span style="font-weight:900;">ADMIN</span>
+        </div>
+        <div class="toggle" title="관리자 모드 (로그인 필요)">
+          <input type="checkbox" id="adminToggle" />
+          <span>관리자</span>
+        </div>
+      </div>
+
+      <!-- Slot 4: top actions -->
+      <div class="slot fixed" style="justify-content:center;">
+        <button class="pill small" id="btnUploadMap" title="지도 업로드">지도 업로드</button>
+        <button class="pill small ghost" id="btnExportState" title="state.json 내보내기">state.json 내보내기</button>
+      </div>
+    </div>
+
+    <div class="top-right">
+      <button class="pill small ghost" id="btnImportState" title="불러오기">불러오기</button>
+      <button class="pill small danger" id="btnResetAll" title="전체 초기화">전체 초기화</button>
+    </div>
+  </div>
+
+  <div class="layout">
+    <!-- LEFT: Pages -->
+    <aside class="side left">
+      <div class="sideInner">
+        <div class="card">
+          <div class="sectionTitle">
+            <span>페이지</span>
+            <span class="subtle">아이온2 / <b id="pagePathName">전체지도</b></span>
+          </div>
+
+          <div class="pageHeaderRow">
+            <div class="pagePath" title="현재 선택된 게임/페이지">
+              <span id="pathGame">아이온2</span>
+              <span class="dot">/</span>
+              <span id="pathPage">전체지도</span>
+            </div>
+            <button class="pill small btnAdd" id="btnAddPage">페이지 추가</button>
+          </div>
+
+          <div class="subtle" style="margin-top:8px;">
+            • 페이지 내 ‘편집’은 게임 안에서 지도 페이지 이동 용도로 사용<br/>
+            • URL은 필요 시 외부 페이지 이동용 (선택)
+          </div>
+
+          <div class="pageList" id="pageList"></div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- CENTER: Canvas -->
+    <main class="center">
+      <div class="hintToast" id="toast"></div>
+      <div class="canvasWrap">
+        <canvas id="cv" width="1200" height="900"></canvas>
+      </div>
+    </main>
+
+    <!-- RIGHT: Marker tools -->
+    <aside class="side right">
+      <div class="sideInner">
+
+        <div class="card">
+          <div class="sectionTitle">
+            <span>카테고리</span>
+            <span class="subtle" id="catCounts"> </span>
+          </div>
+
+          <div class="chipRow" id="catChips"></div>
+
+          <div class="hr"></div>
+
+          <div class="toggle" style="margin-bottom:8px;">
+            <input type="checkbox" id="chkHideInactive" />
+            <span>불필요한 아이템 카테고리 숨기기</span>
+          </div>
+          <div class="toggle" style="margin-bottom:8px;">
+            <input type="checkbox" id="chkHideEmptyPages" />
+            <span>불필요한 아이템 페이지도 숨기기</span>
+          </div>
+
+          <div class="kpi">
+            <span id="kpiShown">표시 중: 0</span>
+            <span id="kpiTotal">마커: 0</span>
+          </div>
+
+          <div style="margin-top:10px;">
+            <button class="pill btnFull" id="btnEditCats">카테고리/색상 편집</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="sectionTitle">
+            <span>관리자 툴</span>
+            <span class="subtle">-</span>
+          </div>
+
+          <div class="subtle">
+            • 우클릭: 마커 추가<br/>
+            • 드래그: 지도 이동 / 휠: 확대·축소<br/>
+            • 마커 클릭: 편집
+          </div>
+
+          <div class="row" style="margin-top:10px;">
+            <button class="pill danger btnFull" id="btnClearOpacity">마커 초기화</button>
+            <button class="pill btnFull" id="btnFit">화면 맞춤</button>
+          </div>
+
+          <label style="margin-top:12px;">선택된 마커: <span id="selMarkerName" class="subtle">(이름 없음)</span></label>
+          <div class="mutebox">
+            • 선택된 마커의 링크(선택)<br/>
+            • 유튜브 링크는 마커 편집에서 설정
+          </div>
+          <label>링크</label>
+          <input id="selMarkerLink" type="url" placeholder="https://..." />
+        </div>
+
+        <div class="card">
+          <div class="sectionTitle">
+            <span>관리자 로그인</span>
+            <span class="subtle" id="authState">미인증</span>
+          </div>
+          <label>비밀번호</label>
+          <input id="pw" type="password" placeholder="0000000001" />
+          <div class="row" style="margin-top:10px;">
+            <button class="pill ok btnFull" id="btnLogin">인증</button>
+            <button class="pill ghost btnFull" id="btnLogout">해제</button>
+          </div>
+          <div class="subtle" style="margin-top:10px;">
+            • 인증은 24시간 유지됩니다 (이 브라우저 기준)
+          </div>
+        </div>
+
+      </div>
+    </aside>
+  </div>
+
+  <!-- Marker edit modal -->
+  <div class="modal" id="markerModal" aria-hidden="true">
+    <div class="modalBox">
+      <div class="modalTop">
+        <div class="ttl">마커 편집</div>
+        <button class="pill small" id="btnCloseModal">닫기</button>
+      </div>
+
+      <div class="modalBody">
+        <div class="subtle" style="margin-bottom:10px;">
+          관리자 모드에서만 편집/삭제 가능합니다. (Enter = 저장)
+        </div>
+
+        <div class="modalGrid">
+          <!-- Left -->
+          <div>
+            <div class="grid2">
+              <div>
+                <label>이름(마커 이름)</label>
+                <input id="m_name" type="text" placeholder="예: 기텔 위치" />
+              </div>
+              <div>
+                <label>카테고리</label>
+                <select id="m_cat"></select>
+              </div>
+            </div>
+
+            <label>마커 원 색상</label>
+            <div class="inline">
+              <input id="m_color" type="text" placeholder="개별 오버라이드 색상 (예: #33aaff)" class="grow" />
+              <div class="ico" id="m_colorPreview" title="미리보기" style="width:42px;height:34px;border-radius:12px;"></div>
+              <label class="toggle" style="margin:0;">
+                <input type="checkbox" id="m_useCatColor" checked />
+                <span>카테고리 색상 사용</span>
+              </label>
+            </div>
+
+            <div class="grid2" style="margin-top:8px;">
+              <div>
+                <label>유튜브 링크(URL)</label>
+                <input id="m_yt" type="url" placeholder="https://www.youtube.com/..." />
+              </div>
+              <div>
+                <label>유튜브 표시명(유저모드 제목)</label>
+                <input id="m_ytTitle" type="text" placeholder="예: 기텔 1번위치" />
+              </div>
+            </div>
+
+            <label>메모 (관리자 등록)</label>
+            <textarea id="m_memo" placeholder="관리자 메모를 입력하세요. 유저모드에서는 읽기 전용입니다."></textarea>
+          </div>
+
+          <!-- Right -->
+          <div>
+            <div class="styleCards">
+              <div class="styleCard">
+                <h4>마커 스타일</h4>
+                <div class="sliderRow">
+                  <input id="m_r" type="range" min="6" max="30" step="1" />
+                  <div class="val"><span id="m_rv">10</span>px</div>
+                </div>
+                <div class="subtle" style="margin-top:8px;">
+                  * 원 크기 변경 시 글씨 크기도 같은 비율로 자동 변경됩니다.
+                </div>
+              </div>
+
+              <div class="styleCard">
+                <h4>글씨 크기</h4>
+                <div class="sliderRow">
+                  <input id="m_fs" type="range" min="10" max="26" step="1" />
+                  <div class="val"><span id="m_fsv">15</span></div>
+                </div>
+                <div class="subtle" style="margin-top:8px;">
+                  * 현재는 자동 동기화 우선
+                </div>
+              </div>
+
+              <div class="styleCard">
+                <h4>굵기/색상</h4>
+                <label style="margin-top:0;">굵기(색상)</label>
+                <select id="m_fw">
+                  <option value="700">700</option>
+                  <option value="800">800</option>
+                  <option value="900" selected>900 (Black)</option>
+                </select>
+
+                <label>글씨 색상 (라벨)</label>
+                <div class="inline">
+                  <input id="m_labelColor" type="text" placeholder="#ffffff" class="grow" />
+                  <button class="pill small ghost" id="btnLabelDefault" type="button">기본값</button>
+                </div>
+
+                <div class="subtle" style="margin-top:8px;">빠른 글씨색</div>
+                <div class="quickColors" id="quickLabelColors"></div>
+              </div>
+            </div>
+
+            <div class="footerNote">
+              좌표(비율): <span id="m_xy">0, 0</span><br/>
+              • 새로운 번호로 시작: 이 마커부터 새 체인(새 1번) 시작<br/>
+              • 해당 마커를 이어서 시작: 이 마커 뒤로 “중간 삽입” 모드 활성화
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="modalBottom">
+        <div style="display:flex; gap:10px; align-items:center;">
+          <button class="pill btnWide ghost" id="btnStartNewChain" type="button">새로운 번호로 시작</button>
+          <button class="pill btnWide ghost" id="btnContinueChain" type="button">해당 마커를 이어서 시작</button>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <button class="pill btnWide danger" id="btnDeleteMarker" type="button">삭제</button>
+          <button class="pill btnWide primary ok" id="btnSaveMarker" type="button">저장</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hidden file inputs -->
+  <input id="fileMap" type="file" accept="image/*" style="display:none" />
+  <input id="fileState" type="file" accept="application/json" style="display:none" />
+
+<script>
+(() => {
+  /***********************
+   * 0) Constants & Utils
+   ***********************/
+  const LS_KEY = "mapmode_state_v1";
+  const LS_AUTH = "mapmode_admin_auth_until";
+  const ADMIN_PW = "0000000001";
+  const AUTH_MS = 24 * 60 * 60 * 1000;
+
+  const now = () => Date.now();
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const uid = () => Math.random().toString(16).slice(2) + "-" + Math.random().toString(16).slice(2);
+
+  function toast(msg, ms=1400){
+    const el = document.getElementById("toast");
+    el.textContent = msg;
+    el.classList.add("show");
+    clearTimeout(toast._t);
+    toast._t = setTimeout(()=> el.classList.remove("show"), ms);
+  }
+
+  function downloadText(filename, text){
+    const blob = new Blob([text], {type:"application/json;charset=utf-8"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(()=>{
+      URL.revokeObjectURL(a.href);
+      a.remove();
+    }, 0);
+  }
+
+  function safeParse(json, fallback){
+    try{ return JSON.parse(json); }catch(e){ return fallback; }
+  }
+
+  /***********************
+   * 1) State
+   ***********************/
+  const defaultCats = [
+    { id:"전체", name:"전체", color:"#7cc4ff", on:true },
+    { id:"보스", name:"보스", color:"#ff5d5d", on:true },
+    { id:"기텔", name:"기텔", color:"#ffd60a", on:true },
+    { id:"큐브", name:"큐브", color:"#2b8cff", on:true },
+  ];
+
+  const defaultState = {
+    version: 1,
+    game: "아이온2",
+    logoUrl: "",
+
+    pages: [
+      { id: "p_all", name: "전체지도", url: "" },
+      { id: "p_2", name: "2번마을", url: "" },
+      { id: "p_3", name: "3번마을", url: "" },
+      { id: "p_4", name: "4번마을", url: "" },
+      { id: "p_5", name: "5번마을", url: "" },
+      { id: "p_6", name: "6번마을", url: "" },
+      { id: "p_7", name: "7번마을", url: "" },
+    ],
+    currentPageId: "p_all",
+
+    categories: defaultCats,
+    markerLabelDefault: "#e7eef8",
+
+    map: {
+      // dataURL (간단 버전: 길어질 수 있음)
+      imgDataUrl: "",
+      naturalW: 1,
+      naturalH: 1,
+      // viewport
+      scale: 1,
+      tx: 0,
+      ty: 0,
+    },
+
+    markers: [
+      // {id,pageId,x,y,name,cat,colorOverride,useCatColor,yt,ytTitle,memo,r,fs,fw,labelColor,opacity,chainId,chainIndex}
+    ],
+
+    chains: [
+      // {id, startMarkerId}
+    ],
+  };
+
+  let S = loadState();
+  function loadState(){
+    const raw = localStorage.getItem(LS_KEY);
+    const st = raw ? safeParse(raw, null) : null;
+    if(!st || typeof st !== "object") return structuredClone(defaultState);
+
+    // minimal migrate/merge
+    const merged = structuredClone(defaultState);
+    Object.assign(merged, st);
+    merged.pages = Array.isArray(st.pages) && st.pages.length ? st.pages : structuredClone(defaultState.pages);
+    merged.categories = Array.isArray(st.categories) && st.categories.length ? st.categories : structuredClone(defaultCats);
+    merged.markers = Array.isArray(st.markers) ? st.markers : [];
+    merged.chains = Array.isArray(st.chains) ? st.chains : [];
+    merged.map = Object.assign(structuredClone(defaultState.map), st.map||{});
+    return merged;
+  }
+  function saveState(){
+    localStorage.setItem(LS_KEY, JSON.stringify(S));
+  }
+
+  /***********************
+   * 2) Auth (24h)
+   ***********************/
+  const adminToggle = document.getElementById("adminToggle");
+  const authState = document.getElementById("authState");
+  const pwInput = document.getElementById("pw");
+
+  function isAuthed(){
+    const until = Number(localStorage.getItem(LS_AUTH) || "0");
+    return until > now();
+  }
+  function setAuthed(on){
+    if(on) localStorage.setItem(LS_AUTH, String(now() + AUTH_MS));
+    else localStorage.removeItem(LS_AUTH);
+    reflectAuthUI();
+  }
+  function reflectAuthUI(){
+    const ok = isAuthed();
+    adminToggle.checked = ok;
+    authState.textContent = ok ? "인증됨(24h)" : "미인증";
+    authState.style.color = ok ? "rgba(57,217,138,.95)" : "rgba(255,93,93,.95)";
+  }
+  reflectAuthUI();
+
+  document.getElementById("btnLogin").addEventListener("click", () => {
+    if(pwInput.value === ADMIN_PW){
+      setAuthed(true);
+      toast("관리자 인증 완료");
+      pwInput.value = "";
+    }else{
+      toast("비밀번호가 틀렸습니다");
+    }
+  });
+  document.getElementById("btnLogout").addEventListener("click", () => {
+    setAuthed(false);
+    toast("인증 해제");
+  });
+
+  adminToggle.addEventListener("change", () => {
+    // 토글만 바꿔서는 인증이 되지 않게(실수 방지)
+    reflectAuthUI();
+    if(!isAuthed()){
+      toast("관리자 인증이 필요합니다");
+      adminToggle.checked = false;
+    }
+  });
+
+  /***********************
+   * 3) Top bar (logo, game, export/import/reset)
+   ***********************/
+  const logoBox = document.getElementById("logoBox");
+  function renderLogo(){
+    logoBox.innerHTML = "";
+    if(S.logoUrl){
+      const img = document.createElement("img");
+      img.src = S.logoUrl;
+      img.alt = "logo";
+      img.onerror = () => {
+        logoBox.innerHTML = `<div class="brand"><div class="word">MAPM<span class="o"></span>DE</div></div>`;
+      };
+      logoBox.appendChild(img);
+    }else{
+      logoBox.innerHTML = `<div class="brand"><div class="word">MAPM<span class="o"></span>DE</div></div>`;
+    }
+  }
+  renderLogo();
+
+  logoBox.addEventListener("dblclick", () => {
+    if(!isAuthed()){ toast("관리자 인증이 필요합니다"); return; }
+    const url = prompt("로고 이미지 URL을 입력하세요 (빈값 = 기본 텍스트)", S.logoUrl || "");
+    if(url === null) return;
+    S.logoUrl = (url||"").trim();
+    renderLogo();
+    saveState();
+  });
+
+  const gameSelect = document.getElementById("gameSelect");
+  gameSelect.value = S.game || "아이온2";
+  document.getElementById("pathGame").textContent = gameSelect.value;
+  gameSelect.addEventListener("change", () => {
+    S.game = gameSelect.value;
+    document.getElementById("pathGame").textContent = S.game;
+    saveState();
+  });
+
+  // Map upload
+  const fileMap = document.getElementById("fileMap");
+  document.getElementById("btnUploadMap").addEventListener("click", () => {
+    if(!isAuthed()){ toast("관리자 인증이 필요합니다"); return; }
+    fileMap.click();
+  });
+  fileMap.addEventListener("change", async (e) => {
+    const f = e.target.files && e.target.files[0];
+    if(!f) return;
+    const url = await fileToDataUrl(f);
+    await setMapImage(url);
+    toast("지도 업로드 완료");
+    e.target.value = "";
+  });
+
+  async function fileToDataUrl(file){
+    return new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => resolve(String(r.result));
+      r.onerror = reject;
+      r.readAsDataURL(file);
+    });
+  }
+
+  // Export / Import state
+  document.getElementById("btnExportState").addEventListener("click", () => {
+    const out = JSON.stringify(S, null, 2);
+    downloadText("state.json", out);
+    toast("state.json 내보내기 완료");
+  });
+
+  const fileState = document.getElementById("fileState");
+  document.getElementById("btnImportState").addEventListener("click", () => fileState.click());
+  fileState.addEventListener("change", async (e) => {
+    const f = e.target.files && e.target.files[0];
+    if(!f) return;
+    try{
+      const txt = await f.text();
+      const obj = JSON.parse(txt);
+      if(!obj || typeof obj !== "object") throw new Error("invalid");
+      // merge minimally
+      S = Object.assign(structuredClone(defaultState), obj);
+      S.pages = Array.isArray(obj.pages) ? obj.pages : structuredClone(defaultState.pages);
+      S.categories = Array.isArray(obj.categories) ? obj.categories : structuredClone(defaultCats);
+      S.markers = Array.isArray(obj.markers) ? obj.markers : [];
+      S.chains = Array.isArray(obj.chains) ? obj.chains : [];
+      S.map = Object.assign(structuredClone(defaultState.map), obj.map||{});
+      saveState();
+      renderAll();
+      toast("불러오기 완료");
+    }catch(err){
+      console.error(err);
+      toast("state.json 형식이 올바르지 않습니다");
+    }finally{
+      e.target.value = "";
+    }
+  });
+
+  // Reset all
+  document.getElementById("btnResetAll").addEventListener("click", () => {
+    if(!confirm("전체 초기화할까요? (마커/페이지/지도 포함)")) return;
+    S = structuredClone(defaultState);
+    saveState();
+    renderAll();
+    toast("초기화 완료");
+  });
+
+  /***********************
+   * 4) Pages (left)
+   ***********************/
+  const pageList = document.getElementById("pageList");
+  const pagePathName = document.getElementById("pagePathName");
+  const pathPage = document.getElementById("pathPage");
+
+  document.getElementById("btnAddPage").addEventListener("click", () => {
+    if(!isAuthed()){ toast("관리자 인증이 필요합니다"); return; }
+    const name = prompt("페이지 이름을 입력하세요 (예: 8번마을)", "");
+    if(!name) return;
+    const page = { id: "p_" + uid(), name: name.trim(), url: "" };
+    S.pages.push(page);
+    S.currentPageId = page.id;
+    saveState();
+    renderPages();
+    toast("페이지 추가 완료");
+  });
+
+  function renderPages(){
+    pageList.innerHTML = "";
+    const hideEmpty = document.getElementById("chkHideEmptyPages").checked;
+
+    const pages = S.pages.filter(p => {
+      if(!hideEmpty) return true;
+      const count = S.markers.filter(m => m.pageId === p.id).length;
+      return count > 0;
+    });
+
+    for(const p of pages){
+      const item = document.createElement("div");
+      item.className = "pageItem" + (p.id === S.currentPageId ? " active" : "");
+      item.innerHTML = `
+        <div>
+          <div class="name">${escapeHtml(p.name)}</div>
+        </div>
+        <div class="mini">
+          <div class="miniBtn" title="이름/URL 편집">✎</div>
+          <div class="miniBtn danger" title="삭제">🗑</div>
+        </div>
+      `;
+      const [btnEdit, btnDel] = item.querySelectorAll(".miniBtn");
+      item.addEventListener("click", (ev) => {
+        // clicking the small buttons should not change selection twice
+        if(ev.target === btnEdit || ev.target === btnDel) return;
+        S.currentPageId = p.id;
+        saveState();
+        renderPages();
+        renderKPIs();
+        renderSelection(null);
+      });
+
+      btnEdit.addEventListener("click", (ev) => {
+        ev.stopPropagation();
+        if(!isAuthed()){ toast("관리자 인증이 필요합니다"); return; }
+        const newName = prompt("페이지 이름", p.name);
+        if(newName === null) return;
+        p.name = (newName||"").trim() || p.name;
+        const newUrl = prompt("페이지 URL (빈값 가능)", p.url || "");
+        if(newUrl !== null) p.url = (newUrl||"").trim();
+        saveState();
+        renderPages();
+      });
+
+      btnDel.addEventListener("click", (ev) => {
+        ev.stopPropagation();
+        if(!isAuthed()){ toast("관리자 인증이 필요합니다"); return; }
+        if(!confirm(`"${p.name}" 페이지를 삭제할까요? (해당 페이지 마커도 삭제됨)`)) return;
+        S.markers = S.markers.filter(m => m.pageId !== p.id);
+        S.pages = S.pages.filter(x => x.id !== p.id);
+        if(!S.pages.length){
+          S.pages = structuredClone(defaultState.pages);
+        }
+        if(!S.pages.find(x => x.id === S.currentPageId)){
+          S.currentPageId = S.pages[0].id;
+        }
+        saveState();
+        renderPages();
+        renderKPIs();
+        renderSelection(null);
+      });
+
+      pageList.appendChild(item);
+    }
+
+    const cur = S.pages.find(p => p.id === S.currentPageId) || S.pages[0];
+    if(cur){
+      pagePathName.textContent = cur.name;
+      pathPage.textContent = cur.name;
+      document.getElementById("pagePathName").textContent = cur.name;
+      document.getElementById("pathPage").textContent = cur.name;
+    }
+  }
+
+  document.getElementById("chkHideEmptyPages").addEventListener("change", renderPages);
+
+  /***********************
+   * 5) Categories (right)
+   ***********************/
+  const catChips = document.getElementById("catChips");
+
+  function getCat(id){
+    return S.categories.find(c => c.id === id);
+  }
+
+  function renderCategoryChips(){
+    catChips.innerHTML = "";
+    const hideInactive = document.getElementById("chkHideInactive").checked;
+
+    const catsToShow = S.categories.filter(c => {
+      if(!hideInactive) return true;
+      return c.on;
+    });
+
+    for(const c of catsToShow){
+      const chip = document.createElement("div");
+      chip.className = "chip" + (c.on ? " on" : "");
+      chip.innerHTML = `
+        <div class="dotc" style="background:${c.color};"></div>
+        <div style="font-weight:900;">${escapeHtml(c.name)}</div>
+      `;
+      chip.addEventListener("click", () => {
+        // "전체"는 항상 on
+        if(c.id === "전체") return;
+        c.on = !c.on;
+        saveState();
+        renderCategoryChips();
+        renderKPIs();
+      });
+      catChips.appendChild(chip);
+    }
+  }
+
+  document.getElementById("chkHideInactive").addEventListener("change", renderCategoryChips);
+
+  document.getElementById("btnEditCats").addEventListener("click", () => {
+    if(!isAuthed()){ toast("관리자 인증이 필요합니다"); return; }
+    const lines = S.categories.map(c => `${c.id}|${c.name}|${c.color}`).join("\n");
+    const txt = prompt(
+`카테고리 편집 (한 줄: id|표시명|색상)
+예)
+보스|보스|#ff5d5d
+기텔|기텔|#ffd60a
+큐브|큐브|#2b8cff
+
+현재:`,
+      lines
+    );
+    if(txt === null) return;
+    const parsed = txt.split("\n").map(s => s.trim()).filter(Boolean).map(line => {
+      const [id,name,color] = line.split("|").map(x => (x||"").trim());
+      if(!id || !name) return null;
+      return { id, name, color: color || "#7cc4ff", on: true };
+    }).filter(Boolean);
+
+    // keep "전체" at top
+    const all = { id:"전체", name:"전체", color:"#7cc4ff", on:true };
+    S.categories = [all, ...parsed.filter(c => c.id !== "전체")];
+    saveState();
+    renderAll();
+    toast("카테고리 저장됨");
+  });
+
+  /***********************
+   * 6) Canvas map: pan/zoom + draw
+   ***********************/
+  const cv = document.getElementById("cv");
+  const ctx = cv.getContext("2d");
+
+  let mapImg = new Image();
+  mapImg.crossOrigin = "anonymous";
+  mapImg.onload = () => {
+    S.map.naturalW = mapImg.naturalWidth || 1;
+    S.map.naturalH = mapImg.naturalHeight || 1;
+    // fit on first load if no transform
+    if(!S.map.scale || S.map.scale === 1 && S.map.tx === 0 && S.map.ty === 0){
+      fitToScreen();
+    }
+    saveState();
+  };
+
+  async function setMapImage(dataUrl){
+    S.map.imgDataUrl = dataUrl;
+    saveState();
+    await loadMapImage();
+    fitToScreen();
+  }
+
+  async function loadMapImage(){
+    return new Promise((resolve) => {
+      if(!S.map.imgDataUrl){
+        // placeholder: white-ish paper
+        mapImg = new Image();
+        mapImg.onload = () => resolve();
+        mapImg.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(
+          `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900">
+            <defs>
+              <radialGradient id="g" cx="50%" cy="40%" r="70%">
+                <stop offset="0%" stop-color="#ffffff"/>
+                <stop offset="100%" stop-color="#e8edf7"/>
+              </radialGradient>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#g)"/>
+            <text x="50%" y="50%" text-anchor="middle" font-family="Arial" font-size="28" fill="#7a889e">지도 업로드 (관리자)</text>
+          </svg>`
+        );
+        return;
+      }
+      mapImg = new Image();
+      mapImg.onload = () => resolve();
+      mapImg.src = S.map.imgDataUrl;
+    });
+  }
+
+  function resizeCanvas(){
+    const wrap = cv.parentElement;
+    const w = wrap.clientWidth - 32;
+    const h = wrap.clientHeight - 32;
+    // keep a large working resolution
+    cv.width = Math.max(900, Math.floor(w));
+    cv.height = Math.max(650, Math.floor(h));
+  }
+  window.addEventListener("resize", () => {
+    resizeCanvas();
+    draw();
+  });
+
+  function fitToScreen(){
+    const pad = 40;
+    const iw = S.map.naturalW || 1;
+    const ih = S.map.naturalH || 1;
+    const cw = cv.width;
+    const ch = cv.height;
+
+    const scale = Math.min((cw - pad) / iw, (ch - pad) / ih);
+    S.map.scale = clamp(scale, 0.05, 10);
+    S.map.tx = (cw - iw * S.map.scale) / 2;
+    S.map.ty = (ch - ih * S.map.scale) / 2;
+    saveState();
+    draw();
+  }
+
+  document.getElementById("btnFit").addEventListener("click", () => {
+    fitToScreen();
+    toast("화면 맞춤");
+  });
+
+  // Pan/zoom interactions
+  let isPanning = false;
+  let lastX = 0, lastY = 0;
+
+  cv.addEventListener("pointerdown", (e) => {
+    cv.setPointerCapture(e.pointerId);
+    lastX = e.clientX; lastY = e.clientY;
+    isPanning = true;
+  });
+  cv.addEventListener("pointermove", (e) => {
+    if(!isPanning) return;
+    const dx = e.clientX - lastX;
+    const dy = e.clientY - lastY;
+    lastX = e.clientX; lastY = e.clientY;
+    S.map.tx += dx;
+    S.map.ty += dy;
+    draw();
+  });
+  cv.addEventListener("pointerup", () => {
+    if(isPanning){
+      isPanning = false;
+      saveState();
+    }
+  });
+  cv.addEventListener("pointercancel", () => {
+    if(isPanning){
+      isPanning = false;
+      saveState();
+    }
+  });
+
+  cv.addEventListener("wheel", (e) => {
+    e.preventDefault();
+    const rect = cv.getBoundingClientRect();
+    const mx = (e.clientX - rect.left);
+    const my = (e.clientY - rect.top);
+
+    const oldScale = S.map.scale;
+    const zoom = Math.exp(-e.deltaY * 0.0012);
+    const newScale = clamp(oldScale * zoom, 0.05, 10);
+
+    // zoom around mouse
+    const wx = (mx - S.map.tx) / oldScale;
+    const wy = (my - S.map.ty) / oldScale;
+
+    S.map.scale = newScale;
+    S.map.tx = mx - wx * newScale;
+    S.map.ty = my - wy * newScale;
+
+    draw();
+    clearTimeout(cv._wheelSave);
+    cv._wheelSave = setTimeout(saveState, 180);
+  }, {passive:false});
+
+  /***********************
+   * 7) Markers: add / select / edit / draw lines
+   ***********************/
+  let selectedMarkerId = null;
+  let insertAfterMarkerId = null; // "해당 마커를 이어서 시작" (중간 삽입)
+  let startNewChainFromThisMarkerId = null;
+
+  const selMarkerName = document.getElementById("selMarkerName");
+  const selMarkerLink = document.getElementById("selMarkerLink");
+
+  selMarkerLink.addEventListener("input", () => {
+    const m = getSelectedMarker();
+    if(!m) return;
+    m.link = selMarkerLink.value.trim();
+    saveState();
+  });
+
+  function getSelectedMarker(){
+    return S.markers.find(m => m.id === selectedMarkerId) || null;
+  }
+
+  function worldFromScreen(sx, sy){
+    const x = (sx - S.map.tx) / S.map.scale;
+    const y = (sy - S.map.ty) / S.map.scale;
+    return {x,y};
+  }
+  function normFromWorld(wx, wy){
+    const iw = S.map.naturalW || 1;
+    const ih = S.map.naturalH || 1;
+    return { nx: clamp(wx / iw, 0, 1), ny: clamp(wy / ih, 0, 1) };
+  }
+  function worldFromNorm(nx, ny){
+    const iw = S.map.naturalW || 1;
+    const ih = S.map.naturalH || 1;
+    return { x: nx * iw, y: ny * ih };
+  }
+
+  function pickMarkerAt(sx, sy){
+    const w = worldFromScreen(sx, sy);
+    // pick among visible markers on current page
+    const ms = getVisibleMarkers();
+    let best = null;
+    let bestD = Infinity;
+
+    for(const m of ms){
+      const p = worldFromNorm(m.x, m.y);
+      const r = (m.r ?? 10);
+      const dx = p.x - w.x;
+      const dy = p.y - w.y;
+      const d = Math.sqrt(dx*dx + dy*dy);
+      if(d <= r * 1.3 && d < bestD){
+        best = m;
+        bestD = d;
+      }
+    }
+    return best;
+  }
+
+  // Right click add marker
+  cv.addEventListener("contextmenu", (e) => {
+    e.preventDefault();
+    if(!isAuthed()){ toast("관리자 인증이 필요합니다"); return; }
+    const rect = cv.getBoundingClientRect();
+    const sx = e.clientX - rect.left;
+    const sy = e.clientY - rect.top;
+
+    const w = worldFromScreen(sx, sy);
+    const n = normFromWorld(w.x, w.y);
+
+    const m = createMarker(n.nx, n.ny);
+    S.markers.push(m);
+
+    // chain numbering behavior:
+    // - If "새로운 번호로 시작" was pressed from modal: start new chain at next marker
+    // - If "이어서 시작": insert right after that marker (same chain)
+    if(startNewChainFromThisMarkerId){
+      // create new chain with this marker as first (index 1)
+      const chainId = "c_" + uid();
+      S.chains.push({id:chainId, startMarkerId:m.id});
+      m.chainId = chainId;
+      m.chainIndex = 1;
+      startNewChainFromThisMarkerId = null;
+    } else if(insertAfterMarkerId){
+      const base = S.markers.find(x => x.id === insertAfterMarkerId);
+      if(base && base.chainId){
+        m.chainId = base.chainId;
+        m.chainIndex = (base.chainIndex || 1) + 1;
+        // shift later markers in same chain on this page
+        for(const mm of S.markers){
+          if(mm.id === m.id) continue;
+          if(mm.chainId === m.chainId && mm.pageId === base.pageId){
+            if((mm.chainIndex||0) >= m.chainIndex) mm.chainIndex = (mm.chainIndex||0) + 1;
+          }
+        }
+      } else {
+        // if no base chain, start new
+        const chainId = "c_" + uid();
+        S.chains.push({id:chainId, startMarkerId:m.id});
+        m.chainId = chainId;
+        m.chainIndex = 1;
+      }
+      insertAfterMarkerId = null;
+    } else {
+      // default: attach to last chain on this page if exists, else new chain
+      const pageMarkers = S.markers.filter(x => x.pageId === S.currentPageId);
+      const last = [...pageMarkers].sort((a,b)=>(a.createdAt||0)-(b.createdAt||0)).pop();
+      if(last && last.chainId){
+        m.chainId = last.chainId;
+        m.chainIndex = (last.chainIndex || 1) + 1;
+      }else{
+        const chainId = "c_" + uid();
+        S.chains.push({id:chainId, startMarkerId:m.id});
+        m.chainId = chainId;
+        m.chainIndex = 1;
+      }
+    }
+
+    saveState();
+    renderSelection(m.id);
+    openMarkerModal(m.id);
+    renderKPIs();
+    draw();
+  });
+
+  // Click to select/edit
+  cv.addEventListener("dblclick", (e) => {
+    // dblclick = quick fit
+    if(e.shiftKey){
+      fitToScreen();
+      toast("화면 맞춤");
+    }
+  });
+
+  cv.addEventListener("click", (e) => {
+    const rect = cv.getBoundingClientRect();
+    const sx = e.clientX - rect.left;
+    const sy = e.clientY - rect.top;
+    const hit = pickMarkerAt(sx, sy);
+    if(hit){
+      renderSelection(hit.id);
+      if(isAuthed()){
+        openMarkerModal(hit.id);
+      }
+    }else{
+      renderSelection(null);
+    }
+  });
+
+  function createMarker(nx, ny){
+    const cat = (S.categories.find(c => c.id !== "전체") || S.categories[0]).id;
+    const baseR = 10;
+    return {
+      id: "m_" + uid(),
+      pageId: S.currentPageId,
+      x: nx, y: ny,
+      name: "",
+      cat,
+      colorOverride: "",
+      useCatColor: true,
+
+      yt: "",
+      ytTitle: "",
+      memo: "",
+
+      r: baseR,
+      fs: 15,
+      fw: 900,
+      labelColor: S.markerLabelDefault || "#e7eef8",
+
+      opacity: 1,
+      link: "",
+
+      chainId: null,
+      chainIndex: null,
+      createdAt: now(),
+    };
+  }
+
+  function getVisibleMarkers(){
+    const curPage = S.currentPageId;
+    const activeCats = new Set(S.categories.filter(c => c.on || c.id === "전체").map(c => c.id));
+    const allOn = activeCats.has("전체");
+    return S.markers.filter(m => {
+      if(m.pageId !== curPage) return false;
+      if(allOn) return true;
+      return activeCats.has(m.cat);
+    });
+  }
+
+  function markerColor(m){
+    if(!m) return "#7cc4ff";
+    if(m.useCatColor){
+      const c = getCat(m.cat);
+      return (c && c.color) ? c.color : "#7cc4ff";
+    }
+    if(m.colorOverride && m.colorOverride.trim()) return m.colorOverride.trim();
+    const c = getCat(m.cat);
+    return (c && c.color) ? c.color : "#7cc4ff";
+  }
+
+  // Reset opacity button
+  document.getElementById("btnClearOpacity").addEventListener("click", () => {
+    for(const m of S.markers){
+      m.opacity = 1;
+    }
+    saveState();
+    draw();
+    toast("마커 초기화");
+  });
+
+  function renderSelection(id){
+    selectedMarkerId = id;
+    const m = getSelectedMarker();
+    selMarkerName.textContent = m ? (m.name || "(이름 없음)") : "(이름 없음)";
+    selMarkerLink.value = m ? (m.link || "") : "";
+  }
+
+  /***********************
+   * 8) Marker Modal logic (Enter = save)
+   ***********************/
+  const markerModal = document.getElementById("markerModal");
+  const btnCloseModal = document.getElementById("btnCloseModal");
+  const btnSaveMarker = document.getElementById("btnSaveMarker");
+  const btnDeleteMarker = document.getElementById("btnDeleteMarker");
+  const btnStartNewChain = document.getElementById("btnStartNewChain");
+  const btnContinueChain = document.getElementById("btnContinueChain");
+
+  const m_name = document.getElementById("m_name");
+  const m_cat = document.getElementById("m_cat");
+  const m_color = document.getElementById("m_color");
+  const m_useCatColor = document.getElementById("m_useCatColor");
+  const m_colorPreview = document.getElementById("m_colorPreview");
+  const m_yt = document.getElementById("m_yt");
+  const m_ytTitle = document.getElementById("m_ytTitle");
+  const m_memo = document.getElementById("m_memo");
+  const m_r = document.getElementById("m_r");
+  const m_rv = document.getElementById("m_rv");
+  const m_fs = document.getElementById("m_fs");
+  const m_fsv = document.getElementById("m_fsv");
+  const m_fw = document.getElementById("m_fw");
+  const m_labelColor = document.getElementById("m_labelColor");
+  const m_xy = document.getElementById("m_xy");
+
+  const btnLabelDefault = document.getElementById("btnLabelDefault");
+
+  // sync flags (이름 -> 유튜브표시명/메모 자동 채우기)
+  let ytTitleTouched = false;
+  let memoTouched = false;
+
+  function openMarkerModal(id){
+    if(!isAuthed()){ toast("관리자 인증이 필요합니다"); return; }
+    selectedMarkerId = id;
+    const m = getSelectedMarker();
+    if(!m) return;
+
+    // fill category options
+    m_cat.innerHTML = "";
+    for(const c of S.categories.filter(x => x.id !== "전체")){
+      const opt = document.createElement("option");
+      opt.value = c.id;
+      opt.textContent = c.name;
+      m_cat.appendChild(opt);
+    }
+
+    ytTitleTouched = false;
+    memoTouched = false;
+
+    m_name.value = m.name || "";
+    m_cat.value = m.cat || (S.categories.find(x => x.id !== "전체")?.id || "");
+    m_color.value = m.colorOverride || "";
+    m_useCatColor.checked = !!m.useCatColor;
+
+    m_yt.value = m.yt || "";
+    m_ytTitle.value = m.ytTitle || "";
+    m_memo.value = m.memo || "";
+
+    m_r.value = String(m.r ?? 10);
+    m_rv.textContent = String(m.r ?? 10);
+
+    m_fs.value = String(m.fs ?? 15);
+    m_fsv.textContent = String(m.fs ?? 15);
+
+    m_fw.value = String(m.fw ?? 900);
+
+    m_labelColor.value = m.labelColor || (S.markerLabelDefault || "#e7eef8");
+
+    const xy = `${(m.x ?? 0).toFixed(6)}, ${(m.y ?? 0).toFixed(6)}`;
+    m_xy.textContent = xy;
+
+    paintColorPreview();
+
+    markerModal.classList.add("show");
+    markerModal.setAttribute("aria-hidden", "false");
+    renderSelection(id);
+
+    setTimeout(()=> m_name.focus(), 50);
+  }
+
+  function closeMarkerModal(){
+    markerModal.classList.remove("show");
+    markerModal.setAttribute("aria-hidden", "true");
+  }
+
+  btnCloseModal.addEventListener("click", closeMarkerModal);
+  markerModal.addEventListener("click", (e) => {
+    if(e.target === markerModal) closeMarkerModal();
+  });
+
+  // Enter to save (only in modal inputs)
+  markerModal.addEventListener("keydown", (e) => {
+    if(e.key === "Enter"){
+      const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
+      if(tag === "textarea") return; // allow newlines
+      e.preventDefault();
+      doSaveMarker();
+    }
+  });
+
+  m_ytTitle.addEventListener("input", () => { ytTitleTouched = true; });
+  m_memo.addEventListener("input", () => { memoTouched = true; });
+
+  // Requirement #8:
+  // - 이름 입력 시: 유튜브 표시명 + 메모도 동일하게 자동 입력
+  // - 유튜브 표시명 수정 시: 다른 텍스트 유지
+  // - 메모 수정 시: 다른 텍스트 유지
+  // Implementation: name changes propagate to ytTitle/memo ONLY if they were not touched manually.
+  m_name.addEventListener("input", () => {
+    const v = m_name.value;
+    if(!ytTitleTouched) m_ytTitle.value = v;
+    if(!memoTouched) m_memo.value = v;
+  });
+
+  function paintColorPreview(){
+    const m = getSelectedMarker();
+    if(!m) return;
+    // live preview from fields
+    const tmp = {
+      ...m,
+      cat: m_cat.value,
+      colorOverride: m_color.value,
+      useCatColor: m_useCatColor.checked
+    };
+    m_colorPreview.style.background = markerColor(tmp);
+  }
+  m_cat.addEventListener("change", paintColorPreview);
+  m_color.addEventListener("input", paintColorPreview);
+  m_useCatColor.addEventListener("change", paintColorPreview);
+
+  // radius slider: auto sync font size
+  m_r.addEventListener("input", () => {
+    const r = Number(m_r.value);
+    m_rv.textContent = String(r);
+    // keep font size in same ratio (simple rule)
+    const fs = clamp(Math.round(r * 1.5), 10, 26);
+    m_fs.value = String(fs);
+    m_fsv.textContent = String(fs);
+  });
+  m_fs.addEventListener("input", () => {
+    m_fsv.textContent = String(m_fs.value);
+  });
+
+  btnLabelDefault.addEventListener("click", () => {
+    m_labelColor.value = S.markerLabelDefault || "#e7eef8";
+  });
+
+  // quick label colors
+  const quick = [
+    ["#ff5d5d","red"],["#ff9f0a","orange"],["#ffd60a","yellow"],
+    ["#39d98a","green"],["#2b8cff","blue"],["#ffffff","white"],["#000000","black"]
+  ];
+  const quickWrap = document.getElementById("quickLabelColors");
+  quickWrap.innerHTML = "";
+  for(const [col] of quick){
+    const b = document.createElement("div");
+    b.className = "qbtn";
+    b.innerHTML = `<div class="dotc" style="background:${col};"></div>`;
+    b.title = col;
+    b.addEventListener("click", () => { m_labelColor.value = col; });
+    quickWrap.appendChild(b);
+  }
+
+  btnSaveMarker.addEventListener("click", doSaveMarker);
+
+  function doSaveMarker(){
+    if(!isAuthed()){ toast("관리자 인증이 필요합니다"); return; }
+    const m = getSelectedMarker();
+    if(!m) return;
+
+    m.name = m_name.value.trim();
+    m.cat = m_cat.value;
+    m.colorOverride = m_color.value.trim();
+    m.useCatColor = !!m_useCatColor.checked;
+
+    m.yt = m_yt.value.trim();
+    m.ytTitle = m_ytTitle.value.trim();
+    m.memo = m_memo.value;
+
+    m.r = Number(m_r.value);
+    m.fs = Number(m_fs.value);
+    m.fw = Number(m_fw.value);
+    m.labelColor = m_labelColor.value.trim() || (S.markerLabelDefault || "#e7eef8");
+
+    saveState();
+    renderSelection(m.id);
+    renderKPIs();
+    draw();
+    toast("저장됨");
+  }
+
+  btnDeleteMarker.addEventListener("click", () => {
+    if(!isAuthed()){ toast("관리자 인증이 필요합니다"); return; }
+    const m = getSelectedMarker();
+    if(!m) return;
+    if(!confirm("이 마커를 삭제할까요?")) return;
+
+    S.markers = S.markers.filter(x => x.id !== m.id);
+    selectedMarkerId = null;
+    saveState();
+    closeMarkerModal();
+    renderSelection(null);
+    renderKPIs();
+    draw();
+    toast("삭제됨");
+  });
+
+  btnStartNewChain.addEventListener("click", () => {
+    const m = getSelectedMarker();
+    if(!m) return;
+    startNewChainFromThisMarkerId = m.id;
+    insertAfterMarkerId = null;
+    toast("다음 추가 마커부터 새 번호(새 체인)로 시작");
+  });
+
+  btnContinueChain.addEventListener("click", () => {
+    const m = getSelectedMarker();
+    if(!m) return;
+    insertAfterMarkerId = m.id;
+    startNewChainFromThisMarkerId = null;
+    toast("다음 추가 마커를 이 마커 뒤로 이어서 삽입");
+  });
+
+  /***********************
+   * 9) Drawing (map + lines + markers)
+   ***********************/
+  function draw(){
+    ctx.clearRect(0,0,cv.width,cv.height);
+
+    // background vignette
+    ctx.save();
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = "rgba(0,0,0,.22)";
+    ctx.fillRect(0,0,cv.width,cv.height);
+    ctx.restore();
+
+    // map
+    ctx.save();
+    ctx.translate(S.map.tx, S.map.ty);
+    ctx.scale(S.map.scale, S.map.scale);
+
+    // draw image
+    if(mapImg && mapImg.complete){
+      ctx.drawImage(mapImg, 0, 0, S.map.naturalW || mapImg.naturalWidth || 1, S.map.naturalH || mapImg.naturalHeight || 1);
+    }
+
+    // lines: connect markers per chainId by chainIndex
+    const ms = getVisibleMarkers();
+    const byChain = new Map();
+    for(const m of ms){
+      if(!m.chainId || !m.chainIndex) continue;
+      if(!byChain.has(m.chainId)) byChain.set(m.chainId, []);
+      byChain.get(m.chainId).push(m);
+    }
+
+    ctx.lineWidth = 2 / S.map.scale;
+    ctx.strokeStyle = "rgba(255,255,255,.75)";
+    ctx.globalAlpha = 0.9;
+
+    for(const [cid, arr] of byChain.entries()){
+      arr.sort((a,b)=>(a.chainIndex||0)-(b.chainIndex||0));
+      if(arr.length < 2) continue;
+      ctx.beginPath();
+      for(let i=0;i<arr.length;i++){
+        const p = worldFromNorm(arr[i].x, arr[i].y);
+        if(i===0) ctx.moveTo(p.x, p.y);
+        else ctx.lineTo(p.x, p.y);
+      }
+      ctx.stroke();
+    }
+
+    // markers + labels
+    for(const m of ms){
+      const p = worldFromNorm(m.x, m.y);
+      const r = (m.r ?? 10);
+      const col = markerColor(m);
+
+      // circle
+      ctx.save();
+      ctx.globalAlpha = clamp(m.opacity ?? 1, 0, 1);
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, r, 0, Math.PI*2);
+      ctx.fillStyle = col;
+      ctx.fill();
+
+      // small outline (thin)
+      ctx.lineWidth = 2 / S.map.scale;
+      ctx.strokeStyle = "rgba(0,0,0,.35)";
+      ctx.stroke();
+      ctx.restore();
+
+      // number inside circle (chainIndex)
+      const num = (m.chainIndex != null) ? String(m.chainIndex) : "";
+      if(num){
+        ctx.save();
+        ctx.globalAlpha = 0.98;
+        ctx.fillStyle = "rgba(0,0,0,.75)";
+        ctx.font = `${m.fw ?? 900} ${Math.max(10, Math.round((m.fs ?? 15) * 0.95))}px ui-sans-serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(num, p.x, p.y + 0.5);
+        ctx.restore();
+      }
+
+      // label near marker
+      if(m.name){
+        ctx.save();
+        ctx.globalAlpha = 0.98;
+        ctx.fillStyle = m.labelColor || (S.markerLabelDefault || "#e7eef8");
+        ctx.font = `${m.fw ?? 900} ${m.fs ?? 15}px ui-sans-serif`;
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
+
+        const off = r + 8;
+        ctx.fillText(m.name, p.x + off, p.y);
+        ctx.restore();
+      }
+
+      // selected ring
+      if(m.id === selectedMarkerId){
+        ctx.save();
+        ctx.globalAlpha = 1;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, r + 5, 0, Math.PI*2);
+        ctx.lineWidth = 2.5 / S.map.scale;
+        ctx.strokeStyle = "rgba(124,196,255,.85)";
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+
+    ctx.restore(); // end world
+  }
+
+  /***********************
+   * 10) KPIs / counts
+   ***********************/
+  function renderKPIs(){
+    const curPage = S.currentPageId;
+    const allOn = S.categories.find(c => c.id === "전체")?.on ?? true;
+
+    const total = S.markers.filter(m => m.pageId === curPage).length;
+    const shown = getVisibleMarkers().length;
+
+    document.getElementById("kpiTotal").textContent = "마커: " + total;
+    document.getElementById("kpiShown").textContent = "표시 중: " + shown;
+
+    // per-category counts
+    const counts = {};
+    for(const m of S.markers.filter(m => m.pageId === curPage)){
+      counts[m.cat] = (counts[m.cat]||0) + 1;
+    }
+    const boss = counts["보스"]||0, gitel = counts["기텔"]||0, cube = counts["큐브"]||0;
+    document.getElementById("catCounts").textContent = `보스 ${boss} · 기텔 ${gitel} · 큐브 ${cube}`;
+  }
+
+  /***********************
+   * 11) Helpers: escape
+   ***********************/
+  function escapeHtml(s){
+    return String(s)
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#39;");
+  }
+
+  /***********************
+   * 12) Initial boot
+   ***********************/
+  async function renderAll(){
+    // left path
+    gameSelect.value = S.game || "아이온2";
+    document.getElementById("pathGame").textContent = gameSelect.value;
+
+    renderPages();
+    renderCategoryChips();
+    renderKPIs();
+
+    await loadMapImage();
+    resizeCanvas();
+
+    // If we have a map image, ensure natural size
+    if(mapImg && mapImg.complete){
+      S.map.naturalW = mapImg.naturalWidth || S.map.naturalW || 1;
+      S.map.naturalH = mapImg.naturalHeight || S.map.naturalH || 1;
+    }
+
+    // If transform seems empty, fit
+    if(!S.map.scale || S.map.scale < 0.0001){
+      fitToScreen();
+    }else{
+      draw();
+    }
+  }
+
+  // Save on unload
+  window.addEventListener("beforeunload", saveState);
+
+  // Start
+  renderAll().then(() => {
+    reflectAuthUI();
+    toast("ADMIN 준비 완료", 900);
+  });
+
+})();
+</script>
+</body>
+</html>
