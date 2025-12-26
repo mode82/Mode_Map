@@ -1,0 +1,1078 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MAPMODE</title>
+  <style>
+    :root{
+      color-scheme: dark;
+      --bg:#0a0f18;
+      --bg2:#070b12;
+      --panel:#0b1220cc;
+      --card:#0e1626cc;
+      --stroke:#1f2a3a;
+      --stroke2:#27344a;
+      --text:#e7eef8;
+      --muted:#9fb0c6;
+      --accent:#7cc4ff;
+      --danger:#ff5d5d;
+      --ok:#39d98a;
+      --warn:#ffd60a;
+
+      --r12:12px;
+      --r14:14px;
+      --r16:16px;
+
+      --shadow: 0 18px 60px rgba(0,0,0,.45);
+      --shadow2: 0 8px 24px rgba(0,0,0,.35);
+      --blur: 14px;
+
+      --topH:58px;
+      --sideW:320px;
+      --sideW2:350px;
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Apple SD Gothic Neo", "Noto Sans KR", Arial, sans-serif;
+      background: radial-gradient(1200px 700px at 50% -10%, rgba(124,196,255,.18), transparent 55%),
+                  radial-gradient(800px 600px at 90% 10%, rgba(57,217,138,.12), transparent 55%),
+                  radial-gradient(800px 600px at 10% 10%, rgba(255,214,10,.08), transparent 55%),
+                  linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
+      color:var(--text);
+      overflow:hidden;
+    }
+
+    /* Top bar (same shape, but user page: no admin controls) */
+    .topbar{
+      position:fixed; inset:0 0 auto 0;
+      height:var(--topH);
+      display:flex; align-items:center; justify-content:space-between;
+      padding:10px 14px;
+      z-index:50;
+      background: linear-gradient(180deg, rgba(9,14,23,.88), rgba(9,14,23,.58));
+      backdrop-filter: blur(var(--blur));
+      border-bottom:1px solid rgba(39,52,74,.65);
+    }
+    .top-left, .top-right{ display:flex; align-items:center; gap:10px; }
+
+    .slot{
+      height:38px;
+      display:flex;
+      align-items:center;
+      padding:0 10px;
+      border-radius:999px;
+      background: rgba(14,22,38,.55);
+      border:1px solid rgba(39,52,74,.65);
+      box-shadow: var(--shadow2);
+      gap:8px;
+      white-space:nowrap;
+    }
+    .slot.fixed{ width:170px; justify-content:center; }
+    .slot.logo{
+      justify-content:flex-start;
+      border:none;
+      background: transparent;
+      box-shadow:none;
+      padding:0;
+      width:170px;
+    }
+    .logoBox{
+      width:170px; height:38px;
+      border-radius:999px;
+      display:flex; align-items:center; justify-content:center;
+      overflow:hidden;
+      background: rgba(14,22,38,.0);
+      border:none;
+    }
+    .logoBox img{ height:26px; width:auto; display:block; opacity:.98; }
+    .brand{
+      display:flex; align-items:center; gap:10px;
+      font-weight:900; letter-spacing:.5px;
+    }
+    .brand .word{
+      font-size:20px;
+      line-height:1;
+      display:flex;
+      align-items:center;
+      gap:0;
+    }
+    .brand .word .o{
+      display:inline-block;
+      width:12px; height:12px; border-radius:999px;
+      margin:0 2px 0 2px;
+      background: #fff;
+      box-shadow: 0 0 0 2px rgba(255,255,255,.12);
+      transform: translateY(1px);
+    }
+
+    .select{
+      appearance:none;
+      border:none;
+      background:transparent;
+      color:var(--text);
+      font-weight:800;
+      padding-right:18px;
+      outline:none;
+      cursor:pointer;
+    }
+    .chev{
+      width:0; height:0;
+      border-left:5px solid transparent;
+      border-right:5px solid transparent;
+      border-top:6px solid rgba(231,238,248,.7);
+      margin-left:-8px;
+      pointer-events:none;
+    }
+
+    .pill{
+      height:34px;
+      display:flex; align-items:center; gap:8px;
+      padding:0 12px;
+      border-radius:999px;
+      background: rgba(14,22,38,.55);
+      border:1px solid rgba(39,52,74,.65);
+      color:var(--text);
+      box-shadow: var(--shadow2);
+      cursor:pointer;
+      user-select:none;
+      text-decoration:none;
+    }
+    .pill:hover{ border-color: rgba(124,196,255,.55); }
+    .pill:active{ transform: translateY(1px); }
+    .pill.small{ height:32px; padding:0 10px; font-size:13px; }
+    .pill.ghost{ background: rgba(14,22,38,.25); }
+    .pill.danger{ border-color: rgba(255,93,93,.5); }
+
+    /* Layout */
+    .layout{
+      position:fixed;
+      inset:var(--topH) 0 0 0;
+      display:grid;
+      grid-template-columns: var(--sideW) 1fr var(--sideW2);
+      height:calc(100% - var(--topH));
+    }
+
+    .side{
+      overflow:hidden;
+      border-right:1px solid rgba(39,52,74,.55);
+      background: rgba(8,12,20,.35);
+      backdrop-filter: blur(var(--blur));
+    }
+    .side.right{
+      border-right:none;
+      border-left:1px solid rgba(39,52,74,.55);
+    }
+    .sideInner{
+      height:100%;
+      padding:12px;
+      overflow:auto;
+    }
+
+    .card{
+      background: rgba(14,22,38,.50);
+      border:1px solid rgba(39,52,74,.6);
+      border-radius: var(--r16);
+      padding:12px;
+      box-shadow: var(--shadow2);
+    }
+    .card + .card{ margin-top:12px; }
+
+    .sectionTitle{
+      font-size:12px;
+      letter-spacing:.3px;
+      color: rgba(231,238,248,.8);
+      margin:4px 0 10px 0;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+    .subtle{
+      color: rgba(159,176,198,.9);
+      font-size:12px;
+      line-height:1.45;
+    }
+
+    /* Left pages list */
+    .pageList{ display:flex; flex-direction:column; gap:10px; margin-top:10px; }
+    .pageItem{
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      padding:10px 10px;
+      border-radius: var(--r14);
+      border:1px solid rgba(39,52,74,.6);
+      background: rgba(14,22,38,.35);
+      cursor:pointer;
+    }
+    .pageItem.active{
+      outline:2px solid rgba(57,217,138,.35);
+      border-color: rgba(57,217,138,.55);
+      background: rgba(14,22,38,.55);
+    }
+    .pageItem .name{
+      font-weight:900;
+      font-size:13px;
+    }
+
+    /* Center canvas */
+    .center{
+      position:relative;
+      overflow:hidden;
+      background:
+        radial-gradient(900px 700px at 50% 15%, rgba(124,196,255,.08), transparent 60%),
+        radial-gradient(900px 700px at 50% 80%, rgba(57,217,138,.05), transparent 60%);
+    }
+    .canvasWrap{
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:16px;
+    }
+    canvas{
+      background: transparent;
+      border-radius: 0px;
+      box-shadow: none;
+      image-rendering: auto;
+      touch-action:none;
+    }
+    .hintToast{
+      position:absolute;
+      left:50%;
+      transform: translateX(-50%);
+      top:14px;
+      padding:10px 12px;
+      border-radius:999px;
+      border:1px solid rgba(39,52,74,.6);
+      background: rgba(14,22,38,.55);
+      color: rgba(231,238,248,.9);
+      box-shadow: var(--shadow2);
+      font-size:12px;
+      display:none;
+      z-index:40;
+    }
+    .hintToast.show{ display:block; }
+
+    /* Right: category + (no admin controls) */
+    .chipRow{ display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
+    .chip{
+      display:flex; align-items:center; gap:8px;
+      padding:7px 10px;
+      border-radius:999px;
+      border:1px solid rgba(39,52,74,.6);
+      background: rgba(10,15,24,.35);
+      cursor:pointer;
+      font-size:12px;
+      user-select:none;
+    }
+    .chip.on{ border-color: rgba(124,196,255,.6); background: rgba(124,196,255,.10); }
+    .dotc{ width:9px; height:9px; border-radius:999px; box-shadow:0 0 0 2px rgba(255,255,255,.06); }
+    .kpi{
+      margin-top:10px;
+      font-size:12px;
+      color: rgba(231,238,248,.85);
+      display:flex; justify-content:space-between;
+    }
+    .hr{ height:1px; background: rgba(39,52,74,.55); margin:10px 0; }
+
+    .btnFull{
+      width:100%;
+      justify-content:center;
+      height:42px;
+      border-radius: 14px;
+      font-weight:900;
+    }
+
+    /* Hover tooltip (memo + youtube) */
+    .hoverBox{
+      position:fixed;
+      z-index:70;
+      max-width:min(520px, 90vw);
+      background: linear-gradient(180deg, rgba(14,22,38,.92), rgba(10,15,24,.86));
+      border:1px solid rgba(39,52,74,.75);
+      box-shadow: var(--shadow);
+      border-radius: 16px;
+      padding:12px;
+      display:none;
+      pointer-events:auto;
+    }
+    .hoverBox.show{ display:block; }
+    .hoverTitle{
+      font-weight:900;
+      margin:0 0 8px 0;
+      font-size:14px;
+      color: rgba(231,238,248,.95);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .hoverMemo{
+      margin:0;
+      white-space:pre-wrap;
+      color: rgba(231,238,248,.86);
+      font-size:13px;
+      line-height:1.5;
+    }
+    .ytLink{
+      margin-top:10px;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      text-decoration:none;
+      color: rgba(231,238,248,.95);
+    }
+    .ytBadge{
+      width:22px; height:22px;
+      border-radius:7px;
+      display:flex; align-items:center; justify-content:center;
+      border:1px solid rgba(39,52,74,.6);
+      background: rgba(10,15,24,.45);
+      font-weight:900;
+    }
+
+    /* Mobile / Mac: force identical layout (no responsive collapse) */
+    @media (max-width: 1200px){
+      /* Keep same 3 columns: allow horizontal scroll if needed */
+      body{ overflow:auto; }
+      .layout{
+        width: calc(var(--sideW) + 1000px + var(--sideW2));
+        min-width: calc(var(--sideW) + 1000px + var(--sideW2));
+      }
+      .center{ min-width: 1000px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="top-left">
+      <div class="slot fixed logo">
+        <div class="logoBox" id="logoBox">
+          <div class="brand"><div class="word">MAPM<span class="o"></span>DE</div></div>
+        </div>
+      </div>
+
+      <div class="slot fixed">
+        <select id="gameSelect" class="select" title="게임 선택">
+          <option value="아이온2">아이온2</option>
+        </select>
+        <div class="chev"></div>
+      </div>
+
+      <div class="slot fixed">
+        <div class="subtle" style="font-weight:900; color:rgba(231,238,248,.92);">유저</div>
+      </div>
+
+      <div class="slot fixed" style="justify-content:center;">
+        <button class="pill small ghost" id="btnReload" title="새로고침">새로고침</button>
+        <button class="pill small danger" id="btnResetView" title="화면 초기화">전체 초기화</button>
+      </div>
+    </div>
+
+    <div class="top-right">
+      <a class="pill small ghost" id="btnOpenAdmin" href="./admin82.html" target="_blank" rel="noopener">ADMIN</a>
+    </div>
+  </div>
+
+  <div class="layout">
+    <!-- LEFT: Pages -->
+    <aside class="side left">
+      <div class="sideInner">
+        <div class="card">
+          <div class="sectionTitle">
+            <span>페이지</span>
+            <span class="subtle"><b id="pathGame">아이온2</b> / <b id="pathPage">전체지도</b></span>
+          </div>
+          <div class="pageList" id="pageList"></div>
+          <div class="subtle" style="margin-top:10px;">
+            • 페이지를 선택하면 해당 페이지 마커만 표시됩니다.
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- CENTER: Canvas -->
+    <main class="center">
+      <div class="hintToast" id="toast"></div>
+      <div class="canvasWrap">
+        <canvas id="cv" width="1200" height="900"></canvas>
+      </div>
+    </main>
+
+    <!-- RIGHT: Categories -->
+    <aside class="side right">
+      <div class="sideInner">
+        <div class="card">
+          <div class="sectionTitle">
+            <span>카테고리</span>
+            <span class="subtle" id="catCounts"></span>
+          </div>
+          <div class="chipRow" id="catChips"></div>
+
+          <div class="hr"></div>
+
+          <div class="kpi">
+            <span id="kpiShown">표시 중: 0</span>
+            <span id="kpiTotal">마커: 0</span>
+          </div>
+
+          <div style="margin-top:10px;">
+            <button class="pill btnFull" id="btnFit">화면 맞춤</button>
+          </div>
+
+          <div class="subtle" style="margin-top:10px;">
+            • 마커 클릭: 해당 마커만 불투명 30%<br/>
+            • 텍스트에 마우스 올리면 메모/유튜브 링크 표시
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Hover tooltip -->
+  <div class="hoverBox" id="hoverBox">
+    <div class="hoverTitle">
+      <span id="hoverTitleText">-</span>
+      <button class="pill small ghost" id="hoverPin" type="button" style="height:28px;">고정</button>
+    </div>
+    <p class="hoverMemo" id="hoverMemo">-</p>
+    <a class="ytLink" id="hoverYt" href="#" target="_blank" rel="noopener" style="display:none;">
+      <span class="ytBadge">▶</span>
+      <span id="hoverYtText">유튜브</span>
+    </a>
+  </div>
+
+<script>
+(() => {
+  /***********************
+   * STATE LOAD
+   ***********************/
+  const LS_KEY = "mapmode_state_v1";
+  const defaultCats = [
+    { id:"전체", name:"전체", color:"#7cc4ff", on:true },
+    { id:"보스", name:"보스", color:"#ff5d5d", on:true },
+    { id:"기텔", name:"기텔", color:"#ffd60a", on:true },
+    { id:"큐브", name:"큐브", color:"#2b8cff", on:true },
+  ];
+  const defaultState = {
+    version:1,
+    game:"아이온2",
+    logoUrl:"",
+    pages: [{id:"p_all", name:"전체지도", url:""}],
+    currentPageId:"p_all",
+    categories: defaultCats,
+    markerLabelDefault:"#e7eef8",
+    map:{ imgDataUrl:"", naturalW:1, naturalH:1, scale:1, tx:0, ty:0 },
+    markers:[],
+    chains:[]
+  };
+
+  const safeParse = (json, fallback) => { try{ return JSON.parse(json); }catch(e){ return fallback; } };
+  let S = loadState();
+  function loadState(){
+    const raw = localStorage.getItem(LS_KEY);
+    const st = raw ? safeParse(raw, null) : null;
+    if(!st || typeof st !== "object") return structuredClone(defaultState);
+    const merged = structuredClone(defaultState);
+    Object.assign(merged, st);
+    merged.pages = Array.isArray(st.pages) && st.pages.length ? st.pages : structuredClone(defaultState.pages);
+    merged.categories = Array.isArray(st.categories) && st.categories.length ? st.categories : structuredClone(defaultCats);
+    merged.markers = Array.isArray(st.markers) ? st.markers : [];
+    merged.chains = Array.isArray(st.chains) ? st.chains : [];
+    merged.map = Object.assign(structuredClone(defaultState.map), st.map||{});
+    return merged;
+  }
+
+  /***********************
+   * UI refs
+   ***********************/
+  const logoBox = document.getElementById("logoBox");
+  const gameSelect = document.getElementById("gameSelect");
+  const pageList = document.getElementById("pageList");
+  const pathGame = document.getElementById("pathGame");
+  const pathPage = document.getElementById("pathPage");
+  const catChips = document.getElementById("catChips");
+  const cv = document.getElementById("cv");
+  const ctx = cv.getContext("2d");
+  const toastEl = document.getElementById("toast");
+
+  const hoverBox = document.getElementById("hoverBox");
+  const hoverTitleText = document.getElementById("hoverTitleText");
+  const hoverMemo = document.getElementById("hoverMemo");
+  const hoverYt = document.getElementById("hoverYt");
+  const hoverYtText = document.getElementById("hoverYtText");
+  const hoverPin = document.getElementById("hoverPin");
+
+  const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
+  const now = ()=>Date.now();
+
+  function toast(msg, ms=1200){
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    clearTimeout(toast._t);
+    toast._t = setTimeout(()=>toastEl.classList.remove("show"), ms);
+  }
+  function escapeHtml(s){
+    return String(s)
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#39;");
+  }
+
+  /***********************
+   * Logo & game
+   ***********************/
+  function renderLogo(){
+    logoBox.innerHTML = "";
+    if(S.logoUrl){
+      const img = document.createElement("img");
+      img.src = S.logoUrl;
+      img.alt = "logo";
+      img.onerror = () => {
+        logoBox.innerHTML = `<div class="brand"><div class="word">MAPM<span class="o"></span>DE</div></div>`;
+      };
+      logoBox.appendChild(img);
+    }else{
+      logoBox.innerHTML = `<div class="brand"><div class="word">MAPM<span class="o"></span>DE</div></div>`;
+    }
+  }
+  renderLogo();
+
+  gameSelect.value = S.game || "아이온2";
+  pathGame.textContent = gameSelect.value;
+
+  gameSelect.addEventListener("change", () => {
+    // user page: game select is display only (keep AION2)
+    gameSelect.value = "아이온2";
+    toast("현재는 아이온2만 사용합니다");
+  });
+
+  /***********************
+   * Pages
+   ***********************/
+  function renderPages(){
+    pageList.innerHTML = "";
+    if(!S.pages || !S.pages.length){
+      S.pages = structuredClone(defaultState.pages);
+      S.currentPageId = S.pages[0].id;
+    }
+    for(const p of S.pages){
+      const item = document.createElement("div");
+      item.className = "pageItem" + (p.id === S.currentPageId ? " active" : "");
+      item.innerHTML = `<div class="name">${escapeHtml(p.name)}</div>`;
+      item.addEventListener("click", () => {
+        S.currentPageId = p.id;
+        // (user page) persist current page for convenience
+        localStorage.setItem("mapmode_user_current_page", p.id);
+        renderPages();
+        renderKPIs();
+        hideHover(true);
+        draw();
+      });
+      pageList.appendChild(item);
+    }
+    // restore user-selected page if exists
+    const saved = localStorage.getItem("mapmode_user_current_page");
+    if(saved && S.pages.find(x=>x.id===saved)){
+      S.currentPageId = saved;
+      localStorage.removeItem("mapmode_user_current_page"); // avoid loops on first paint
+      renderPages();
+      return;
+    }
+
+    const cur = S.pages.find(p=>p.id===S.currentPageId) || S.pages[0];
+    pathPage.textContent = cur ? cur.name : "전체지도";
+  }
+
+  /***********************
+   * Categories (toggle visibility)
+   ***********************/
+  function getCat(id){ return S.categories.find(c=>c.id===id); }
+  function renderCategoryChips(){
+    catChips.innerHTML = "";
+    if(!S.categories || !S.categories.length) S.categories = structuredClone(defaultCats);
+
+    for(const c of S.categories){
+      const chip = document.createElement("div");
+      chip.className = "chip" + (c.on ? " on" : "");
+      chip.innerHTML = `<div class="dotc" style="background:${c.color};"></div><div style="font-weight:900;">${escapeHtml(c.name)}</div>`;
+      chip.addEventListener("click", () => {
+        // allow toggling, but keep at least one category on
+        c.on = !c.on;
+        if(!S.categories.some(x=>x.on)){
+          c.on = true;
+          toast("최소 1개 카테고리는 켜져야 합니다");
+        }
+        renderCategoryChips();
+        renderKPIs();
+        hideHover(true);
+        draw();
+      });
+      catChips.appendChild(chip);
+    }
+  }
+
+  function getVisibleMarkers(){
+    const curPage = S.currentPageId;
+    const onCats = new Set(S.categories.filter(c=>c.on).map(c=>c.id));
+    const allOn = onCats.has("전체");
+    return (S.markers||[]).filter(m=>{
+      if(m.pageId !== curPage) return false;
+      if(allOn) return true;
+      return onCats.has(m.cat);
+    });
+  }
+
+  function markerColor(m){
+    if(!m) return "#7cc4ff";
+    if(m.useCatColor){
+      const c = getCat(m.cat);
+      return (c && c.color) ? c.color : "#7cc4ff";
+    }
+    if(m.colorOverride && m.colorOverride.trim()) return m.colorOverride.trim();
+    const c = getCat(m.cat);
+    return (c && c.color) ? c.color : "#7cc4ff";
+  }
+
+  function renderKPIs(){
+    const curPage = S.currentPageId;
+    const total = (S.markers||[]).filter(m=>m.pageId===curPage).length;
+    const shown = getVisibleMarkers().length;
+    document.getElementById("kpiTotal").textContent = "마커: " + total;
+    document.getElementById("kpiShown").textContent = "표시 중: " + shown;
+
+    const counts = {};
+    for(const m of (S.markers||[]).filter(m=>m.pageId===curPage)){
+      counts[m.cat] = (counts[m.cat]||0) + 1;
+    }
+    const boss = counts["보스"]||0, gitel = counts["기텔"]||0, cube = counts["큐브"]||0;
+    document.getElementById("catCounts").textContent = `보스 ${boss} · 기텔 ${gitel} · 큐브 ${cube}`;
+  }
+
+  /***********************
+   * Map image + canvas sizing
+   ***********************/
+  let mapImg = new Image();
+  mapImg.crossOrigin = "anonymous";
+  mapImg.onload = () => {
+    S.map.naturalW = mapImg.naturalWidth || 1;
+    S.map.naturalH = mapImg.naturalHeight || 1;
+    if(!S.map.scale || (S.map.scale===1 && S.map.tx===0 && S.map.ty===0)){
+      fitToScreen();
+    }
+    draw();
+  };
+
+  function loadMapImage(){
+    return new Promise((resolve) => {
+      if(!S.map.imgDataUrl){
+        mapImg = new Image();
+        mapImg.onload = () => resolve();
+        mapImg.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(
+          `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900">
+            <defs>
+              <radialGradient id="g" cx="50%" cy="40%" r="70%">
+                <stop offset="0%" stop-color="#ffffff"/>
+                <stop offset="100%" stop-color="#e8edf7"/>
+              </radialGradient>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#g)"/>
+            <text x="50%" y="50%" text-anchor="middle" font-family="Arial" font-size="28" fill="#7a889e">state.json이 필요합니다</text>
+          </svg>`
+        );
+        return;
+      }
+      mapImg = new Image();
+      mapImg.onload = () => resolve();
+      mapImg.src = S.map.imgDataUrl;
+    });
+  }
+
+  function resizeCanvas(){
+    const wrap = cv.parentElement;
+    const w = wrap.clientWidth - 32;
+    const h = wrap.clientHeight - 32;
+    cv.width = Math.max(900, Math.floor(w));
+    cv.height = Math.max(650, Math.floor(h));
+  }
+  window.addEventListener("resize", () => {
+    resizeCanvas();
+    draw();
+  });
+
+  function fitToScreen(){
+    const pad = 40;
+    const iw = S.map.naturalW || 1;
+    const ih = S.map.naturalH || 1;
+    const cw = cv.width;
+    const ch = cv.height;
+
+    const scale = Math.min((cw - pad) / iw, (ch - pad) / ih);
+    S.map.scale = clamp(scale, 0.05, 10);
+    S.map.tx = (cw - iw * S.map.scale) / 2;
+    S.map.ty = (ch - ih * S.map.scale) / 2;
+  }
+
+  document.getElementById("btnFit").addEventListener("click", () => {
+    fitToScreen();
+    hideHover(true);
+    draw();
+    toast("화면 맞춤");
+  });
+
+  /***********************
+   * Pan/Zoom (same behavior on PC/Mac/Mobile)
+   ***********************/
+  let isPanning = false;
+  let lastX=0, lastY=0;
+
+  cv.addEventListener("pointerdown", (e) => {
+    cv.setPointerCapture(e.pointerId);
+    lastX = e.clientX; lastY = e.clientY;
+    isPanning = true;
+  });
+  cv.addEventListener("pointermove", (e) => {
+    if(!isPanning) return;
+    const dx = e.clientX - lastX;
+    const dy = e.clientY - lastY;
+    lastX = e.clientX; lastY = e.clientY;
+    S.map.tx += dx;
+    S.map.ty += dy;
+    hideHover(true);
+    draw();
+  });
+  cv.addEventListener("pointerup", () => { isPanning = false; });
+  cv.addEventListener("pointercancel", () => { isPanning = false; });
+
+  cv.addEventListener("wheel", (e) => {
+    e.preventDefault();
+    const rect = cv.getBoundingClientRect();
+    const mx = (e.clientX - rect.left);
+    const my = (e.clientY - rect.top);
+
+    const oldScale = S.map.scale;
+    const zoom = Math.exp(-e.deltaY * 0.0012);
+    const newScale = clamp(oldScale * zoom, 0.05, 10);
+
+    const wx = (mx - S.map.tx) / oldScale;
+    const wy = (my - S.map.ty) / oldScale;
+
+    S.map.scale = newScale;
+    S.map.tx = mx - wx * newScale;
+    S.map.ty = my - wy * newScale;
+
+    hideHover(true);
+    draw();
+  }, {passive:false});
+
+  /***********************
+   * Marker picking / opacity 30% (text not affected)
+   ***********************/
+  let dimmedMarkerId = null; // only one at a time
+
+  function worldFromScreen(sx, sy){
+    const x = (sx - S.map.tx) / S.map.scale;
+    const y = (sy - S.map.ty) / S.map.scale;
+    return {x,y};
+  }
+  function worldFromNorm(nx, ny){
+    const iw = S.map.naturalW || 1;
+    const ih = S.map.naturalH || 1;
+    return { x: nx * iw, y: ny * ih };
+  }
+
+  function pickMarkerAt(sx, sy){
+    const w = worldFromScreen(sx, sy);
+    const ms = getVisibleMarkers();
+    let best=null, bestD=Infinity;
+    for(const m of ms){
+      const p = worldFromNorm(m.x, m.y);
+      const r = (m.r ?? 10);
+      const dx = p.x - w.x;
+      const dy = p.y - w.y;
+      const d = Math.sqrt(dx*dx + dy*dy);
+      if(d <= r*1.3 && d < bestD){
+        best=m; bestD=d;
+      }
+    }
+    return best;
+  }
+
+  cv.addEventListener("click", (e) => {
+    const rect = cv.getBoundingClientRect();
+    const sx = e.clientX - rect.left;
+    const sy = e.clientY - rect.top;
+    const hit = pickMarkerAt(sx, sy);
+    if(hit){
+      dimmedMarkerId = hit.id; // only this marker circle dims
+      hideHover(true);
+      draw();
+    }else{
+      dimmedMarkerId = null;
+      hideHover(true);
+      draw();
+    }
+  });
+
+  /***********************
+   * Hover: show memo + youtube when hovering TEXT area
+   * (We implement simple text hitboxes computed each draw)
+   ***********************/
+  let labelHitboxes = []; // {id, x1,y1,x2,y2, marker}
+  let hoverPinned = false;
+
+  function hideHover(force=false){
+    if(hoverPinned && !force) return;
+    hoverBox.classList.remove("show");
+  }
+  function showHover(m, sx, sy){
+    hoverTitleText.textContent = m.name || "(이름 없음)";
+    hoverMemo.textContent = (m.memo && m.memo.trim()) ? m.memo : "(메모 없음)";
+
+    const ytUrl = (m.yt || "").trim();
+    const ytTitle = (m.ytTitle || "").trim() || "유튜브";
+    if(ytUrl){
+      hoverYt.style.display = "inline-flex";
+      hoverYt.href = ytUrl;
+      hoverYtText.textContent = ytTitle;
+    }else{
+      hoverYt.style.display = "none";
+      hoverYt.href = "#";
+      hoverYtText.textContent = "유튜브";
+    }
+
+    // position (avoid edges)
+    const pad = 12;
+    const boxW = 520;
+    const boxH = 160;
+    let x = sx + 18;
+    let y = sy + 18;
+
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    x = clamp(x, pad, vw - pad - Math.min(boxW, vw - pad*2));
+    y = clamp(y, pad + 60, vh - pad - Math.min(boxH, vh - pad*2));
+
+    hoverBox.style.left = x + "px";
+    hoverBox.style.top = y + "px";
+    hoverBox.classList.add("show");
+  }
+
+  hoverPin.addEventListener("click", () => {
+    hoverPinned = !hoverPinned;
+    hoverPin.textContent = hoverPinned ? "고정됨" : "고정";
+    if(!hoverPinned){
+      hideHover(true);
+    }
+  });
+
+  window.addEventListener("keydown", (e) => {
+    if(e.key === "Escape"){
+      hoverPinned = false;
+      hoverPin.textContent = "고정";
+      hideHover(true);
+    }
+  });
+
+  window.addEventListener("pointerdown", (e) => {
+    if(!hoverBox.classList.contains("show")) return;
+    if(hoverPinned) return;
+    if(!hoverBox.contains(e.target)){
+      hideHover(true);
+    }
+  });
+
+  cv.addEventListener("pointermove", (e) => {
+    if(hoverPinned) return;
+    const x = e.clientX;
+    const y = e.clientY;
+
+    // hit test label boxes
+    let hit = null;
+    for(const hb of labelHitboxes){
+      if(x >= hb.x1 && x <= hb.x2 && y >= hb.y1 && y <= hb.y2){
+        hit = hb.marker;
+        break;
+      }
+    }
+    if(hit){
+      showHover(hit, x, y);
+    }else{
+      hideHover(true);
+    }
+  });
+
+  /***********************
+   * Drawing
+   ***********************/
+  function draw(){
+    ctx.clearRect(0,0,cv.width,cv.height);
+    labelHitboxes = [];
+
+    // bg
+    ctx.save();
+    ctx.fillStyle = "rgba(0,0,0,.22)";
+    ctx.fillRect(0,0,cv.width,cv.height);
+    ctx.restore();
+
+    // world
+    ctx.save();
+    ctx.translate(S.map.tx, S.map.ty);
+    ctx.scale(S.map.scale, S.map.scale);
+
+    // map image
+    if(mapImg && mapImg.complete){
+      ctx.drawImage(mapImg, 0, 0, S.map.naturalW || mapImg.naturalWidth || 1, S.map.naturalH || mapImg.naturalHeight || 1);
+    }
+
+    const ms = getVisibleMarkers();
+
+    // lines by chain
+    const byChain = new Map();
+    for(const m of ms){
+      if(!m.chainId || !m.chainIndex) continue;
+      if(!byChain.has(m.chainId)) byChain.set(m.chainId, []);
+      byChain.get(m.chainId).push(m);
+    }
+
+    ctx.lineWidth = 2 / S.map.scale;
+    ctx.strokeStyle = "rgba(255,255,255,.75)";
+    ctx.globalAlpha = 0.9;
+    for(const arr of byChain.values()){
+      arr.sort((a,b)=>(a.chainIndex||0)-(b.chainIndex||0));
+      if(arr.length < 2) continue;
+      ctx.beginPath();
+      for(let i=0;i<arr.length;i++){
+        const p = worldFromNorm(arr[i].x, arr[i].y);
+        if(i===0) ctx.moveTo(p.x, p.y);
+        else ctx.lineTo(p.x, p.y);
+      }
+      ctx.stroke();
+    }
+
+    // markers + text
+    for(const m of ms){
+      const p = worldFromNorm(m.x, m.y);
+      const r = (m.r ?? 10);
+      const col = markerColor(m);
+
+      // circle opacity rule:
+      // - If this marker is selected: 0.3
+      // - Others: 1
+      const circleAlpha = (dimmedMarkerId === m.id) ? 0.30 : 1.0;
+
+      // circle
+      ctx.save();
+      ctx.globalAlpha = circleAlpha;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, r, 0, Math.PI*2);
+      ctx.fillStyle = col;
+      ctx.fill();
+      ctx.lineWidth = 2 / S.map.scale;
+      ctx.strokeStyle = "rgba(0,0,0,.35)";
+      ctx.stroke();
+      ctx.restore();
+
+      // number
+      const num = (m.chainIndex != null) ? String(m.chainIndex) : "";
+      if(num){
+        ctx.save();
+        ctx.globalAlpha = 0.98;
+        ctx.fillStyle = "rgba(0,0,0,.75)";
+        ctx.font = `${m.fw ?? 900} ${Math.max(10, Math.round((m.fs ?? 15) * 0.95))}px ui-sans-serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(num, p.x, p.y + 0.5);
+        ctx.restore();
+      }
+
+      // label (TEXT must NOT be affected by circle opacity)
+      if(m.name){
+        ctx.save();
+        ctx.globalAlpha = 0.98;
+        ctx.fillStyle = m.labelColor || (S.markerLabelDefault || "#e7eef8");
+        ctx.font = `${m.fw ?? 900} ${m.fs ?? 15}px ui-sans-serif`;
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
+
+        const off = r + 8;
+        ctx.fillText(m.name, p.x + off, p.y);
+        // build label hitbox in screen space
+        const text = m.name;
+        const metrics = ctx.measureText(text);
+        const w = metrics.width;
+        const h = (m.fs ?? 15) * 1.35;
+
+        // world -> screen conversion for hitbox
+        const sx = (p.x + off) * S.map.scale + S.map.tx;
+        const sy = (p.y) * S.map.scale + S.map.ty;
+
+        labelHitboxes.push({
+          id: m.id,
+          marker: m,
+          x1: sx - 2,
+          y1: sy - h/2,
+          x2: sx + w + 6,
+          y2: sy + h/2
+        });
+
+        ctx.restore();
+      }
+    }
+
+    ctx.restore();
+  }
+
+  /***********************
+   * Buttons
+   ***********************/
+  document.getElementById("btnReload").addEventListener("click", () => {
+    S = loadState();
+    renderAll();
+    toast("새로고침 완료");
+  });
+
+  document.getElementById("btnResetView").addEventListener("click", () => {
+    // user page: reset view only (not deleting data)
+    dimmedMarkerId = null;
+    hoverPinned = false;
+    hoverPin.textContent = "고정";
+    fitToScreen();
+    hideHover(true);
+    draw();
+    toast("화면 초기화");
+  });
+
+  /***********************
+   * Boot
+   ***********************/
+  async function renderAll(){
+    renderLogo();
+    pathGame.textContent = (S.game || "아이온2");
+    renderPages();
+    renderCategoryChips();
+    renderKPIs();
+    await loadMapImage();
+    resizeCanvas();
+    if(mapImg && mapImg.complete){
+      S.map.naturalW = mapImg.naturalWidth || S.map.naturalW || 1;
+      S.map.naturalH = mapImg.naturalHeight || S.map.naturalH || 1;
+    }
+    if(!S.map.scale || S.map.scale < 0.0001){
+      fitToScreen();
+    }
+    draw();
+  }
+
+  renderAll().then(()=>toast("MAPMODE 준비 완료", 900));
+})();
+</script>
+</body>
+</html>
